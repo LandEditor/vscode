@@ -43,6 +43,7 @@ export const pendingNotebookCellModelUpdates = new WeakMap<
 	NotebookDocument,
 	Set<Thenable<void>>
 >();
+
 export function activate(context: ExtensionContext) {
 	workspace.onDidChangeNotebookDocument(
 		onDidChangeNotebookCells,

@@ -50,8 +50,10 @@ type DefaultProfileChangeEvent = Map<
 let followupCounter = 0;
 
 const testResultInternalIDs = new WeakMap<vscode.TestRunResult, string>();
+
 export const IExtHostTesting =
 	createDecorator<IExtHostTesting>("IExtHostTesting");
+
 export interface IExtHostTesting extends ExtHostTesting {
 	readonly _serviceBrand: undefined;
 }
@@ -1345,6 +1347,7 @@ const tryGetProfileFromTestRunReq = (request: vscode.TestRunRequest) => {
 	}
 	return request.profile;
 };
+
 export class TestRunDto {
 	public static fromPublic(
 		controllerId: string,

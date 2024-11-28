@@ -49,6 +49,7 @@ export const INotebookOutlineEntryFactory =
 	createDecorator<INotebookOutlineEntryFactory>(
 		"INotebookOutlineEntryFactory",
 	);
+
 export interface INotebookOutlineEntryFactory {
 	readonly _serviceBrand: undefined;
 

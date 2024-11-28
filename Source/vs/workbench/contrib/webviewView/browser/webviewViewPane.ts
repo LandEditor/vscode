@@ -61,6 +61,7 @@ declare const ResizeObserver: any;
 const storageKeys = {
 	webviewState: "webviewState",
 } as const;
+
 export class WebviewViewPane extends ViewPane {
 	private static _originStore?: ExtensionKeyedWebviewOriginStore;
 	private static getOriginStore(

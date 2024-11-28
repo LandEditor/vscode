@@ -37,6 +37,7 @@ import { IMarkdownString, MarkdownString } from '../../../base/common/htmlConten
 export type InstallableExtension = { readonly manifest: IExtensionManifest; extension: IGalleryExtension | URI; options: InstallOptions };
 
 export type InstallExtensionTaskOptions = InstallOptions & { readonly profileLocation: URI; readonly productVersion: IProductVersion };
+
 export interface IInstallExtensionTask {
 	readonly manifest: IExtensionManifest;
 	readonly identifier: IExtensionIdentifier;
@@ -50,6 +51,7 @@ export interface IInstallExtensionTask {
 }
 
 export type UninstallExtensionTaskOptions = UninstallOptions & { readonly profileLocation: URI };
+
 export interface IUninstallExtensionTask {
 	readonly options: UninstallExtensionTaskOptions;
 	readonly extension: ILocalExtension;

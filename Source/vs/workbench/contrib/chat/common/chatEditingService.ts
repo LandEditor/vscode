@@ -25,6 +25,7 @@ import { IChatResponseModel } from "./chatModel.js";
 
 export const IChatEditingService =
 	createDecorator<IChatEditingService>("chatEditingService");
+
 export interface IChatEditingService {
 	_serviceBrand: undefined;
 
@@ -163,6 +164,7 @@ export const enum ChatEditingSessionState {
 }
 export const CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME =
 	"chat-editing-multi-diff-source";
+
 export const chatEditingWidgetFileStateContextKey =
 	new RawContextKey<WorkingSetEntryState>(
 		"chatEditingWidgetFileState",
@@ -172,30 +174,40 @@ export const chatEditingWidgetFileStateContextKey =
 			"The current state of the file in the chat editing widget",
 		),
 	);
+
 export const decidedChatEditingResourceContextKey = new RawContextKey<string[]>(
 	"decidedChatEditingResource",
 	[],
 );
+
 export const chatEditingResourceContextKey = new RawContextKey<
 	string | undefined
 >("chatEditingResource", undefined);
+
 export const inChatEditingSessionContextKey = new RawContextKey<
 	boolean | undefined
 >("inChatEditingSession", undefined);
+
 export const applyingChatEditsContextKey = new RawContextKey<
 	boolean | undefined
 >("isApplyingChatEdits", undefined);
+
 export const hasUndecidedChatEditingResourceContextKey = new RawContextKey<
 	boolean | undefined
 >("hasUndecidedChatEditingResource", false);
+
 export const hasAppliedChatEditsContextKey = new RawContextKey<
 	boolean | undefined
 >("hasAppliedChatEdits", false);
+
 export const applyingChatEditsFailedContextKey = new RawContextKey<
 	boolean | undefined
 >("applyingChatEditsFailed", false);
+
 export const chatEditingMaxFileAssignmentName = "chatEditingSessionFileLimit";
+
 export const defaultChatEditingMaxFileLimit = 10;
+
 export const enum ChatEditKind {
 	Created,
 	Modified,

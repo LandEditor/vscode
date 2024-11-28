@@ -48,18 +48,21 @@ export const IEditorService = createDecorator<IEditorService>("editorService");
  * Open an editor in the currently active group.
  */
 export const ACTIVE_GROUP = -1;
+
 export type ACTIVE_GROUP_TYPE = typeof ACTIVE_GROUP;
 
 /**
  * Open an editor to the side of the active group.
  */
 export const SIDE_GROUP = -2;
+
 export type SIDE_GROUP_TYPE = typeof SIDE_GROUP;
 
 /**
  * Open an editor in a new auxiliary window.
  */
 export const AUX_WINDOW_GROUP = -3;
+
 export type AUX_WINDOW_GROUP_TYPE = typeof AUX_WINDOW_GROUP;
 
 export type PreferredGroup =

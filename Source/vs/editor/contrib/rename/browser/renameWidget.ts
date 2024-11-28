@@ -89,6 +89,7 @@ export const CONTEXT_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>(
 		"Whether the rename input widget is visible",
 	),
 );
+
 export const CONTEXT_RENAME_INPUT_FOCUSED = new RawContextKey<boolean>(
 	"renameInputFocused",
 	false,

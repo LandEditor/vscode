@@ -8,6 +8,7 @@ import { IWillInstantiateEditorPaneEvent } from "../../../common/editor.js";
 
 export const IEditorPaneService =
 	createDecorator<IEditorPaneService>("editorPaneService");
+
 export interface IEditorPaneService {
 	readonly _serviceBrand: undefined;
 	/**

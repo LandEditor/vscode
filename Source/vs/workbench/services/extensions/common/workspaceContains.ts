@@ -24,6 +24,7 @@ import { QueryBuilder } from "../../search/common/queryBuilder.js";
 import { ISearchService } from "../../search/common/search.js";
 
 const WORKSPACE_CONTAINS_TIMEOUT = 7000;
+
 export interface IExtensionActivationHost {
 	readonly logService: ILogService;
 	readonly folders: readonly UriComponents[];

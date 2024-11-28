@@ -47,12 +47,14 @@ import { INotebookEditorService } from "../services/notebookEditorService.js";
 
 // Kernel Command
 export const SELECT_KERNEL_ID = "_notebook.selectKernel";
+
 export const NOTEBOOK_ACTIONS_CATEGORY = localize2(
 	"notebookActions.category",
 	"Notebook",
 );
 
 export const CELL_TITLE_CELL_GROUP_ID = "inline/cell";
+
 export const CELL_TITLE_OUTPUT_GROUP_ID = "inline/output";
 
 export const NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT =

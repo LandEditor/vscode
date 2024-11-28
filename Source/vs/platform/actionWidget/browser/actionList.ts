@@ -30,6 +30,7 @@ import { defaultListStyles } from "../../theme/browser/defaultStyles.js";
 import { asCssVariable } from "../../theme/common/colorRegistry.js";
 
 export const acceptSelectedActionCommand = "acceptSelectedCodeAction";
+
 export const previewSelectedActionCommand = "previewSelectedCodeAction";
 
 export interface IActionListDelegate<T> {

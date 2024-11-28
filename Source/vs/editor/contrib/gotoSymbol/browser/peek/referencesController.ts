@@ -67,6 +67,7 @@ export const ctxReferenceSearchVisible = new RawContextKey<boolean>(
 		"Whether reference peek is visible, like 'Peek References' or 'Peek Definition'",
 	),
 );
+
 export abstract class ReferencesController implements IEditorContribution {
 	static readonly ID = "editor.contrib.referencesController";
 	private readonly _disposables = new DisposableStore();

@@ -204,6 +204,7 @@ export function getOutOfWorkspaceEditorResources(
 }
 // Supports patterns of <path><#|:|(><line><#|:|,><col?><:?>
 const LINE_COLON_PATTERN = /\s?[#:\(](?:line )?(\d*)(?:[#:,](\d*))?\)?:?\s*$/;
+
 export interface IFilterAndRange {
 	filter: string;
 	range: IRange;
@@ -282,6 +283,7 @@ export const SearchStateKey = new RawContextKey<SearchUIState>(
 	"searchState",
 	SearchUIState.Idle,
 );
+
 export interface NotebookPriorityInfo {
 	isFromSettings: boolean;
 	filenamePatterns: string[];

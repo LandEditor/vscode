@@ -93,6 +93,7 @@ export function registerMainProcessRemoteService<T>(
 export const ISharedProcessService = createDecorator<ISharedProcessService>(
 	"sharedProcessService",
 );
+
 export interface ISharedProcessService extends IRemoteService {
 	/**
 	 * Allows to create a `MessagePort` connection between the

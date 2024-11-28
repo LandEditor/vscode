@@ -66,10 +66,12 @@ import { IInlineChatSessionService } from "../../../inlineChat/browser/inlineCha
 import { ApplyFileSnippetAction } from "../../../snippets/browser/commands/fileTemplateSnippets.js";
 
 const $ = dom.$;
+
 export interface IEmptyTextEditorHintOptions {
 	readonly clickable?: boolean;
 }
 export const emptyTextEditorHintSetting = "workbench.editor.empty.hint";
+
 export class EmptyTextEditorHintContribution implements IEditorContribution {
 	public static readonly ID = "editor.contrib.emptyTextEditorHint";
 	protected toDispose: IDisposable[];

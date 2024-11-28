@@ -170,6 +170,7 @@ let normalizedUserHomeCached: {
 	original: string;
 	normalized: string;
 } = Object.create(null);
+
 export function tildify(path: string, userHome: string, os = OS): string {
 	if (os === OperatingSystem.Windows || !path || !userHome) {
 		return path; // unsupported on Windows
@@ -243,6 +244,7 @@ const ellipsis = "\u2026";
 const unc = "\\\\";
 
 const home = "~";
+
 export function shorten(
 	paths: string[],
 	pathSeparator: string = sep,

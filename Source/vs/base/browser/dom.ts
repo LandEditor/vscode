@@ -208,18 +208,21 @@ export function addDisposableListener<
 	handler: (event: GlobalEventHandlersEventMap[K]) => void,
 	useCapture?: boolean,
 ): IDisposable;
+
 export function addDisposableListener(
 	node: EventTarget,
 	type: string,
 	handler: (event: any) => void,
 	useCapture?: boolean,
 ): IDisposable;
+
 export function addDisposableListener(
 	node: EventTarget,
 	type: string,
 	handler: (event: any) => void,
 	options: AddEventListenerOptions,
 ): IDisposable;
+
 export function addDisposableListener(
 	node: EventTarget,
 	type: string,
@@ -355,6 +358,7 @@ export const addStandardDisposableGenericMouseUpListener =
 			useCapture,
 		);
 	};
+
 export function addDisposableGenericMouseDownListener(
 	node: EventTarget,
 	handler: (event: any) => void,
@@ -1755,10 +1759,12 @@ export function after<T extends Node>(sibling: HTMLElement, child: T): T {
 }
 
 export function append<T extends Node>(parent: HTMLElement, child: T): T;
+
 export function append<T extends Node>(
 	parent: HTMLElement,
 	...children: (T | string)[]
 ): void;
+
 export function append<T extends Node>(
 	parent: HTMLElement,
 	...children: (T | string)[]
@@ -2026,6 +2032,7 @@ export function windowOpenNoOpener(url: string): void {
  */
 const popupWidth = 780,
 	popupHeight = 640;
+
 export function windowOpenPopup(url: string): void {
 	const left = Math.floor(
 		mainWindow.screenLeft + mainWindow.innerWidth / 2 - popupWidth / 2,

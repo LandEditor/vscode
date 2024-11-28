@@ -55,6 +55,7 @@ import {
 import { ICodeEditorService } from "./services/codeEditorService.js";
 
 const CORE_WEIGHT = KeybindingWeight.EditorCore;
+
 export abstract class CoreEditorCommand<T> extends EditorCommand {
 	public runEditorCommand(
 		accessor: ServicesAccessor | null,

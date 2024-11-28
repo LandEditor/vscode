@@ -5,7 +5,9 @@
 import { Codicon } from "./codicons.js";
 
 export type ColorIdentifier = string;
+
 export type IconIdentifier = string;
+
 export interface ThemeColor {
 	id: string;
 }

@@ -207,6 +207,7 @@ const extensionKindSchema: IJSONSchema = {
 };
 
 const schemaId = "vscode://schemas/vscode-extensions";
+
 export const schema: IJSONSchema = {
 	properties: {
 		engines: {
@@ -960,6 +961,7 @@ const PRExtensions = {
 	ExtensionsRegistry: "ExtensionsRegistry",
 };
 Registry.add(PRExtensions.ExtensionsRegistry, new ExtensionsRegistryImpl());
+
 export const ExtensionsRegistry: ExtensionsRegistryImpl = Registry.as(
 	PRExtensions.ExtensionsRegistry,
 );

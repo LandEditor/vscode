@@ -185,6 +185,7 @@ const _themeIconIds = [
 	"symbol-operator",
 	"symbol-type-parameter",
 ];
+
 export function getThemeIcon(
 	kind: vscode.SymbolKind,
 ): vscode.ThemeIcon | undefined {

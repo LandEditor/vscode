@@ -10,6 +10,7 @@ import { ILanguageIdCodec } from "../languages.js";
 
 export const ILanguageService =
 	createDecorator<ILanguageService>("languageService");
+
 export interface ILanguageExtensionPoint {
 	id: string;
 	extensions?: string[];

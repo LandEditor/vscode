@@ -143,5 +143,6 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 }
 export const IExtHostLocalizationService =
 	createDecorator<IExtHostLocalizationService>("IExtHostLocalizationService");
+
 export interface IExtHostLocalizationService
 	extends ExtHostLocalizationService {}

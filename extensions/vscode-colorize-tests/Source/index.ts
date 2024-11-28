@@ -27,4 +27,5 @@ if (process.env.BUILD_ARTIFACTSTAGINGDIRECTORY) {
 	};
 }
 testRunner.configure(options);
+
 export = testRunner;

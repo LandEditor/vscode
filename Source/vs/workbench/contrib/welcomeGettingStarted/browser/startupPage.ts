@@ -50,6 +50,7 @@ import {
 
 export const restoreWalkthroughsConfigurationKey =
 	"workbench.welcomePage.restorableWalkthroughs";
+
 export type RestoreWalkthroughsConfigurationValue = {
 	folder: string;
 	category?: string;
@@ -61,6 +62,7 @@ const configurationKey = "workbench.startupEditor";
 const oldConfigurationKey = "workbench.welcome.enabled";
 
 const telemetryOptOutStorageKey = "workbench.telemetryOptOutShown";
+
 export class StartupPageEditorResolverContribution
 	implements IWorkbenchContribution
 {

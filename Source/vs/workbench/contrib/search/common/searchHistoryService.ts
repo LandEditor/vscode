@@ -21,6 +21,7 @@ export interface ISearchHistoryService {
 export const ISearchHistoryService = createDecorator<ISearchHistoryService>(
 	"searchHistoryService",
 );
+
 export interface ISearchHistoryValues {
 	search?: string[];
 	replace?: string[];

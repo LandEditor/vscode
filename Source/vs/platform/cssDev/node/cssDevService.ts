@@ -14,6 +14,7 @@ import { ILogService } from "../../log/common/log.js";
 export const ICSSDevelopmentService = createDecorator<ICSSDevelopmentService>(
 	"ICSSDevelopmentService",
 );
+
 export interface ICSSDevelopmentService {
 	_serviceBrand: undefined;
 	isEnabled: boolean;

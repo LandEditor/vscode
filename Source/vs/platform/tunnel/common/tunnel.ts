@@ -14,9 +14,11 @@ import { IAddressProvider } from "../../remote/common/remoteAgentConnection.js";
 import { TunnelPrivacy } from "../../remote/common/remoteAuthorityResolver.js";
 
 export const ITunnelService = createDecorator<ITunnelService>("tunnelService");
+
 export const ISharedTunnelsService = createDecorator<ISharedTunnelsService>(
 	"sharedTunnelsService",
 );
+
 export interface RemoteTunnel {
 	readonly tunnelRemotePort: number;
 	readonly tunnelRemoteHost: string;
@@ -222,10 +224,12 @@ export const LOCALHOST_ADDRESSES = [
 	"0:0:0:0:0:0:0:1",
 	"::1",
 ];
+
 export function isLocalhost(host: string): boolean {
 	return LOCALHOST_ADDRESSES.indexOf(host) >= 0;
 }
 export const ALL_INTERFACES_ADDRESSES = ["0.0.0.0", "0:0:0:0:0:0:0:0", "::"];
+
 export function isAllInterfaces(host: string): boolean {
 	return ALL_INTERFACES_ADDRESSES.indexOf(host) >= 0;
 }

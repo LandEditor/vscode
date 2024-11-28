@@ -73,6 +73,7 @@ SENTINEL.parent = SENTINEL;
 SENTINEL.left = SENTINEL;
 SENTINEL.right = SENTINEL;
 SENTINEL.color = NodeColor.Black;
+
 export function leftest(node: TreeNode): TreeNode {
 	while (node.left !== SENTINEL) {
 		node = node.left;

@@ -13,6 +13,7 @@ import { localize } from "../../../../../nls.js";
 import { registerIcon } from "../../../../../platform/theme/common/iconRegistry.js";
 
 const $ = dom.$;
+
 export class CloseButton extends Disposable {
 	private _button: HTMLElement;
 	private readonly _onClicked = this._register(new Emitter<void>());

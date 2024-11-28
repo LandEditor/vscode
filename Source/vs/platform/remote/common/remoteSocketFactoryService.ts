@@ -13,6 +13,7 @@ import {
 
 export const IRemoteSocketFactoryService =
 	createDecorator<IRemoteSocketFactoryService>("remoteSocketFactoryService");
+
 export interface IRemoteSocketFactoryService {
 	readonly _serviceBrand: undefined;
 	/**

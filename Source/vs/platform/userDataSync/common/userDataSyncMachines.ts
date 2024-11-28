@@ -47,10 +47,12 @@ export interface IMachinesData {
 export type IUserDataSyncMachine = Readonly<IMachineData> & {
 	readonly isCurrent: boolean;
 };
+
 export const IUserDataSyncMachinesService =
 	createDecorator<IUserDataSyncMachinesService>(
 		"IUserDataSyncMachinesService",
 	);
+
 export interface IUserDataSyncMachinesService {
 	_serviceBrand: any;
 	readonly onDidChange: Event<void>;
@@ -74,6 +76,7 @@ const Edge = "Edge";
 const Firefox = "Firefox";
 
 const Android = "Android";
+
 export function isWebPlatform(platform: string) {
 	switch (platform) {
 		case Safari:

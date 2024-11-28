@@ -60,6 +60,7 @@ import {
 } from "../../../services/userDataSync/common/userDataSync.js";
 
 type UserDataSyncConflictResource = IUserDataSyncResource & IResourcePreview;
+
 export class UserDataSyncConflictsViewPane
 	extends TreeViewPane
 	implements IUserDataSyncConflictsView

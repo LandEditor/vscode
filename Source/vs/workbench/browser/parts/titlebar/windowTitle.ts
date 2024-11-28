@@ -71,7 +71,9 @@ export const defaultWindowTitle = (() => {
 	}
 	return base;
 })();
+
 export const defaultWindowTitleSeparator = isMacintosh ? " \u2014 " : " - ";
+
 export class WindowTitle extends Disposable {
 	private static readonly NLS_USER_IS_ADMIN = isWindows
 		? localize("userIsAdmin", "[Administrator]")

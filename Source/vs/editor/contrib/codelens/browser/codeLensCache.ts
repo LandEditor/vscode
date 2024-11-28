@@ -27,6 +27,7 @@ import { ITextModel } from "../../../common/model.js";
 import { CodeLensModel } from "./codelens.js";
 
 export const ICodeLensCache = createDecorator<ICodeLensCache>("ICodeLensCache");
+
 export interface ICodeLensCache {
 	readonly _serviceBrand: undefined;
 	put(model: ITextModel, data: CodeLensModel): void;

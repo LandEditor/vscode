@@ -41,6 +41,7 @@ export const terminalColorSchema: IJSONSchema = {
 	],
 	default: null,
 };
+
 export const terminalIconSchema: IJSONSchema = {
 	type: "string",
 	enum: Array.from(getAllCodicons(), (icon) => icon.id),
@@ -485,6 +486,7 @@ export function registerTerminalPlatformConfiguration() {
 	registerTerminalDefaultProfileConfiguration();
 }
 let defaultProfilesConfiguration: IConfigurationNode | undefined;
+
 export function registerTerminalDefaultProfileConfiguration(
 	detectedProfiles?: {
 		os: OperatingSystem;

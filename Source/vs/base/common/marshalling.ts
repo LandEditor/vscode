@@ -36,9 +36,11 @@ type Deserialize<T> = T extends UriComponents
 		: T extends object
 			? Revived<T>
 			: T;
+
 export type Revived<T> = {
 	[K in keyof T]: Deserialize<T[K]>;
 };
+
 export function revive<T = any>(obj: any, depth = 0): Revived<T> {
 	if (!obj || depth > 200) {
 		return obj;

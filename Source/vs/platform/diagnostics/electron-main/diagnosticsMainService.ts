@@ -29,8 +29,10 @@ import {
 } from "../common/diagnostics.js";
 
 export const ID = "diagnosticsMainService";
+
 export const IDiagnosticsMainService =
 	createDecorator<IDiagnosticsMainService>(ID);
+
 export interface IRemoteDiagnosticOptions {
 	includeProcesses?: boolean;
 	includeWorkspaceMetadata?: boolean;

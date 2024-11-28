@@ -8,16 +8,25 @@ export const InSearchEditor = new RawContextKey<boolean>(
 	"inSearchEditor",
 	false,
 );
+
 export const SearchEditorScheme = "search-editor";
+
 export const SearchEditorWorkingCopyTypeId = "search/editor";
+
 export const SearchEditorFindMatchClass = "searchEditorFindMatch";
+
 export const SearchEditorID = "workbench.editor.searchEditor";
+
 export const OpenNewEditorCommandId = "search.action.openNewEditor";
+
 export const OpenEditorCommandId = "search.action.openEditor";
+
 export const ToggleSearchEditorContextLinesCommandId =
 	"toggleSearchEditorContextLines";
+
 export const SearchEditorInputTypeId =
 	"workbench.editorinputs.searchEditorInput";
+
 export type SearchConfiguration = {
 	query: string;
 	filesToInclude: string;

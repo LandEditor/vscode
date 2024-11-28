@@ -908,6 +908,7 @@ export function removeAnsiEscapeCodesFromPrompt(str: string): string {
 }
 // -- UTF-8 BOM
 export const UTF8_BOM_CHARACTER = String.fromCharCode(CharCode.UTF8_BOM);
+
 export function startsWithUTF8BOM(str: string): boolean {
 	return !!(str && str.length > 0 && str.charCodeAt(0) === CharCode.UTF8_BOM);
 }
@@ -1253,6 +1254,7 @@ const enum CodePoint {
 	enclosingKeyCap = 0x20e3,
 }
 export const noBreakWhitespace = "\xa0";
+
 export class AmbiguousCharacters {
 	private static readonly ambiguousCharacterData = new Lazy<
 		Record<

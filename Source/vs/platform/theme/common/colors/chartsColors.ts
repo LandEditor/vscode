@@ -17,6 +17,7 @@ export const chartsForeground = registerColor(
 	foreground,
 	nls.localize("chartsForeground", "The foreground color used in charts."),
 );
+
 export const chartsLines = registerColor(
 	"charts.lines",
 	transparent(foreground, 0.5),
@@ -25,16 +26,19 @@ export const chartsLines = registerColor(
 		"The color used for horizontal lines in charts.",
 	),
 );
+
 export const chartsRed = registerColor(
 	"charts.red",
 	editorErrorForeground,
 	nls.localize("chartsRed", "The red color used in chart visualizations."),
 );
+
 export const chartsBlue = registerColor(
 	"charts.blue",
 	editorInfoForeground,
 	nls.localize("chartsBlue", "The blue color used in chart visualizations."),
 );
+
 export const chartsYellow = registerColor(
 	"charts.yellow",
 	editorWarningForeground,
@@ -43,6 +47,7 @@ export const chartsYellow = registerColor(
 		"The yellow color used in chart visualizations.",
 	),
 );
+
 export const chartsOrange = registerColor(
 	"charts.orange",
 	minimapFindMatch,
@@ -51,6 +56,7 @@ export const chartsOrange = registerColor(
 		"The orange color used in chart visualizations.",
 	),
 );
+
 export const chartsGreen = registerColor(
 	"charts.green",
 	{
@@ -64,6 +70,7 @@ export const chartsGreen = registerColor(
 		"The green color used in chart visualizations.",
 	),
 );
+
 export const chartsPurple = registerColor(
 	"charts.purple",
 	{

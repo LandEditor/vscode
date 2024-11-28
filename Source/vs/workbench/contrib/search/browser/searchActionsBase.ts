@@ -22,6 +22,7 @@ import {
 import { SearchView } from "./searchView.js";
 
 export const category = nls.localize2("search", "Search");
+
 export function isSearchViewFocused(viewsService: IViewsService): boolean {
 	const searchView = getSearchView(viewsService);
 

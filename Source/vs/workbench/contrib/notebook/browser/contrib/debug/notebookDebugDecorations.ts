@@ -218,6 +218,7 @@ registerNotebookContribution(
 	PausedCellDecorationContribution.id,
 	PausedCellDecorationContribution,
 );
+
 export class NotebookBreakpointDecorations
 	extends Disposable
 	implements INotebookEditorContribution

@@ -39,6 +39,7 @@ export type UpdateNotAvailableClassification = {
 	};
 	comment: "This is used to understand how often VS Code pings the update server for an update and there's none available.";
 };
+
 export type UpdateErrorClassification = {
 	owner: "joaomoreno";
 	messageHash: {
@@ -48,6 +49,7 @@ export type UpdateErrorClassification = {
 	};
 	comment: "This is used to know how often VS Code updates have failed.";
 };
+
 export abstract class AbstractUpdateService implements IUpdateService {
 	declare readonly _serviceBrand: undefined;
 	protected url: string | undefined;

@@ -9,6 +9,7 @@ const labelWithIconsRegex = new RegExp(
 	`(\\\\)?\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)`,
 	"g",
 );
+
 export function renderLabelWithIcons(
 	text: string,
 ): Array<HTMLSpanElement | string> {

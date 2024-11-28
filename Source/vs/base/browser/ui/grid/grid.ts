@@ -26,7 +26,9 @@ import {
 } from "./gridview.js";
 
 export type { IViewSize };
+
 export { LayoutPriority, Orientation, orthogonal } from "./gridview.js";
+
 export const enum Direction {
 	Up,
 	Down,
@@ -74,6 +76,7 @@ export interface GridBranchNode<T extends IView> {
 	readonly box: Box;
 }
 export type GridNode<T extends IView> = GridLeafNode<T> | GridBranchNode<T>;
+
 export function isGridBranchNode<T extends IView>(
 	node: GridNode<T>,
 ): node is GridBranchNode<T> {
@@ -237,21 +240,26 @@ function getGridLocation(element: HTMLElement): GridLocation {
 export type DistributeSizing = {
 	type: "distribute";
 };
+
 export type SplitSizing = {
 	type: "split";
 };
+
 export type AutoSizing = {
 	type: "auto";
 };
+
 export type InvisibleSizing = {
 	type: "invisible";
 	cachedVisibleSize: number;
 };
+
 export type Sizing =
 	| DistributeSizing
 	| SplitSizing
 	| AutoSizing
 	| InvisibleSizing;
+
 export namespace Sizing {
 	export const Distribute: DistributeSizing = { type: "distribute" };
 
@@ -876,6 +884,7 @@ export interface ISerializedBranchNode {
 	visible?: boolean;
 }
 export type ISerializedNode = ISerializedLeafNode | ISerializedBranchNode;
+
 export interface ISerializedGrid {
 	root: ISerializedNode;
 	orientation: Orientation;
@@ -1001,13 +1010,16 @@ export type GridLeafNodeDescriptor<T> = {
 	size?: number;
 	data?: any;
 };
+
 export type GridBranchNodeDescriptor<T> = {
 	size?: number;
 	groups: GridNodeDescriptor<T>[];
 };
+
 export type GridNodeDescriptor<T> =
 	| GridBranchNodeDescriptor<T>
 	| GridLeafNodeDescriptor<T>;
+
 export type GridDescriptor<T> = {
 	orientation: Orientation;
 } & GridBranchNodeDescriptor<T>;

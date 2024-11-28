@@ -533,7 +533,9 @@ overrideActionForActiveExtensionEditorWebview(PasteAction, webview => webview.pa
 
 // Contexts
 export const CONTEXT_HAS_LOCAL_SERVER = new RawContextKey<boolean>('hasLocalServer', false);
+
 export const CONTEXT_HAS_REMOTE_SERVER = new RawContextKey<boolean>('hasRemoteServer', false);
+
 export const CONTEXT_HAS_WEB_SERVER = new RawContextKey<boolean>('hasWebServer', false);
 
 async function runAction(action: IAction): Promise<void> {

@@ -30,6 +30,7 @@ export const WalkThroughArrowUp: ICommandAndKeybindingRule = {
 		}
 	},
 };
+
 export const WalkThroughArrowDown: ICommandAndKeybindingRule = {
 	id: "workbench.action.interactivePlayground.arrowDown",
 	weight: KeybindingWeight.WorkbenchContrib,
@@ -48,6 +49,7 @@ export const WalkThroughArrowDown: ICommandAndKeybindingRule = {
 		}
 	},
 };
+
 export const WalkThroughPageUp: ICommandAndKeybindingRule = {
 	id: "workbench.action.interactivePlayground.pageUp",
 	weight: KeybindingWeight.WorkbenchContrib,
@@ -66,6 +68,7 @@ export const WalkThroughPageUp: ICommandAndKeybindingRule = {
 		}
 	},
 };
+
 export const WalkThroughPageDown: ICommandAndKeybindingRule = {
 	id: "workbench.action.interactivePlayground.pageDown",
 	weight: KeybindingWeight.WorkbenchContrib,

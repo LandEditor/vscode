@@ -37,14 +37,23 @@ import {
 import { Source } from "./debugSource.js";
 
 export const VIEWLET_ID = "workbench.view.debug";
+
 export const VARIABLES_VIEW_ID = "workbench.debug.variablesView";
+
 export const WATCH_VIEW_ID = "workbench.debug.watchExpressionsView";
+
 export const CALLSTACK_VIEW_ID = "workbench.debug.callStackView";
+
 export const LOADED_SCRIPTS_VIEW_ID = "workbench.debug.loadedScriptsView";
+
 export const BREAKPOINTS_VIEW_ID = "workbench.debug.breakPointsView";
+
 export const DISASSEMBLY_VIEW_ID = "workbench.debug.disassemblyView";
+
 export const DEBUG_PANEL_ID = "workbench.panel.repl";
+
 export const REPL_VIEW_ID = "workbench.panel.repl.view";
+
 export const CONTEXT_DEBUG_TYPE = new RawContextKey<string>(
 	"debugType",
 	undefined,
@@ -56,6 +65,7 @@ export const CONTEXT_DEBUG_TYPE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_DEBUG_CONFIGURATION_TYPE = new RawContextKey<string>(
 	"debugConfigurationType",
 	undefined,
@@ -67,6 +77,7 @@ export const CONTEXT_DEBUG_CONFIGURATION_TYPE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_DEBUG_STATE = new RawContextKey<string>(
 	"debugState",
 	"inactive",
@@ -78,7 +89,9 @@ export const CONTEXT_DEBUG_STATE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_DEBUG_UX_KEY = "debugUx";
+
 export const CONTEXT_DEBUG_UX = new RawContextKey<string>(
 	CONTEXT_DEBUG_UX_KEY,
 	"default",
@@ -90,6 +103,7 @@ export const CONTEXT_DEBUG_UX = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_HAS_DEBUGGED = new RawContextKey<boolean>(
 	"hasDebugged",
 	false,
@@ -101,6 +115,7 @@ export const CONTEXT_HAS_DEBUGGED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_IN_DEBUG_MODE = new RawContextKey<boolean>(
 	"inDebugMode",
 	false,
@@ -112,6 +127,7 @@ export const CONTEXT_IN_DEBUG_MODE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_IN_DEBUG_REPL = new RawContextKey<boolean>(
 	"inDebugRepl",
 	false,
@@ -123,6 +139,7 @@ export const CONTEXT_IN_DEBUG_REPL = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINT_WIDGET_VISIBLE = new RawContextKey<boolean>(
 	"breakpointWidgetVisible",
 	false,
@@ -134,6 +151,7 @@ export const CONTEXT_BREAKPOINT_WIDGET_VISIBLE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_IN_BREAKPOINT_WIDGET = new RawContextKey<boolean>(
 	"inBreakpointWidget",
 	false,
@@ -145,6 +163,7 @@ export const CONTEXT_IN_BREAKPOINT_WIDGET = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINTS_FOCUSED = new RawContextKey<boolean>(
 	"breakpointsFocused",
 	true,
@@ -156,6 +175,7 @@ export const CONTEXT_BREAKPOINTS_FOCUSED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_WATCH_EXPRESSIONS_FOCUSED = new RawContextKey<boolean>(
 	"watchExpressionsFocused",
 	true,
@@ -167,6 +187,7 @@ export const CONTEXT_WATCH_EXPRESSIONS_FOCUSED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_WATCH_EXPRESSIONS_EXIST = new RawContextKey<boolean>(
 	"watchExpressionsExist",
 	false,
@@ -178,6 +199,7 @@ export const CONTEXT_WATCH_EXPRESSIONS_EXIST = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLES_FOCUSED = new RawContextKey<boolean>(
 	"variablesFocused",
 	true,
@@ -189,6 +211,7 @@ export const CONTEXT_VARIABLES_FOCUSED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_EXPRESSION_SELECTED = new RawContextKey<boolean>(
 	"expressionSelected",
 	false,
@@ -200,6 +223,7 @@ export const CONTEXT_EXPRESSION_SELECTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINT_INPUT_FOCUSED = new RawContextKey<boolean>(
 	"breakpointInputFocused",
 	false,
@@ -211,6 +235,7 @@ export const CONTEXT_BREAKPOINT_INPUT_FOCUSED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_CALLSTACK_ITEM_TYPE = new RawContextKey<string>(
 	"callStackItemType",
 	undefined,
@@ -222,6 +247,7 @@ export const CONTEXT_CALLSTACK_ITEM_TYPE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_CALLSTACK_SESSION_IS_ATTACH = new RawContextKey<boolean>(
 	"callStackSessionIsAttach",
 	false,
@@ -233,6 +259,7 @@ export const CONTEXT_CALLSTACK_SESSION_IS_ATTACH = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_CALLSTACK_ITEM_STOPPED = new RawContextKey<boolean>(
 	"callStackItemStopped",
 	false,
@@ -244,6 +271,7 @@ export const CONTEXT_CALLSTACK_ITEM_STOPPED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_CALLSTACK_SESSION_HAS_ONE_THREAD =
 	new RawContextKey<boolean>("callStackSessionHasOneThread", false, {
 		type: "boolean",
@@ -252,6 +280,7 @@ export const CONTEXT_CALLSTACK_SESSION_HAS_ONE_THREAD =
 			"True when the focused session in the CALL STACK view has exactly one thread. Used internally for inline menus in the CALL STACK view.",
 		),
 	});
+
 export const CONTEXT_WATCH_ITEM_TYPE = new RawContextKey<string>(
 	"watchItemType",
 	undefined,
@@ -263,6 +292,7 @@ export const CONTEXT_WATCH_ITEM_TYPE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_CAN_VIEW_MEMORY = new RawContextKey<boolean>(
 	"canViewMemory",
 	undefined,
@@ -274,6 +304,7 @@ export const CONTEXT_CAN_VIEW_MEMORY = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINT_ITEM_TYPE = new RawContextKey<string>(
 	"breakpointItemType",
 	undefined,
@@ -285,6 +316,7 @@ export const CONTEXT_BREAKPOINT_ITEM_TYPE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINT_ITEM_IS_DATA_BYTES = new RawContextKey<boolean>(
 	"breakpointItemBytes",
 	undefined,
@@ -296,6 +328,7 @@ export const CONTEXT_BREAKPOINT_ITEM_IS_DATA_BYTES = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINT_HAS_MODES = new RawContextKey<boolean>(
 	"breakpointHasModes",
 	false,
@@ -307,6 +340,7 @@ export const CONTEXT_BREAKPOINT_HAS_MODES = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINT_SUPPORTS_CONDITION = new RawContextKey<boolean>(
 	"breakpointSupportsCondition",
 	false,
@@ -318,6 +352,7 @@ export const CONTEXT_BREAKPOINT_SUPPORTS_CONDITION = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_LOADED_SCRIPTS_SUPPORTED = new RawContextKey<boolean>(
 	"loadedScriptsSupported",
 	false,
@@ -329,6 +364,7 @@ export const CONTEXT_LOADED_SCRIPTS_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_LOADED_SCRIPTS_ITEM_TYPE = new RawContextKey<string>(
 	"loadedScriptsItemType",
 	undefined,
@@ -340,6 +376,7 @@ export const CONTEXT_LOADED_SCRIPTS_ITEM_TYPE = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_FOCUSED_SESSION_IS_ATTACH = new RawContextKey<boolean>(
 	"focusedSessionIsAttach",
 	false,
@@ -351,6 +388,7 @@ export const CONTEXT_FOCUSED_SESSION_IS_ATTACH = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG = new RawContextKey<boolean>(
 	"focusedSessionIsNoDebug",
 	false,
@@ -362,6 +400,7 @@ export const CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_STEP_BACK_SUPPORTED = new RawContextKey<boolean>(
 	"stepBackSupported",
 	false,
@@ -373,6 +412,7 @@ export const CONTEXT_STEP_BACK_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_RESTART_FRAME_SUPPORTED = new RawContextKey<boolean>(
 	"restartFrameSupported",
 	false,
@@ -384,6 +424,7 @@ export const CONTEXT_RESTART_FRAME_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_STACK_FRAME_SUPPORTS_RESTART = new RawContextKey<boolean>(
 	"stackFrameSupportsRestart",
 	false,
@@ -395,6 +436,7 @@ export const CONTEXT_STACK_FRAME_SUPPORTS_RESTART = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_JUMP_TO_CURSOR_SUPPORTED = new RawContextKey<boolean>(
 	"jumpToCursorSupported",
 	false,
@@ -406,6 +448,7 @@ export const CONTEXT_JUMP_TO_CURSOR_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_STEP_INTO_TARGETS_SUPPORTED = new RawContextKey<boolean>(
 	"stepIntoTargetsSupported",
 	false,
@@ -417,6 +460,7 @@ export const CONTEXT_STEP_INTO_TARGETS_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAKPOINTS_EXIST = new RawContextKey<boolean>(
 	"breakpointsExist",
 	false,
@@ -428,6 +472,7 @@ export const CONTEXT_BREAKPOINTS_EXIST = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_DEBUGGERS_AVAILABLE = new RawContextKey<boolean>(
 	"debuggersAvailable",
 	false,
@@ -439,6 +484,7 @@ export const CONTEXT_DEBUGGERS_AVAILABLE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_DEBUG_EXTENSION_AVAILABLE = new RawContextKey<boolean>(
 	"debugExtensionAvailable",
 	true,
@@ -450,6 +496,7 @@ export const CONTEXT_DEBUG_EXTENSION_AVAILABLE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT =
 	new RawContextKey<string>("debugProtocolVariableMenuContext", undefined, {
 		type: "string",
@@ -458,6 +505,7 @@ export const CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT =
 			"Represents the context the debug adapter sets on the focused variable in the VARIABLES view.",
 		),
 	});
+
 export const CONTEXT_SET_VARIABLE_SUPPORTED = new RawContextKey<boolean>(
 	"debugSetVariableSupported",
 	false,
@@ -469,6 +517,7 @@ export const CONTEXT_SET_VARIABLE_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_SET_DATA_BREAKPOINT_BYTES_SUPPORTED =
 	new RawContextKey<boolean>(
 		"debugSetDataBreakpointAddressSupported",
@@ -481,6 +530,7 @@ export const CONTEXT_SET_DATA_BREAKPOINT_BYTES_SUPPORTED =
 			),
 		},
 	);
+
 export const CONTEXT_SET_EXPRESSION_SUPPORTED = new RawContextKey<boolean>(
 	"debugSetExpressionSupported",
 	false,
@@ -492,6 +542,7 @@ export const CONTEXT_SET_EXPRESSION_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED =
 	new RawContextKey<boolean>("breakWhenValueChangesSupported", false, {
 		type: "boolean",
@@ -500,6 +551,7 @@ export const CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED =
 			"True when the focused session supports to break when value changes.",
 		),
 	});
+
 export const CONTEXT_BREAK_WHEN_VALUE_IS_ACCESSED_SUPPORTED =
 	new RawContextKey<boolean>("breakWhenValueIsAccessedSupported", false, {
 		type: "boolean",
@@ -508,6 +560,7 @@ export const CONTEXT_BREAK_WHEN_VALUE_IS_ACCESSED_SUPPORTED =
 			"True when the focused breakpoint supports to break when value is accessed.",
 		),
 	});
+
 export const CONTEXT_BREAK_WHEN_VALUE_IS_READ_SUPPORTED =
 	new RawContextKey<boolean>("breakWhenValueIsReadSupported", false, {
 		type: "boolean",
@@ -516,6 +569,7 @@ export const CONTEXT_BREAK_WHEN_VALUE_IS_READ_SUPPORTED =
 			"True when the focused breakpoint supports to break when value is read.",
 		),
 	});
+
 export const CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED = new RawContextKey<boolean>(
 	"terminateDebuggeeSupported",
 	false,
@@ -527,6 +581,7 @@ export const CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED = new RawContextKey<boolean>(
 	"suspendDebuggeeSupported",
 	false,
@@ -538,6 +593,7 @@ export const CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT =
 	new RawContextKey<boolean>("variableEvaluateNamePresent", false, {
 		type: "boolean",
@@ -546,6 +602,7 @@ export const CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT =
 			"True when the focused variable has an 'evalauteName' field set.",
 		),
 	});
+
 export const CONTEXT_VARIABLE_IS_READONLY = new RawContextKey<boolean>(
 	"variableIsReadonly",
 	false,
@@ -557,6 +614,7 @@ export const CONTEXT_VARIABLE_IS_READONLY = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_VALUE = new RawContextKey<boolean>(
 	"variableValue",
 	false,
@@ -568,6 +626,7 @@ export const CONTEXT_VARIABLE_VALUE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_TYPE = new RawContextKey<boolean>(
 	"variableType",
 	false,
@@ -579,6 +638,7 @@ export const CONTEXT_VARIABLE_TYPE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_INTERFACES = new RawContextKey<boolean>(
 	"variableInterfaces",
 	false,
@@ -590,6 +650,7 @@ export const CONTEXT_VARIABLE_INTERFACES = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_NAME = new RawContextKey<boolean>(
 	"variableName",
 	false,
@@ -601,6 +662,7 @@ export const CONTEXT_VARIABLE_NAME = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_LANGUAGE = new RawContextKey<boolean>(
 	"variableLanguage",
 	false,
@@ -612,6 +674,7 @@ export const CONTEXT_VARIABLE_LANGUAGE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_VARIABLE_EXTENSIONID = new RawContextKey<boolean>(
 	"variableExtensionId",
 	false,
@@ -623,6 +686,7 @@ export const CONTEXT_VARIABLE_EXTENSIONID = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_EXCEPTION_WIDGET_VISIBLE = new RawContextKey<boolean>(
 	"exceptionWidgetVisible",
 	false,
@@ -634,6 +698,7 @@ export const CONTEXT_EXCEPTION_WIDGET_VISIBLE = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_MULTI_SESSION_REPL = new RawContextKey<boolean>(
 	"multiSessionRepl",
 	false,
@@ -645,6 +710,7 @@ export const CONTEXT_MULTI_SESSION_REPL = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_MULTI_SESSION_DEBUG = new RawContextKey<boolean>(
 	"multiSessionDebug",
 	false,
@@ -656,6 +722,7 @@ export const CONTEXT_MULTI_SESSION_DEBUG = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_DISASSEMBLE_REQUEST_SUPPORTED = new RawContextKey<boolean>(
 	"disassembleRequestSupported",
 	false,
@@ -667,6 +734,7 @@ export const CONTEXT_DISASSEMBLE_REQUEST_SUPPORTED = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_DISASSEMBLY_VIEW_FOCUS = new RawContextKey<boolean>(
 	"disassemblyViewFocus",
 	false,
@@ -678,6 +746,7 @@ export const CONTEXT_DISASSEMBLY_VIEW_FOCUS = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const CONTEXT_LANGUAGE_SUPPORTS_DISASSEMBLE_REQUEST =
 	new RawContextKey<boolean>("languageSupportsDisassembleRequest", false, {
 		type: "boolean",
@@ -686,6 +755,7 @@ export const CONTEXT_LANGUAGE_SUPPORTS_DISASSEMBLE_REQUEST =
 			"True when the language in the current editor supports disassemble request.",
 		),
 	});
+
 export const CONTEXT_FOCUSED_STACK_FRAME_HAS_INSTRUCTION_POINTER_REFERENCE =
 	new RawContextKey<boolean>(
 		"focusedStackFrameHasInstructionReference",
@@ -698,15 +768,20 @@ export const CONTEXT_FOCUSED_STACK_FRAME_HAS_INSTRUCTION_POINTER_REFERENCE =
 			),
 		},
 	);
+
 export const debuggerDisabledMessage = (debugType: string) =>
 	nls.localize(
 		"debuggerDisabled",
 		"Configured debug type '{0}' is installed but not supported in this environment.",
 		debugType,
 	);
+
 export const EDITOR_CONTRIBUTION_ID = "editor.contrib.debug";
+
 export const BREAKPOINT_EDITOR_CONTRIBUTION_ID = "editor.contrib.breakpoint";
+
 export const DEBUG_SCHEME = "debug";
+
 export const INTERNAL_CONSOLE_OPTIONS_SCHEMA = {
 	enum: ["neverOpen", "openOnSessionStart", "openOnFirstSessionStart"],
 	default: "openOnFirstSessionStart",
@@ -824,6 +899,7 @@ export interface LoadedSourceEvent {
 	source: Source;
 }
 export type IDebugSessionReplMode = "separate" | "mergeWithParent";
+
 export interface IDebugTestRunReference {
 	runId: string;
 	taskId: string;
@@ -888,6 +964,7 @@ export type MemoryRange =
 	| IValidMemoryRange
 	| IUnreadableMemoryRange
 	| IErrorMemoryRange;
+
 export const DEBUG_MEMORY_SCHEME = "vscode-debug-memory";
 /**
  * An IMemoryRegion corresponds to a contiguous range of memory referred to
@@ -1334,6 +1411,7 @@ export type DataBreakpointSource =
 			address: string;
 			bytes: number;
 	  };
+
 export interface IDataBreakpoint extends IBaseBreakpoint {
 	readonly description: string;
 	readonly canPersist: boolean;
@@ -1674,6 +1752,7 @@ export type IAdapterDescriptor =
 	| IDebugAdapterServer
 	| IDebugAdapterNamedPipeServer
 	| IDebugAdapterImpl;
+
 export interface IPlatformSpecificAdapterContribution {
 	program?: string;
 	args?: string[];
@@ -1952,6 +2031,7 @@ export interface ILaunch {
 }
 // Debug service interfaces
 export const IDebugService = createDecorator<IDebugService>("debugService");
+
 export interface IDebugService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -2242,6 +2322,7 @@ export type MainThreadDebugVisualization =
 			type: DebugVisualizationType.Tree;
 			id: string;
 	  };
+
 export const enum DebugTreeItemCollapsibleState {
 	None = 0,
 	Collapsed = 1,

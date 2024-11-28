@@ -17,6 +17,7 @@ import { CodeCellViewModel } from "../../viewModel/codeCellViewModel.js";
 import { CellContentPart } from "../cellPart.js";
 
 const UPDATE_EXECUTION_ORDER_GRACE_PERIOD = 200;
+
 export class CellExecutionPart extends CellContentPart {
 	private readonly kernelDisposables = this._register(new DisposableStore());
 

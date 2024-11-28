@@ -63,6 +63,7 @@ interface IActionShowOptions {
 }
 
 const DECORATION_CLASS_NAME = "quickfix-edit-highlight";
+
 export class CodeActionController
 	extends Disposable
 	implements IEditorContribution

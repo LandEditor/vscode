@@ -10,6 +10,7 @@ export const INotebookRendererMessagingService =
 	createDecorator<INotebookRendererMessagingService>(
 		"INotebookRendererMessagingService",
 	);
+
 export interface INotebookRendererMessagingService {
 	readonly _serviceBrand: undefined;
 	/**

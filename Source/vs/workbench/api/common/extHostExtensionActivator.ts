@@ -51,6 +51,7 @@ export type ExtensionActivationTimesFragment = {
 		comment: "Time it took for async-activation to finish";
 	};
 };
+
 export class ExtensionActivationTimes {
 	public static readonly NONE = new ExtensionActivationTimes(
 		false,
@@ -201,6 +202,7 @@ type ActivationIdAndReason = {
 	id: ExtensionIdentifier;
 	reason: ExtensionActivationReason;
 };
+
 export class ExtensionsActivator implements IDisposable {
 	private readonly _registry: ExtensionDescriptionRegistry;
 	private readonly _globalRegistry: ExtensionDescriptionRegistry;

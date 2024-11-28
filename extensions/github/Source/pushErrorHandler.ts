@@ -28,6 +28,7 @@ import {
 } from "./typings/git";
 
 type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
+
 export function isInCodespaces(): boolean {
 	return env.remoteName === "codespaces";
 }

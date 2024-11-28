@@ -27,6 +27,7 @@ type RequestResponse = [
 	},
 	VSBuffer,
 ];
+
 export class RequestChannel implements IServerChannel {
 	constructor(private readonly service: IRequestService) {}
 	listen(context: any, event: string): Event<any> {

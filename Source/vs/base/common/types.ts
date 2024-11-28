@@ -104,17 +104,20 @@ export function assertAllDefined<T1, T2>(
 	t1: T1 | null | undefined,
 	t2: T2 | null | undefined,
 ): [T1, T2];
+
 export function assertAllDefined<T1, T2, T3>(
 	t1: T1 | null | undefined,
 	t2: T2 | null | undefined,
 	t3: T3 | null | undefined,
 ): [T1, T2, T3];
+
 export function assertAllDefined<T1, T2, T3, T4>(
 	t1: T1 | null | undefined,
 	t2: T2 | null | undefined,
 	t3: T3 | null | undefined,
 	t4: T4 | null | undefined,
 ): [T1, T2, T3, T4];
+
 export function assertAllDefined(
 	...args: (unknown | null | undefined)[]
 ): unknown[] {
@@ -161,6 +164,7 @@ export function areFunctions(...objects: unknown[]): boolean {
 	return objects.length > 0 && objects.every(isFunction);
 }
 export type TypeConstraint = string | Function;
+
 export function validateConstraints(
 	args: unknown[],
 	constraints: Array<TypeConstraint | undefined>,

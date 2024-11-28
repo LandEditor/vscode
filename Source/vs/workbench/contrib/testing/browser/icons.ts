@@ -22,21 +22,25 @@ export const testingViewIcon = registerIcon(
 	Codicon.beaker,
 	localize("testViewIcon", "View icon of the test view."),
 );
+
 export const testingResultsIcon = registerIcon(
 	"test-results-icon",
 	Codicon.checklist,
 	localize("testingResultsIcon", "Icons for test results."),
 );
+
 export const testingRunIcon = registerIcon(
 	"testing-run-icon",
 	Codicon.run,
 	localize("testingRunIcon", 'Icon of the "run test" action.'),
 );
+
 export const testingRerunIcon = registerIcon(
 	"testing-rerun-icon",
 	Codicon.debugRerun,
 	localize("testingRerunIcon", 'Icon of the "rerun tests" action.'),
 );
+
 export const testingRunAllIcon = registerIcon(
 	"testing-run-all-icon",
 	Codicon.runAll,
@@ -48,11 +52,13 @@ export const testingDebugAllIcon = registerIcon(
 	Codicon.debugAltSmall,
 	localize("testingDebugAllIcon", 'Icon of the "debug all tests" action.'),
 );
+
 export const testingDebugIcon = registerIcon(
 	"testing-debug-icon",
 	Codicon.debugAltSmall,
 	localize("testingDebugIcon", 'Icon of the "debug test" action.'),
 );
+
 export const testingCoverageIcon = registerIcon(
 	"testing-coverage-icon",
 	Codicon.runCoverage,
@@ -61,6 +67,7 @@ export const testingCoverageIcon = registerIcon(
 		'Icon of the "run test with coverage" action.',
 	),
 );
+
 export const testingCoverageAllIcon = registerIcon(
 	"testing-coverage-all-icon",
 	Codicon.runAllCoverage,
@@ -69,16 +76,19 @@ export const testingCoverageAllIcon = registerIcon(
 		'Icon of the "run all tests with coverage" action.',
 	),
 );
+
 export const testingCancelIcon = registerIcon(
 	"testing-cancel-icon",
 	Codicon.debugStop,
 	localize("testingCancelIcon", "Icon to cancel ongoing test runs."),
 );
+
 export const testingFilterIcon = registerIcon(
 	"testing-filter",
 	Codicon.filter,
 	localize("filterIcon", "Icon for the 'Filter' action in the testing view."),
 );
+
 export const testingHiddenIcon = registerIcon(
 	"testing-hidden",
 	Codicon.eyeClosed,
@@ -87,6 +97,7 @@ export const testingHiddenIcon = registerIcon(
 		"Icon shown beside hidden tests, when they've been shown.",
 	),
 );
+
 export const testingShowAsList = registerIcon(
 	"testing-show-as-list-icon",
 	Codicon.listTree,
@@ -95,6 +106,7 @@ export const testingShowAsList = registerIcon(
 		"Icon shown when the test explorer is disabled as a tree.",
 	),
 );
+
 export const testingShowAsTree = registerIcon(
 	"testing-show-as-list-icon",
 	Codicon.listFlat,
@@ -103,16 +115,19 @@ export const testingShowAsTree = registerIcon(
 		"Icon shown when the test explorer is disabled as a list.",
 	),
 );
+
 export const testingUpdateProfiles = registerIcon(
 	"testing-update-profiles",
 	Codicon.gear,
 	localize("testingUpdateProfiles", "Icon shown to update test profiles."),
 );
+
 export const testingRefreshTests = registerIcon(
 	"testing-refresh-tests",
 	Codicon.refresh,
 	localize("testingRefreshTests", "Icon on the button to refresh tests."),
 );
+
 export const testingTurnContinuousRunOn = registerIcon(
 	"testing-turn-continuous-run-on",
 	Codicon.eye,
@@ -121,6 +136,7 @@ export const testingTurnContinuousRunOn = registerIcon(
 		"Icon to turn continuous test runs on.",
 	),
 );
+
 export const testingTurnContinuousRunOff = registerIcon(
 	"testing-turn-continuous-run-off",
 	Codicon.eyeClosed,
@@ -129,6 +145,7 @@ export const testingTurnContinuousRunOff = registerIcon(
 		"Icon to turn continuous test runs off.",
 	),
 );
+
 export const testingContinuousIsOn = registerIcon(
 	"testing-continuous-is-on",
 	Codicon.eye,
@@ -137,6 +154,7 @@ export const testingContinuousIsOn = registerIcon(
 		"Icon when continuous run is on for a test ite,.",
 	),
 );
+
 export const testingCancelRefreshTests = registerIcon(
 	"testing-cancel-refresh-tests",
 	Codicon.stop,
@@ -145,11 +163,13 @@ export const testingCancelRefreshTests = registerIcon(
 		"Icon on the button to cancel refreshing tests.",
 	),
 );
+
 export const testingCoverageReport = registerIcon(
 	"testing-coverage",
 	Codicon.coverage,
 	localize("testingCoverage", "Icon representing test coverage"),
 );
+
 export const testingWasCovered = registerIcon(
 	"testing-was-covered",
 	Codicon.check,
@@ -158,6 +178,7 @@ export const testingWasCovered = registerIcon(
 		"Icon representing that an element was covered",
 	),
 );
+
 export const testingCoverageMissingBranch = registerIcon(
 	"testing-missing-branch",
 	Codicon.question,
@@ -166,6 +187,7 @@ export const testingCoverageMissingBranch = registerIcon(
 		"Icon representing a uncovered block without a range",
 	),
 );
+
 export const testingStatesToIcons = new Map<TestResultState, ThemeIcon>([
 	[
 		TestResultState.Errored,

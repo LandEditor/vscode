@@ -55,6 +55,7 @@ export interface ProcessExplorerWindowConfiguration
 }
 export const IProcessMainService =
 	createDecorator<IProcessMainService>("processService");
+
 export interface IProcessMainService {
 	readonly _serviceBrand: undefined;
 

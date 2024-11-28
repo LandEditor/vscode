@@ -550,4 +550,5 @@ export class ExtHostConfigProvider {
 export const IExtHostConfiguration = createDecorator<IExtHostConfiguration>(
 	"IExtHostConfiguration",
 );
+
 export interface IExtHostConfiguration extends ExtHostConfiguration {}

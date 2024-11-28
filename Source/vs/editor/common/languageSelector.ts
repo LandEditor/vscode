@@ -28,6 +28,7 @@ export type LanguageSelector =
 	| string
 	| LanguageFilter
 	| ReadonlyArray<string | LanguageFilter>;
+
 export function score(
 	selector: LanguageSelector | undefined,
 	candidateUri: URI,

@@ -60,6 +60,7 @@ const _defaultOptions: ISnippetInsertOptions = {
 	clipboardText: undefined,
 	overtypingCapturer: undefined,
 };
+
 export class SnippetController2 implements IEditorContribution {
 	public static readonly ID = "snippetController2";
 	static get(editor: ICodeEditor): SnippetController2 | null {

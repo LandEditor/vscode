@@ -48,6 +48,7 @@ const workspacesCategory: ILocalizedString = localize2(
 	"workspaces",
 	"Workspaces",
 );
+
 export class OpenFileAction extends Action2 {
 	static readonly ID = "workbench.action.files.openFile";
 

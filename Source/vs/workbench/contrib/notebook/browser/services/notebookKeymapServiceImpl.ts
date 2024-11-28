@@ -87,6 +87,7 @@ function onExtensionChanged(
 }
 
 const hasRecommendedKeymapKey = "hasRecommendedKeymap";
+
 export class NotebookKeymapService
 	extends Disposable
 	implements INotebookKeymapService

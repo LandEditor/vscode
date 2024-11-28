@@ -12,6 +12,7 @@ type Event<Params extends object = {}> = {
 	preventDefault: () => void;
 	readonly defaultPrevented: boolean;
 } & Params;
+
 export interface IpcRendererEvent extends Event {
 	// Docs: https://electronjs.org/docs/api/structures/ipc-renderer-event
 	// Note: API with `Transferable` intentionally commented out because you

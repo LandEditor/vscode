@@ -76,6 +76,7 @@ const speechProvidersExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 		},
 	},
 });
+
 export class SpeechService extends Disposable implements ISpeechService {
 	readonly _serviceBrand: undefined;
 	private readonly _onDidChangeHasSpeechProvider = this._register(

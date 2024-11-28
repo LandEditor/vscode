@@ -461,8 +461,10 @@ export class CompressedObjectTreeModel<
 }
 // Compressible Object Tree
 export type ElementMapper<T> = (elements: T[]) => T;
+
 export const DefaultElementMapper: ElementMapper<any> = (elements) =>
 	elements[elements.length - 1];
+
 export type CompressedNodeUnwrapper<T> = (node: ICompressedTreeNode<T>) => T;
 type CompressedNodeWeakMapper<T, TFilterData> = WeakMapper<
 	ITreeNode<ICompressedTreeNode<T> | null, TFilterData>,

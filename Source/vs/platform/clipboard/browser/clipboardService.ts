@@ -27,6 +27,7 @@ import { IClipboardService } from "../common/clipboardService.js";
  * Requires support for custom web clipboards https://github.com/w3c/clipboard-apis/pull/175
  */
 const vscodeResourcesMime = "application/vnd.code.resources";
+
 export class BrowserClipboardService
 	extends Disposable
 	implements IClipboardService

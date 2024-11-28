@@ -10,6 +10,7 @@ export const ITextMateTokenizationService =
 	createDecorator<ITextMateTokenizationService>(
 		"textMateTokenizationFeature",
 	);
+
 export interface ITextMateTokenizationService {
 	readonly _serviceBrand: undefined;
 	createTokenizer(languageId: string): Promise<IGrammar | null>;

@@ -1075,6 +1075,7 @@ function completeListItemPattern(
 }
 
 const maxIncompleteTokensFixRounds = 3;
+
 export function fillInIncompleteTokens(
 	tokens: marked.TokensList,
 ): marked.TokensList {

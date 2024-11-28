@@ -72,6 +72,7 @@ const documentationExtensionPointSchema =
 			},
 		},
 	});
+
 export const documentationExtensionPointDescriptor = {
 	extensionPoint: "documentation",
 	deps: [languagesExtPoint],

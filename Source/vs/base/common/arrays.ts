@@ -110,6 +110,7 @@ export function binarySearch2(
 	return -(low + 1);
 }
 type Compare<T> = (a: T, b: T) => number;
+
 export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
 	nth = nth | 0;
 
@@ -438,9 +439,11 @@ export function isFalsyOrEmpty(obj: any): boolean {
  * @returns True if the provided object is an array and has at least one element.
  */
 export function isNonEmptyArray<T>(obj: T[] | undefined | null): obj is T[];
+
 export function isNonEmptyArray<T>(
 	obj: readonly T[] | undefined | null,
 ): obj is readonly T[];
+
 export function isNonEmptyArray<T>(
 	obj: T[] | readonly T[] | undefined | null,
 ): obj is T[] | readonly T[] {
@@ -498,7 +501,9 @@ export function commonPrefixLength<T>(
 	return result;
 }
 export function range(to: number): number[];
+
 export function range(from: number, to: number): number[];
+
 export function range(arg: number, to?: number): number[] {
 	let from = typeof to === "number" ? arg : 0;
 
@@ -527,6 +532,7 @@ export function index<T>(
 ): {
 	[key: string]: T;
 };
+
 export function index<T, R>(
 	array: ReadonlyArray<T>,
 	indexer: (t: T) => string,
@@ -534,6 +540,7 @@ export function index<T, R>(
 ): {
 	[key: string]: R;
 };
+
 export function index<T, R>(
 	array: ReadonlyArray<T>,
 	indexer: (t: T) => string,
@@ -644,7 +651,9 @@ export function mapArrayOrNot<T, U>(items: T | T[], fn: (_: T) => U): U | U[] {
 	return Array.isArray(items) ? items.map(fn) : fn(items);
 }
 export function asArray<T>(x: T | T[]): T[];
+
 export function asArray<T>(x: T | readonly T[]): readonly T[];
+
 export function asArray<T>(x: T | T[]): T[] {
 	return Array.isArray(x) ? x : [x];
 }
@@ -717,6 +726,7 @@ function getActualStartIndex<T>(array: T[], start: number): number {
  * and zero indicates that neither is the case.
  */
 export type CompareResult = number;
+
 export namespace CompareResult {
 	export function isLessThan(result: CompareResult): boolean {
 		return result < 0;
@@ -742,6 +752,7 @@ export namespace CompareResult {
  * We also have `c(a, b) == 0` iff `c(b, a) == 0`.
  */
 export type Comparator<T> = (a: T, b: T) => CompareResult;
+
 export function compareBy<TItem, TCompareBy>(
 	selector: (item: TItem) => TCompareBy,
 	comparator: Comparator<TCompareBy>,
@@ -766,8 +777,10 @@ export function tieBreakComparators<TItem>(
  * The natural order on numbers.
  */
 export const numberComparator: Comparator<number> = (a, b) => a - b;
+
 export const booleanComparator: Comparator<boolean> = (a, b) =>
 	numberComparator(a ? 1 : 0, b ? 1 : 0);
+
 export function reverseOrder<TItem>(
 	comparator: Comparator<TItem>,
 ): Comparator<TItem> {

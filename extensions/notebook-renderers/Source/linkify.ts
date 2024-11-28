@@ -47,10 +47,12 @@ type LinkPart = {
 	value: string;
 	captures: string[];
 };
+
 export type LinkOptions = {
 	trustHtml?: boolean;
 	linkifyFilePaths: boolean;
 };
+
 export class LinkDetector {
 	// used by unit tests
 	static injectedHtmlCreator: (value: string) => string;
@@ -250,6 +252,7 @@ export class LinkDetector {
 }
 
 const linkDetector = new LinkDetector();
+
 export function linkify(
 	text: string,
 	linkOptions: LinkOptions,

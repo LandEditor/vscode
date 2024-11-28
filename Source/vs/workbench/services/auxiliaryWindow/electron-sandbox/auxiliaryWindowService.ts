@@ -40,6 +40,7 @@ import {
 type NativeCodeWindow = CodeWindow & {
 	readonly vscode: ISandboxGlobals;
 };
+
 export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 	private skipUnloadConfirmation = false;
 	private maximized = false;

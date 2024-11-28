@@ -46,6 +46,7 @@ type LogChannelQuickPickItem = IQuickPickItem & {
 	resource: URI;
 	extensionId?: string;
 };
+
 export class SetLogLevelAction extends Action {
 	static readonly ID = "workbench.action.setLogLevel";
 	static readonly TITLE = nls.localize2("setLogLevel", "Set Log Level...");

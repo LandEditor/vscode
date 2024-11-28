@@ -68,6 +68,7 @@ interface IWebviewViewResolver {
 }
 export const IWebviewViewService =
 	createDecorator<IWebviewViewService>("webviewViewService");
+
 export interface IWebviewViewService {
 	readonly _serviceBrand: undefined;
 	/**

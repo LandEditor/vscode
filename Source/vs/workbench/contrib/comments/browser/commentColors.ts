@@ -75,6 +75,7 @@ const unresolvedCommentBorder = registerColor(
 		"Color of borders and arrow for unresolved comments.",
 	),
 );
+
 export const commentThreadRangeBackground = registerColor(
 	"editorCommentsWidget.rangeBackground",
 	transparent(unresolvedCommentBorder, 0.1),
@@ -83,6 +84,7 @@ export const commentThreadRangeBackground = registerColor(
 		"Color of background for comment ranges.",
 	),
 );
+
 export const commentThreadRangeActiveBackground = registerColor(
 	"editorCommentsWidget.rangeActiveBackground",
 	transparent(unresolvedCommentBorder, 0.1),
@@ -101,9 +103,12 @@ const commentThreadStateIconColors = new Map([
 	[languages.CommentThreadState.Unresolved, unresolvedCommentViewIcon],
 	[languages.CommentThreadState.Resolved, resolvedCommentViewIcon],
 ]);
+
 export const commentThreadStateColorVar = "--comment-thread-state-color";
+
 export const commentViewThreadStateColorVar =
 	"--comment-view-thread-state-color";
+
 export const commentThreadStateBackgroundColorVar =
 	"--comment-thread-state-background-color";
 function getCommentThreadStateColor(

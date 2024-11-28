@@ -29,6 +29,7 @@ export const editorLineHighlight = registerColor(
 		"Background color for the highlight of line at the cursor position.",
 	),
 );
+
 export const editorLineHighlightBorder = registerColor(
 	"editor.lineHighlightBorder",
 	{
@@ -42,6 +43,7 @@ export const editorLineHighlightBorder = registerColor(
 		"Background color for the border around the line at the cursor position.",
 	),
 );
+
 export const editorRangeHighlight = registerColor(
 	"editor.rangeHighlightBackground",
 	{ dark: "#ffffff0b", light: "#fdff0033", hcDark: null, hcLight: null },
@@ -51,6 +53,7 @@ export const editorRangeHighlight = registerColor(
 	),
 	true,
 );
+
 export const editorRangeHighlightBorder = registerColor(
 	"editor.rangeHighlightBorder",
 	{
@@ -64,6 +67,7 @@ export const editorRangeHighlightBorder = registerColor(
 		"Background color of the border around highlighted ranges.",
 	),
 );
+
 export const editorSymbolHighlight = registerColor(
 	"editor.symbolHighlightBackground",
 	{
@@ -78,6 +82,7 @@ export const editorSymbolHighlight = registerColor(
 	),
 	true,
 );
+
 export const editorSymbolHighlightBorder = registerColor(
 	"editor.symbolHighlightBorder",
 	{
@@ -91,6 +96,7 @@ export const editorSymbolHighlightBorder = registerColor(
 		"Background color of the border around highlighted symbols.",
 	),
 );
+
 export const editorCursorForeground = registerColor(
 	"editorCursor.foreground",
 	{
@@ -101,6 +107,7 @@ export const editorCursorForeground = registerColor(
 	},
 	nls.localize("caret", "Color of the editor cursor."),
 );
+
 export const editorCursorBackground = registerColor(
 	"editorCursor.background",
 	null,
@@ -109,6 +116,7 @@ export const editorCursorBackground = registerColor(
 		"The background color of the editor cursor. Allows customizing the color of a character overlapped by a block cursor.",
 	),
 );
+
 export const editorMultiCursorPrimaryForeground = registerColor(
 	"editorMultiCursor.primary.foreground",
 	editorCursorForeground,
@@ -117,6 +125,7 @@ export const editorMultiCursorPrimaryForeground = registerColor(
 		"Color of the primary editor cursor when multiple cursors are present.",
 	),
 );
+
 export const editorMultiCursorPrimaryBackground = registerColor(
 	"editorMultiCursor.primary.background",
 	editorCursorBackground,
@@ -125,6 +134,7 @@ export const editorMultiCursorPrimaryBackground = registerColor(
 		"The background color of the primary editor cursor when multiple cursors are present. Allows customizing the color of a character overlapped by a block cursor.",
 	),
 );
+
 export const editorMultiCursorSecondaryForeground = registerColor(
 	"editorMultiCursor.secondary.foreground",
 	editorCursorForeground,
@@ -133,6 +143,7 @@ export const editorMultiCursorSecondaryForeground = registerColor(
 		"Color of secondary editor cursors when multiple cursors are present.",
 	),
 );
+
 export const editorMultiCursorSecondaryBackground = registerColor(
 	"editorMultiCursor.secondary.background",
 	editorCursorBackground,
@@ -141,6 +152,7 @@ export const editorMultiCursorSecondaryBackground = registerColor(
 		"The background color of secondary editor cursors when multiple cursors are present. Allows customizing the color of a character overlapped by a block cursor.",
 	),
 );
+
 export const editorWhitespaces = registerColor(
 	"editorWhitespace.foreground",
 	{
@@ -154,6 +166,7 @@ export const editorWhitespaces = registerColor(
 		"Color of whitespace characters in the editor.",
 	),
 );
+
 export const editorLineNumbers = registerColor(
 	"editorLineNumber.foreground",
 	{
@@ -164,6 +177,7 @@ export const editorLineNumbers = registerColor(
 	},
 	nls.localize("editorLineNumbers", "Color of editor line numbers."),
 );
+
 export const deprecatedEditorIndentGuides = registerColor(
 	"editorIndentGuide.background",
 	editorWhitespaces,
@@ -177,6 +191,7 @@ export const deprecatedEditorIndentGuides = registerColor(
 		"'editorIndentGuide.background' is deprecated. Use 'editorIndentGuide.background1' instead.",
 	),
 );
+
 export const deprecatedEditorActiveIndentGuides = registerColor(
 	"editorIndentGuide.activeBackground",
 	editorWhitespaces,
@@ -190,6 +205,7 @@ export const deprecatedEditorActiveIndentGuides = registerColor(
 		"'editorIndentGuide.activeBackground' is deprecated. Use 'editorIndentGuide.activeBackground1' instead.",
 	),
 );
+
 export const editorIndentGuide1 = registerColor(
 	"editorIndentGuide.background1",
 	deprecatedEditorIndentGuides,
@@ -198,6 +214,7 @@ export const editorIndentGuide1 = registerColor(
 		"Color of the editor indentation guides (1).",
 	),
 );
+
 export const editorIndentGuide2 = registerColor(
 	"editorIndentGuide.background2",
 	"#00000000",
@@ -206,6 +223,7 @@ export const editorIndentGuide2 = registerColor(
 		"Color of the editor indentation guides (2).",
 	),
 );
+
 export const editorIndentGuide3 = registerColor(
 	"editorIndentGuide.background3",
 	"#00000000",
@@ -214,6 +232,7 @@ export const editorIndentGuide3 = registerColor(
 		"Color of the editor indentation guides (3).",
 	),
 );
+
 export const editorIndentGuide4 = registerColor(
 	"editorIndentGuide.background4",
 	"#00000000",
@@ -222,6 +241,7 @@ export const editorIndentGuide4 = registerColor(
 		"Color of the editor indentation guides (4).",
 	),
 );
+
 export const editorIndentGuide5 = registerColor(
 	"editorIndentGuide.background5",
 	"#00000000",
@@ -230,6 +250,7 @@ export const editorIndentGuide5 = registerColor(
 		"Color of the editor indentation guides (5).",
 	),
 );
+
 export const editorIndentGuide6 = registerColor(
 	"editorIndentGuide.background6",
 	"#00000000",
@@ -238,6 +259,7 @@ export const editorIndentGuide6 = registerColor(
 		"Color of the editor indentation guides (6).",
 	),
 );
+
 export const editorActiveIndentGuide1 = registerColor(
 	"editorIndentGuide.activeBackground1",
 	deprecatedEditorActiveIndentGuides,
@@ -246,6 +268,7 @@ export const editorActiveIndentGuide1 = registerColor(
 		"Color of the active editor indentation guides (1).",
 	),
 );
+
 export const editorActiveIndentGuide2 = registerColor(
 	"editorIndentGuide.activeBackground2",
 	"#00000000",
@@ -254,6 +277,7 @@ export const editorActiveIndentGuide2 = registerColor(
 		"Color of the active editor indentation guides (2).",
 	),
 );
+
 export const editorActiveIndentGuide3 = registerColor(
 	"editorIndentGuide.activeBackground3",
 	"#00000000",
@@ -262,6 +286,7 @@ export const editorActiveIndentGuide3 = registerColor(
 		"Color of the active editor indentation guides (3).",
 	),
 );
+
 export const editorActiveIndentGuide4 = registerColor(
 	"editorIndentGuide.activeBackground4",
 	"#00000000",
@@ -270,6 +295,7 @@ export const editorActiveIndentGuide4 = registerColor(
 		"Color of the active editor indentation guides (4).",
 	),
 );
+
 export const editorActiveIndentGuide5 = registerColor(
 	"editorIndentGuide.activeBackground5",
 	"#00000000",
@@ -278,6 +304,7 @@ export const editorActiveIndentGuide5 = registerColor(
 		"Color of the active editor indentation guides (5).",
 	),
 );
+
 export const editorActiveIndentGuide6 = registerColor(
 	"editorIndentGuide.activeBackground6",
 	"#00000000",
@@ -305,6 +332,7 @@ const deprecatedEditorActiveLineNumber = registerColor(
 		"Id is deprecated. Use 'editorLineNumber.activeForeground' instead.",
 	),
 );
+
 export const editorActiveLineNumber = registerColor(
 	"editorLineNumber.activeForeground",
 	deprecatedEditorActiveLineNumber,
@@ -313,6 +341,7 @@ export const editorActiveLineNumber = registerColor(
 		"Color of editor active line number",
 	),
 );
+
 export const editorDimmedLineNumber = registerColor(
 	"editorLineNumber.dimmedForeground",
 	null,
@@ -321,6 +350,7 @@ export const editorDimmedLineNumber = registerColor(
 		"Color of the final editor line when editor.renderFinalNewline is set to dimmed.",
 	),
 );
+
 export const editorRuler = registerColor(
 	"editorRuler.foreground",
 	{
@@ -331,6 +361,7 @@ export const editorRuler = registerColor(
 	},
 	nls.localize("editorRuler", "Color of the editor rulers."),
 );
+
 export const editorCodeLensForeground = registerColor(
 	"editorCodeLens.foreground",
 	{
@@ -344,6 +375,7 @@ export const editorCodeLensForeground = registerColor(
 		"Foreground color of editor CodeLens",
 	),
 );
+
 export const editorBracketMatchBackground = registerColor(
 	"editorBracketMatch.background",
 	{
@@ -357,6 +389,7 @@ export const editorBracketMatchBackground = registerColor(
 		"Background color behind matching brackets",
 	),
 );
+
 export const editorBracketMatchBorder = registerColor(
 	"editorBracketMatch.border",
 	{
@@ -370,6 +403,7 @@ export const editorBracketMatchBorder = registerColor(
 		"Color for matching brackets boxes",
 	),
 );
+
 export const editorOverviewRulerBorder = registerColor(
 	"editorOverviewRuler.border",
 	{
@@ -383,6 +417,7 @@ export const editorOverviewRulerBorder = registerColor(
 		"Color of the overview ruler border.",
 	),
 );
+
 export const editorOverviewRulerBackground = registerColor(
 	"editorOverviewRuler.background",
 	null,
@@ -391,6 +426,7 @@ export const editorOverviewRulerBackground = registerColor(
 		"Background color of the editor overview ruler.",
 	),
 );
+
 export const editorGutter = registerColor(
 	"editorGutter.background",
 	editorBackground,
@@ -399,6 +435,7 @@ export const editorGutter = registerColor(
 		"Background color of the editor gutter. The gutter contains the glyph margins and the line numbers.",
 	),
 );
+
 export const editorUnnecessaryCodeBorder = registerColor(
 	"editorUnnecessaryCode.border",
 	{
@@ -412,6 +449,7 @@ export const editorUnnecessaryCodeBorder = registerColor(
 		"Border color of unnecessary (unused) source code in the editor.",
 	),
 );
+
 export const editorUnnecessaryCodeOpacity = registerColor(
 	"editorUnnecessaryCode.opacity",
 	{
@@ -425,6 +463,7 @@ export const editorUnnecessaryCodeOpacity = registerColor(
 		"Opacity of unnecessary (unused) source code in the editor. For example, \"#000000c0\" will render the code with 75% opacity. For high contrast themes, use the  'editorUnnecessaryCode.border' theme color to underline unnecessary code instead of fading it out.",
 	),
 );
+
 export const ghostTextBorder = registerColor(
 	"editorGhostText.border",
 	{
@@ -438,6 +477,7 @@ export const ghostTextBorder = registerColor(
 		"Border color of ghost text in the editor.",
 	),
 );
+
 export const ghostTextForeground = registerColor(
 	"editorGhostText.foreground",
 	{
@@ -451,6 +491,7 @@ export const ghostTextForeground = registerColor(
 		"Foreground color of the ghost text in the editor.",
 	),
 );
+
 export const ghostTextBackground = registerColor(
 	"editorGhostText.background",
 	null,
@@ -461,6 +502,7 @@ export const ghostTextBackground = registerColor(
 );
 
 const rulerRangeDefault = new Color(new RGBA(0, 122, 204, 0.6));
+
 export const overviewRulerRangeHighlight = registerColor(
 	"editorOverviewRuler.rangeHighlightForeground",
 	rulerRangeDefault,
@@ -470,6 +512,7 @@ export const overviewRulerRangeHighlight = registerColor(
 	),
 	true,
 );
+
 export const overviewRulerError = registerColor(
 	"editorOverviewRuler.errorForeground",
 	{
@@ -483,6 +526,7 @@ export const overviewRulerError = registerColor(
 		"Overview ruler marker color for errors.",
 	),
 );
+
 export const overviewRulerWarning = registerColor(
 	"editorOverviewRuler.warningForeground",
 	{
@@ -496,6 +540,7 @@ export const overviewRulerWarning = registerColor(
 		"Overview ruler marker color for warnings.",
 	),
 );
+
 export const overviewRulerInfo = registerColor(
 	"editorOverviewRuler.infoForeground",
 	{
@@ -506,6 +551,7 @@ export const overviewRulerInfo = registerColor(
 	},
 	nls.localize("overviewRuleInfo", "Overview ruler marker color for infos."),
 );
+
 export const editorBracketHighlightingForeground1 = registerColor(
 	"editorBracketHighlight.foreground1",
 	{
@@ -519,6 +565,7 @@ export const editorBracketHighlightingForeground1 = registerColor(
 		"Foreground color of brackets (1). Requires enabling bracket pair colorization.",
 	),
 );
+
 export const editorBracketHighlightingForeground2 = registerColor(
 	"editorBracketHighlight.foreground2",
 	{
@@ -532,6 +579,7 @@ export const editorBracketHighlightingForeground2 = registerColor(
 		"Foreground color of brackets (2). Requires enabling bracket pair colorization.",
 	),
 );
+
 export const editorBracketHighlightingForeground3 = registerColor(
 	"editorBracketHighlight.foreground3",
 	{
@@ -545,6 +593,7 @@ export const editorBracketHighlightingForeground3 = registerColor(
 		"Foreground color of brackets (3). Requires enabling bracket pair colorization.",
 	),
 );
+
 export const editorBracketHighlightingForeground4 = registerColor(
 	"editorBracketHighlight.foreground4",
 	"#00000000",
@@ -553,6 +602,7 @@ export const editorBracketHighlightingForeground4 = registerColor(
 		"Foreground color of brackets (4). Requires enabling bracket pair colorization.",
 	),
 );
+
 export const editorBracketHighlightingForeground5 = registerColor(
 	"editorBracketHighlight.foreground5",
 	"#00000000",
@@ -561,6 +611,7 @@ export const editorBracketHighlightingForeground5 = registerColor(
 		"Foreground color of brackets (5). Requires enabling bracket pair colorization.",
 	),
 );
+
 export const editorBracketHighlightingForeground6 = registerColor(
 	"editorBracketHighlight.foreground6",
 	"#00000000",
@@ -569,6 +620,7 @@ export const editorBracketHighlightingForeground6 = registerColor(
 		"Foreground color of brackets (6). Requires enabling bracket pair colorization.",
 	),
 );
+
 export const editorBracketHighlightingUnexpectedBracketForeground =
 	registerColor(
 		"editorBracketHighlight.unexpectedBracket.foreground",
@@ -583,6 +635,7 @@ export const editorBracketHighlightingUnexpectedBracketForeground =
 			"Foreground color of unexpected brackets.",
 		),
 	);
+
 export const editorBracketPairGuideBackground1 = registerColor(
 	"editorBracketPairGuide.background1",
 	"#00000000",
@@ -591,6 +644,7 @@ export const editorBracketPairGuideBackground1 = registerColor(
 		"Background color of inactive bracket pair guides (1). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideBackground2 = registerColor(
 	"editorBracketPairGuide.background2",
 	"#00000000",
@@ -599,6 +653,7 @@ export const editorBracketPairGuideBackground2 = registerColor(
 		"Background color of inactive bracket pair guides (2). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideBackground3 = registerColor(
 	"editorBracketPairGuide.background3",
 	"#00000000",
@@ -607,6 +662,7 @@ export const editorBracketPairGuideBackground3 = registerColor(
 		"Background color of inactive bracket pair guides (3). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideBackground4 = registerColor(
 	"editorBracketPairGuide.background4",
 	"#00000000",
@@ -615,6 +671,7 @@ export const editorBracketPairGuideBackground4 = registerColor(
 		"Background color of inactive bracket pair guides (4). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideBackground5 = registerColor(
 	"editorBracketPairGuide.background5",
 	"#00000000",
@@ -623,6 +680,7 @@ export const editorBracketPairGuideBackground5 = registerColor(
 		"Background color of inactive bracket pair guides (5). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideBackground6 = registerColor(
 	"editorBracketPairGuide.background6",
 	"#00000000",
@@ -631,6 +689,7 @@ export const editorBracketPairGuideBackground6 = registerColor(
 		"Background color of inactive bracket pair guides (6). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideActiveBackground1 = registerColor(
 	"editorBracketPairGuide.activeBackground1",
 	"#00000000",
@@ -639,6 +698,7 @@ export const editorBracketPairGuideActiveBackground1 = registerColor(
 		"Background color of active bracket pair guides (1). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideActiveBackground2 = registerColor(
 	"editorBracketPairGuide.activeBackground2",
 	"#00000000",
@@ -647,6 +707,7 @@ export const editorBracketPairGuideActiveBackground2 = registerColor(
 		"Background color of active bracket pair guides (2). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideActiveBackground3 = registerColor(
 	"editorBracketPairGuide.activeBackground3",
 	"#00000000",
@@ -655,6 +716,7 @@ export const editorBracketPairGuideActiveBackground3 = registerColor(
 		"Background color of active bracket pair guides (3). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideActiveBackground4 = registerColor(
 	"editorBracketPairGuide.activeBackground4",
 	"#00000000",
@@ -663,6 +725,7 @@ export const editorBracketPairGuideActiveBackground4 = registerColor(
 		"Background color of active bracket pair guides (4). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideActiveBackground5 = registerColor(
 	"editorBracketPairGuide.activeBackground5",
 	"#00000000",
@@ -671,6 +734,7 @@ export const editorBracketPairGuideActiveBackground5 = registerColor(
 		"Background color of active bracket pair guides (5). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorBracketPairGuideActiveBackground6 = registerColor(
 	"editorBracketPairGuide.activeBackground6",
 	"#00000000",
@@ -679,6 +743,7 @@ export const editorBracketPairGuideActiveBackground6 = registerColor(
 		"Background color of active bracket pair guides (6). Requires enabling bracket pair guides.",
 	),
 );
+
 export const editorUnicodeHighlightBorder = registerColor(
 	"editorUnicodeHighlight.border",
 	editorWarningForeground,
@@ -687,6 +752,7 @@ export const editorUnicodeHighlightBorder = registerColor(
 		"Border color used to highlight unicode characters.",
 	),
 );
+
 export const editorUnicodeHighlightBackground = registerColor(
 	"editorUnicodeHighlight.background",
 	editorWarningBackground,

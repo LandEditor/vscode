@@ -11,8 +11,10 @@ import { ITextModel } from "../model.js";
 
 export const EDITOR_EXPERIMENTAL_PREFER_TREESITTER =
 	"editor.experimental.preferTreeSitter";
+
 export const ITreeSitterParserService =
 	createDecorator<ITreeSitterParserService>("treeSitterParserService");
+
 export interface ITreeSitterParserService {
 	readonly _serviceBrand: undefined;
 	onDidAddLanguage: Event<{ id: string; language: Parser.Language }>;

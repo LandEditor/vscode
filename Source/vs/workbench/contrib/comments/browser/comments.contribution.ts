@@ -260,6 +260,7 @@ Registry.as<IConfigurationRegistry>(
 	},
 });
 registerSingleton(ICommentService, CommentService, InstantiationType.Delayed);
+
 export class UnresolvedCommentsBadge
 	extends Disposable
 	implements IWorkbenchContribution

@@ -18,6 +18,7 @@ const fixedEditorPadding = {
 	top: 12,
 	bottom: 12,
 };
+
 export function getEditorPadding(lineCount: number) {
 	return lineCount === 1
 		? fixedEditorPaddingSingleLineCells
@@ -48,6 +49,7 @@ export const fixedEditorOptions: IEditorOptions = {
 	renderLineHighlight: "none",
 	readOnly: true,
 };
+
 export const fixedDiffEditorOptions: IDiffEditorConstructionOptions = {
 	...fixedEditorOptions,
 	glyphMargin: true,

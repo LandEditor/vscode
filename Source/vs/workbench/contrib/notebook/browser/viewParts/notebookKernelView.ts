@@ -206,6 +206,7 @@ registerAction2(
 		}
 	},
 );
+
 export class NotebooKernelActionViewItem extends ActionViewItem {
 	private _kernelLabel?: HTMLAnchorElement;
 

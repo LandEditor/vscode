@@ -172,12 +172,14 @@ export async function pickRemoteSource(
 		branch?: false | undefined;
 	},
 ): Promise<string | undefined>;
+
 export async function pickRemoteSource(
 	model: Model,
 	options: PickRemoteSourceOptions & {
 		branch: true;
 	},
 ): Promise<PickRemoteSourceResult | undefined>;
+
 export async function pickRemoteSource(
 	model: Model,
 	options: PickRemoteSourceOptions = {},

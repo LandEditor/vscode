@@ -1466,6 +1466,7 @@ export const overviewRulerModifiedForeground = registerColor(
 		"Overview ruler marker color for modified content.",
 	),
 );
+
 export const overviewRulerAddedForeground = registerColor(
 	"editorOverviewRuler.addedForeground",
 	transparent(editorGutterAddedBackground, 0.6),
@@ -1474,6 +1475,7 @@ export const overviewRulerAddedForeground = registerColor(
 		"Overview ruler marker color for added content.",
 	),
 );
+
 export const overviewRulerDeletedForeground = registerColor(
 	"editorOverviewRuler.deletedForeground",
 	transparent(editorGutterDeletedBackground, 0.6),

@@ -288,9 +288,11 @@ export function createWebWorker<T extends object>(
 	moduleId: string,
 	label: string | undefined,
 ): IWorkerClient<T>;
+
 export function createWebWorker<T extends object>(
 	workerDescriptor: IWorkerDescriptor,
 ): IWorkerClient<T>;
+
 export function createWebWorker<T extends object>(
 	arg0: string | IWorkerDescriptor,
 	arg1?: string | undefined,

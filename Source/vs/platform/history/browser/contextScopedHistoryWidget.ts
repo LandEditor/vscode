@@ -48,6 +48,7 @@ const HistoryNavigationForwardsEnablementContext =
 
 const HistoryNavigationBackwardsEnablementContext =
 	"historyNavigationBackwardsEnabled";
+
 export interface IHistoryNavigationContext extends IDisposable {
 	historyNavigationForwardsEnablement: IContextKey<boolean>;
 	historyNavigationBackwardsEnablement: IContextKey<boolean>;
@@ -55,6 +56,7 @@ export interface IHistoryNavigationContext extends IDisposable {
 let lastFocusedWidget: IHistoryNavigationWidget | undefined = undefined;
 
 const widgets: IHistoryNavigationWidget[] = [];
+
 export function registerAndCreateHistoryNavigationContext(
 	scopedContextKeyService: IContextKeyService,
 	widget: IHistoryNavigationWidget,

@@ -40,6 +40,7 @@ CommandsRegistry.registerCommand(markSnippetAsUsed, (accessor, ...args) => {
 		snippetsService.updateUsageTimestamp(first);
 	}
 });
+
 export class SnippetCompletion implements CompletionItem {
 	label: CompletionItemLabel;
 	detail: string;

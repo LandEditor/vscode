@@ -37,6 +37,7 @@ import {
 } from "../common/debug.js";
 
 const rangeRe = /range=([0-9]+):([0-9]+)/;
+
 export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	private memoryFdCounter = 0;
 	private readonly fdMemory = new Map<

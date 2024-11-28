@@ -134,6 +134,7 @@ const maven: ITaskEntry = {
 };
 
 let _templates: ITaskEntry[] | null = null;
+
 export function getTemplates(): ITaskEntry[] {
 	if (!_templates) {
 		_templates = [dotnetBuild, msbuild, maven].sort((a, b) => {

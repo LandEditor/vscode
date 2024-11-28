@@ -325,6 +325,7 @@ export enum ModifiedBaseRangeStateKind {
 	unrecognized,
 }
 export type InputNumber = 1 | 2;
+
 export function getOtherInputNumber(inputNumber: InputNumber): InputNumber {
 	return inputNumber === 1 ? 2 : 1;
 }
@@ -533,6 +534,7 @@ export type ModifiedBaseRangeState =
 	| ModifiedBaseRangeStateInput2
 	| ModifiedBaseRangeStateBoth
 	| ModifiedBaseRangeStateUnrecognized;
+
 export namespace ModifiedBaseRangeState {
 	export const base = new ModifiedBaseRangeStateBase();
 

@@ -116,6 +116,7 @@ export async function serveFile(
 }
 
 const APP_ROOT = dirname(FileAccess.asFileUri("").fsPath);
+
 export class WebClientServer {
 	private readonly _webExtensionResourceUrlTemplate: URI | undefined;
 	private readonly _staticRoute: string;

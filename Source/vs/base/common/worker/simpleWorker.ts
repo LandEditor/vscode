@@ -17,6 +17,7 @@ import { URI } from "../uri.js";
 const DEFAULT_CHANNEL = "default";
 
 const INITIALIZE = "$initialize";
+
 export interface IWorker extends IDisposable {
 	getId(): number;
 	postMessage(message: Message, transfer: ArrayBuffer[]): void;
@@ -37,6 +38,7 @@ export interface IWorkerDescriptor {
 	readonly label: string | undefined;
 }
 let webWorkerWarningLogged = false;
+
 export function logOnceWebWorkerWarning(err: any): void {
 	if (!isWeb) {
 		// running tests
@@ -342,6 +344,7 @@ class SimpleWorkerProtocol {
 	}
 }
 type ProxiedMethodName = `$${string}` | `on${string}`;
+
 export type Proxied<T> = {
 	[K in keyof T]: T[K] extends (...args: infer A) => infer R
 		? K extends ProxiedMethodName
@@ -349,6 +352,7 @@ export type Proxied<T> = {
 			: never
 		: never;
 };
+
 export interface IWorkerClient<W> {
 	proxy: Proxied<W>;
 	dispose(): void;

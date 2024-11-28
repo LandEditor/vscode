@@ -114,6 +114,7 @@ const MAX_NUM_INLINE_VALUES = 100; // JS Global scope can have 700+ entries. We 
 const MAX_INLINE_DECORATOR_LENGTH = 150; // Max string length of each inline decorator when debugging. If exceeded ... is added
 const MAX_TOKENIZATION_LINE_LEN = 500; // If line is too long, then inline values for the line are skipped
 const DEAFULT_INLINE_DEBOUNCE_DELAY = 200;
+
 export const debugInlineForeground = registerColor(
 	"editor.inlineValuesForeground",
 	{
@@ -127,6 +128,7 @@ export const debugInlineForeground = registerColor(
 		"Color for the debug inline value text.",
 	),
 );
+
 export const debugInlineBackground = registerColor(
 	"editor.inlineValuesBackground",
 	"#ffc80033",

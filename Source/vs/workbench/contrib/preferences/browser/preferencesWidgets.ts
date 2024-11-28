@@ -301,6 +301,7 @@ export type SettingsTarget =
 	| ConfigurationTarget.USER_REMOTE
 	| ConfigurationTarget.WORKSPACE
 	| URI;
+
 export interface ISettingsTargetsWidgetOptions {
 	enableRemoteSettings?: boolean;
 }

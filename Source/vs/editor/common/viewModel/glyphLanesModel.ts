@@ -6,6 +6,7 @@ import { Range } from "../core/range.js";
 import { GlyphMarginLane, IGlyphMarginLanesModel } from "../model.js";
 
 const MAX_LANE = GlyphMarginLane.Right;
+
 export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
 	private lanes: Uint8Array;
 	private persist = 0;

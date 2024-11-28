@@ -10,6 +10,7 @@ import { DisposableStore, toDisposable } from "./lifecycle.js";
  * The payload that flows in readable stream events.
  */
 export type ReadableStreamEventPayload<T> = T | Error | "end";
+
 export interface ReadableStreamEvents<T> {
 	/**
 	 * The 'data' event is emitted whenever the stream is
@@ -476,9 +477,11 @@ export function consumeStream<T, R = T>(
 	stream: ReadableStreamEvents<T>,
 	reducer: IReducer<T, R>,
 ): Promise<R>;
+
 export function consumeStream(
 	stream: ReadableStreamEvents<unknown>,
 ): Promise<undefined>;
+
 export function consumeStream<T, R = T>(
 	stream: ReadableStreamEvents<T>,
 	reducer?: IReducer<T, R>,

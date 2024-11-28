@@ -53,6 +53,7 @@ export interface ICodeMapperProvider {
 }
 export const ICodeMapperService =
 	createDecorator<ICodeMapperService>("codeMapperService");
+
 export interface ICodeMapperService {
 	readonly _serviceBrand: undefined;
 	registerCodeMapperProvider(

@@ -53,6 +53,7 @@ export const SUPPORTED_CODE_ACTIONS = new RawContextKey<string>(
 	"supportedCodeAction",
 	"",
 );
+
 export const APPLY_FIX_ALL_COMMAND_ID = "_typescript.applyFixAllCodeAction";
 type TriggeredCodeAction = {
 	readonly selection: Selection;
@@ -198,6 +199,7 @@ const emptyCodeActionSet = Object.freeze<CodeActionSet>({
 	hasAIFix: false,
 	allAIFixes: false,
 });
+
 export class CodeActionModel extends Disposable {
 	private readonly _codeActionOracle = this._register(
 		new MutableDisposable<CodeActionOracle>(),

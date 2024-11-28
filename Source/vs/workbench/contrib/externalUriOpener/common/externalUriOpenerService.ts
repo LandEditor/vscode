@@ -32,6 +32,7 @@ import {
 
 export const IExternalUriOpenerService =
 	createDecorator<IExternalUriOpenerService>("externalUriOpenerService");
+
 export interface IExternalOpenerProvider {
 	getOpeners(targetUri: URI): AsyncIterable<IExternalUriOpener>;
 }

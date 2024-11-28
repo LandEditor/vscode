@@ -26,12 +26,15 @@ export const statePriority: {
 	[TestResultState.Unset]: 0,
 	[TestResultState.Skipped]: 1,
 };
+
 export const isFailedState = (s: TestResultState) =>
 	s === TestResultState.Errored || s === TestResultState.Failed;
+
 export const isStateWithResult = (s: TestResultState) =>
 	s === TestResultState.Errored ||
 	s === TestResultState.Failed ||
 	s === TestResultState.Passed;
+
 export const stateNodes: {
 	[K in TestResultState]: TreeStateNode;
 } = mapValues(statePriority, (priority, stateStr): TreeStateNode => {
@@ -39,8 +42,10 @@ export const stateNodes: {
 
 	return { statusNode: true, state, priority };
 });
+
 export const cmpPriority = (a: TestResultState, b: TestResultState) =>
 	statePriority[b] - statePriority[a];
+
 export const maxPriority = (...states: TestResultState[]) => {
 	switch (states.length) {
 		case 0:
@@ -66,6 +71,7 @@ export const maxPriority = (...states: TestResultState[]) => {
 		}
 	}
 };
+
 export const statesInOrder = Object.keys(statePriority)
 	.map((s) => Number(s) as TestResultState)
 	.sort(cmpPriority);
@@ -88,6 +94,7 @@ export const terminalStatePriorities: {
 export type TestStateCount = {
 	[K in TestResultState]: number;
 };
+
 export const makeEmptyCounts = (): TestStateCount => {
 	// shh! don't tell anyone this is actually an array!
 	return new Uint32Array(statesInOrder.length) as any as {

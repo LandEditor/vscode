@@ -18,6 +18,7 @@ import {
 import { IJSONContribution, ISuggestionsCollector } from "./jsonContributions";
 
 const USER_AGENT = "Visual Studio Code";
+
 export class BowerJSONContribution implements IJSONContribution {
 	private topRanked = [
 		"twitter",

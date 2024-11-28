@@ -85,7 +85,9 @@ import { CommentsModel } from "./commentsModel.js";
 import { TimestampWidget } from "./timestamp.js";
 
 export const COMMENTS_VIEW_ID = "workbench.panel.comments";
+
 export const COMMENTS_VIEW_STORAGE_ID = "Comments";
+
 export const COMMENTS_VIEW_TITLE: ILocalizedString = nls.localize2(
 	"comments.view.title",
 	"Comments",

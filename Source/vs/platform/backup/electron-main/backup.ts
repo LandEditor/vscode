@@ -8,6 +8,7 @@ import { IEmptyWindowBackupInfo } from "../node/backup.js";
 
 export const IBackupMainService =
 	createDecorator<IBackupMainService>("backupMainService");
+
 export interface IBackupMainService {
 	readonly _serviceBrand: undefined;
 	isHotExitEnabled(): boolean;

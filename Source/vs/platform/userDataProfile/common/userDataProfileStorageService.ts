@@ -52,6 +52,7 @@ export const IUserDataProfileStorageService =
 	createDecorator<IUserDataProfileStorageService>(
 		"IUserDataProfileStorageService",
 	);
+
 export interface IUserDataProfileStorageService {
 	readonly _serviceBrand: undefined;
 	/**

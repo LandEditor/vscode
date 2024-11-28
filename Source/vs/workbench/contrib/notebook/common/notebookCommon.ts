@@ -54,11 +54,15 @@ import { INotebookTextModelLike } from "./notebookKernelService.js";
 import { ICellRange } from "./notebookRange.js";
 
 export const NOTEBOOK_EDITOR_ID = "workbench.editor.notebook";
+
 export const NOTEBOOK_DIFF_EDITOR_ID =
 	"workbench.editor.notebookTextDiffEditor";
+
 export const NOTEBOOK_MULTI_DIFF_EDITOR_ID =
 	"workbench.editor.notebookMultiTextDiffEditor";
+
 export const INTERACTIVE_WINDOW_EDITOR_ID = "workbench.editor.interactive";
+
 export const REPL_EDITOR_ID = "workbench.editor.repl";
 
 export const EXECUTE_REPL_COMMAND_ID = "replNotebook.input.execute";
@@ -174,9 +178,11 @@ export type InteractiveWindowCollapseCodeCells =
 export type TransientCellMetadata = {
 	readonly [K in keyof NotebookCellMetadata]?: boolean;
 };
+
 export type CellContentMetadata = {
 	readonly [K in keyof NotebookCellMetadata]?: boolean;
 };
+
 export type TransientDocumentMetadata = {
 	readonly [K in keyof NotebookDocumentMetadata]?: boolean;
 };
@@ -612,6 +618,7 @@ export type NullablePartialNotebookCellInternalMetadata = {
 		| NotebookCellInternalMetadata[Key]
 		| null;
 };
+
 export interface ICellPartialInternalMetadataEdit {
 	editType: CellEditType.PartialInternalMetadata;
 	index: number;
@@ -649,6 +656,7 @@ export type IImmediateCellEditOperation =
 	| ICellPartialInternalMetadataEdit
 	| ICellPartialInternalMetadataEditByHandle
 	| ICellPartialMetadataEdit;
+
 export type ICellEditOperation =
 	| IImmediateCellEditOperation
 	| ICellReplaceEdit
@@ -1187,6 +1195,7 @@ export type ShowCellStatusBarType =
 	| "hidden"
 	| "visible"
 	| "visibleAfterExecute";
+
 export const NotebookSetting = {
 	displayOrder: "notebook.displayOrder",
 	cellToolbarLocation: "notebook.cellToolbarLocation",

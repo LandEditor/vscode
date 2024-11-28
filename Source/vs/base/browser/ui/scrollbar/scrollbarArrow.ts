@@ -12,6 +12,7 @@ import { Widget } from "../widget.js";
  * The arrow image size.
  */
 export const ARROW_IMG_SIZE = 11;
+
 export interface ScrollbarArrowOptions {
 	onActivate: () => void;
 

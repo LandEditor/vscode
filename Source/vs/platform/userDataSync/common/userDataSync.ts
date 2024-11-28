@@ -106,6 +106,7 @@ function getIgnoredSettings(
 	return [...ignoredSettings.values()];
 }
 export const USER_DATA_SYNC_CONFIGURATION_SCOPE = "settingsSync";
+
 export interface IUserDataSyncConfiguration {
 	keybindingsPerPlatform?: boolean;
 	ignoredExtensions?: string[];
@@ -113,6 +114,7 @@ export interface IUserDataSyncConfiguration {
 }
 export const CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM =
 	"settingsSync.keybindingsPerPlatform";
+
 export function registerConfiguration(): IDisposable {
 	const ignoredSettingsSchemaId = "vscode://schemas/ignoredSettings";
 
@@ -219,6 +221,7 @@ export type IAuthenticationProvider = {
 	id: string;
 	scopes: string[];
 };
+
 export interface IUserDataSyncStore {
 	readonly url: URI;
 	readonly type: UserDataSyncStoreType;
@@ -257,6 +260,7 @@ export const ALL_SYNC_RESOURCES: SyncResource[] = [
 	SyncResource.GlobalState,
 	SyncResource.Profiles,
 ];
+
 export function getPathSegments(
 	collection: string | undefined,
 	...paths: string[]
@@ -279,6 +283,7 @@ export function getLastSyncResourceUri(
 	);
 }
 export type IUserDataResourceManifest = Record<ServerResource, string>;
+
 export interface IUserDataCollectionManifest {
 	[collectionId: string]: {
 		readonly latest?: IUserDataResourceManifest;
@@ -319,11 +324,14 @@ export type ServerResource =
 	| "machines"
 	| "editSessions"
 	| "workspaceState";
+
 export type UserDataSyncStoreType = "insiders" | "stable";
+
 export const IUserDataSyncStoreManagementService =
 	createDecorator<IUserDataSyncStoreManagementService>(
 		"IUserDataSyncStoreManagementService",
 	);
+
 export interface IUserDataSyncStoreManagementService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeUserDataSyncStore: Event<void>;
@@ -335,6 +343,7 @@ export interface IUserDataSyncStoreManagementService {
 }
 export const IUserDataSyncStoreService =
 	createDecorator<IUserDataSyncStoreService>("IUserDataSyncStoreService");
+
 export interface IUserDataSyncStoreService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeDonotMakeRequestsUntil: Event<void>;
@@ -388,6 +397,7 @@ export const IUserDataSyncLocalStoreService =
 	createDecorator<IUserDataSyncLocalStoreService>(
 		"IUserDataSyncLocalStoreService",
 	);
+
 export interface IUserDataSyncLocalStoreService {
 	readonly _serviceBrand: undefined;
 	writeResource(
@@ -413,7 +423,9 @@ export interface IUserDataSyncLocalStoreService {
 //#endregion
 // #region User Data Sync Headers
 export const HEADER_OPERATION_ID = "x-operation-id";
+
 export const HEADER_EXECUTION_ID = "X-Execution-Id";
+
 export function createSyncHeaders(executionId: string): IHeaders {
 	const headers: IHeaders = {};
 	headers[HEADER_EXECUTION_ID] = executionId;
@@ -525,6 +537,7 @@ export interface ISyncUserDataProfile {
 	readonly useDefaultFlags?: UseDefaultProfileFlags;
 }
 export type ISyncExtension = ILocalSyncExtension | IRemoteSyncExtension;
+
 export interface ILocalSyncExtension {
 	identifier: IExtensionIdentifier;
 	pinned: boolean;
@@ -654,6 +667,7 @@ export interface IUserDataSynchroniser {
 //#endregion
 // #region keys synced only in web
 export const SYNC_SERVICE_URL_TYPE = "sync.store.url.type";
+
 export function getEnablementKey(resource: SyncResource) {
 	return `sync.enable.${resource}`;
 }
@@ -663,6 +677,7 @@ export const IUserDataSyncEnablementService =
 	createDecorator<IUserDataSyncEnablementService>(
 		"IUserDataSyncEnablementService",
 	);
+
 export interface IUserDataSyncEnablementService {
 	_serviceBrand: any;
 	readonly onDidChangeEnablement: Event<boolean>;
@@ -691,6 +706,7 @@ export interface IUserDataManualSyncTask {
 export const IUserDataSyncService = createDecorator<IUserDataSyncService>(
 	"IUserDataSyncService",
 );
+
 export interface IUserDataSyncService {
 	_serviceBrand: any;
 	readonly status: SyncStatus;
@@ -736,6 +752,7 @@ export const IUserDataSyncResourceProviderService =
 	createDecorator<IUserDataSyncResourceProviderService>(
 		"IUserDataSyncResourceProviderService",
 	);
+
 export interface IUserDataSyncResourceProviderService {
 	_serviceBrand: any;
 
@@ -773,6 +790,7 @@ export interface IUserDataSyncResourceProviderService {
 }
 export const IUserDataAutoSyncService =
 	createDecorator<IUserDataAutoSyncService>("IUserDataAutoSyncService");
+
 export interface IUserDataAutoSyncService {
 	_serviceBrand: any;
 	readonly onError: Event<UserDataSyncError>;
@@ -786,6 +804,7 @@ export interface IUserDataAutoSyncService {
 }
 export const IUserDataSyncUtilService =
 	createDecorator<IUserDataSyncUtilService>("IUserDataSyncUtilService");
+
 export interface IUserDataSyncUtilService {
 	readonly _serviceBrand: undefined;
 	resolveUserBindings(
@@ -797,6 +816,7 @@ export interface IUserDataSyncUtilService {
 export const IUserDataSyncLogService = createDecorator<IUserDataSyncLogService>(
 	"IUserDataSyncLogService",
 );
+
 export interface IUserDataSyncLogService extends ILogService {}
 export interface IConflictSetting {
 	key: string;
@@ -805,5 +825,7 @@ export interface IConflictSetting {
 }
 //#endregion
 export const USER_DATA_SYNC_LOG_ID = "userDataSync";
+
 export const USER_DATA_SYNC_SCHEME = "vscode-userdata-sync";
+
 export const PREVIEW_DIR_NAME = "preview";

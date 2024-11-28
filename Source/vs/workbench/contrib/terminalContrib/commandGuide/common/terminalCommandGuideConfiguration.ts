@@ -11,6 +11,7 @@ export const enum TerminalCommandGuideSettingId {
 }
 export const terminalCommandGuideConfigSection =
 	"terminal.integrated.shellIntegration";
+
 export interface ITerminalCommandGuideConfiguration {
 	showCommandGuide: boolean;
 }

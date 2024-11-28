@@ -287,6 +287,7 @@ async function _resolveCwd(
 	return cwd;
 }
 export type VariableResolver = (str: string) => Promise<string>;
+
 export function createVariableResolver(
 	lastActiveWorkspace: IWorkspaceFolder | undefined,
 	env: IProcessEnvironment,

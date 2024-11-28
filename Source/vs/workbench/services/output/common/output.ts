@@ -28,25 +28,32 @@ export const LOG_MODE_ID = "log";
  * Output view id
  */
 export const OUTPUT_VIEW_ID = "workbench.panel.output";
+
 export const CONTEXT_IN_OUTPUT = new RawContextKey<boolean>("inOutput", false);
+
 export const CONTEXT_ACTIVE_FILE_OUTPUT = new RawContextKey<boolean>(
 	"activeLogOutput",
 	false,
 );
+
 export const CONTEXT_ACTIVE_OUTPUT_LEVEL_SETTABLE = new RawContextKey<boolean>(
 	"activeLogOutput.levelSettable",
 	false,
 );
+
 export const CONTEXT_ACTIVE_OUTPUT_LEVEL = new RawContextKey<string>(
 	"activeLogOutput.level",
 	"",
 );
+
 export const CONTEXT_ACTIVE_OUTPUT_LEVEL_IS_DEFAULT =
 	new RawContextKey<boolean>("activeLogOutput.levelIsDefault", false);
+
 export const CONTEXT_OUTPUT_SCROLL_LOCK = new RawContextKey<boolean>(
 	`outputView.scrollLock`,
 	false,
 );
+
 export const IOutputService = createDecorator<IOutputService>("outputService");
 /**
  * The output service to manage output from the various processes running.
@@ -123,6 +130,7 @@ export interface IOutputChannel {
 export const Extensions = {
 	OutputChannels: "workbench.contributions.outputChannels",
 };
+
 export interface IOutputChannelDescriptor {
 	id: string;
 	label: string;
@@ -182,6 +190,7 @@ class OutputChannelRegistry implements IOutputChannelRegistry {
 	}
 }
 Registry.add(Extensions.OutputChannels, new OutputChannelRegistry());
+
 export const ACTIVE_OUTPUT_CHANNEL_CONTEXT = new RawContextKey<string>(
 	"activeOutputChannel",
 	"",

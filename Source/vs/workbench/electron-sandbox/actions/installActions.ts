@@ -17,6 +17,7 @@ const shellCommandCategory: ILocalizedString = localize2(
 	"shellCommand",
 	"Shell Command",
 );
+
 export class InstallShellScriptAction extends Action2 {
 	constructor() {
 		super({

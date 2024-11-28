@@ -499,6 +499,7 @@ const _defaultOptions: ISnippetSessionInsertOptions = {
 	clipboardText: undefined,
 	overtypingCapturer: undefined,
 };
+
 export interface ISnippetEdit {
 	range: Range;
 	template: string;

@@ -18,6 +18,7 @@ export const conflictMarkers = {
 	start: "<<<<<<<",
 	end: ">>>>>>>",
 };
+
 export class MergeMarkersController extends Disposable {
 	private readonly viewZoneIds: string[] = [];
 	private readonly disposableStore = new DisposableStore();

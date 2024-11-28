@@ -18,6 +18,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const INotebookDocumentService =
 	createDecorator<INotebookDocumentService>("notebookDocumentService");
+
 export interface INotebookDocument {
 	readonly uri: URI;
 
@@ -29,6 +30,7 @@ const _lengths = ["W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f"];
 const _padRegexp = new RegExp(`^[${_lengths.join("")}]+`);
 
 const _radix = 7;
+
 export function parse(cell: URI):
 	| {
 			notebook: URI;

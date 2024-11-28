@@ -15,6 +15,7 @@ import { formatChatQuestion } from "../common/chatParserTypes.js";
 import { IChatFollowup } from "../common/chatService.js";
 
 const $ = dom.$;
+
 export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 	constructor(
 		container: HTMLElement,

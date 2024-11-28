@@ -43,12 +43,14 @@ interface ITerminalData {
 }
 
 const TASK_TERMINAL_STATUS_ID = "task_terminal_status";
+
 export const ACTIVE_TASK_STATUS: ITerminalStatus = {
 	id: TASK_TERMINAL_STATUS_ID,
 	icon: spinningLoading,
 	severity: Severity.Info,
 	tooltip: nls.localize("taskTerminalStatus.active", "Task is running"),
 };
+
 export const SUCCEEDED_TASK_STATUS: ITerminalStatus = {
 	id: TASK_TERMINAL_STATUS_ID,
 	icon: Codicon.check,
@@ -65,6 +67,7 @@ const SUCCEEDED_INACTIVE_TASK_STATUS: ITerminalStatus = {
 		"Task succeeded and waiting...",
 	),
 };
+
 export const FAILED_TASK_STATUS: ITerminalStatus = {
 	id: TASK_TERMINAL_STATUS_ID,
 	icon: Codicon.error,
@@ -115,6 +118,7 @@ const INFO_INACTIVE_TASK_STATUS: ITerminalStatus = {
 		"Task has infos and is waiting...",
 	),
 };
+
 export class TaskTerminalStatus extends Disposable {
 	private terminalMap: Map<number, ITerminalData> = new Map();
 	private _marker: IMarker | undefined;

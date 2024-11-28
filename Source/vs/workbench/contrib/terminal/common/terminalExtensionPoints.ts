@@ -17,6 +17,7 @@ const terminalsExtPoint =
 	extensionsRegistry.ExtensionsRegistry.registerExtensionPoint<ITerminalContributions>(
 		terminalContributionsDescriptor,
 	);
+
 export interface ITerminalContributionService {
 	readonly _serviceBrand: undefined;
 	readonly terminalProfiles: ReadonlyArray<IExtensionTerminalProfile>;
@@ -25,6 +26,7 @@ export const ITerminalContributionService =
 	createDecorator<ITerminalContributionService>(
 		"terminalContributionsService",
 	);
+
 export class TerminalContributionService
 	implements ITerminalContributionService
 {

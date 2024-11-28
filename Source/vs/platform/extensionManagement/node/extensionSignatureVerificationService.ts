@@ -13,6 +13,7 @@ export const IExtensionSignatureVerificationService =
 	createDecorator<IExtensionSignatureVerificationService>(
 		"IExtensionSignatureVerificationService",
 	);
+
 export interface IExtensionSignatureVerificationResult {
 	readonly code: ExtensionSignatureVerificationCode;
 }

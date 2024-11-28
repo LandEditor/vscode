@@ -303,6 +303,7 @@ export type ISerializedLineRange = [
 	startLineNumber: number,
 	endLineNumberExclusive: number,
 ];
+
 export class LineRangeSet {
 	constructor(
 		/**

@@ -136,6 +136,7 @@ type MergeEditorInput = {
 	input2: { uri: URI };
 	result: URI;
 };
+
 export function isMergeEditorInput(
 	editor: unknown,
 ): editor is MergeEditorInput {

@@ -58,6 +58,7 @@ export interface IUtilityProcessWorkerCreateConfiguration
 	};
 }
 export const ipcUtilityProcessWorkerChannelName = "utilityProcessWorker";
+
 export interface IUtilityProcessWorkerService {
 	readonly _serviceBrand: undefined;
 	/**

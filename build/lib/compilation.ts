@@ -476,6 +476,7 @@ function generateApiProposalNames() {
 }
 
 const apiProposalNamesReporter = createReporter("api-proposal-names");
+
 export const compileApiProposalNamesTask = task.define(
 	"compile-api-proposal-names",
 	() => {
@@ -486,6 +487,7 @@ export const compileApiProposalNamesTask = task.define(
 			.pipe(apiProposalNamesReporter.end(true));
 	},
 );
+
 export const watchApiProposalNamesTask = task.define(
 	"watch-api-proposal-names",
 	() => {

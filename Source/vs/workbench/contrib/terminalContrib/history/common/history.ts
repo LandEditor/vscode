@@ -75,6 +75,7 @@ const enum StorageKeys {
 let directoryHistory:
 	| ITerminalPersistedHistory<{ remoteAuthority?: string }>
 	| undefined = undefined;
+
 export function getDirectoryHistory(
 	accessor: ServicesAccessor,
 ): ITerminalPersistedHistory<{ remoteAuthority?: string }> {
@@ -92,6 +93,7 @@ export function getDirectoryHistory(
 let commandHistory:
 	| ITerminalPersistedHistory<{ shellType: TerminalShellType }>
 	| undefined = undefined;
+
 export function getCommandHistory(
 	accessor: ServicesAccessor,
 ): ITerminalPersistedHistory<{ shellType: TerminalShellType | undefined }> {
@@ -286,6 +288,7 @@ const shellFileHistory: Map<
 	TerminalShellType | undefined,
 	IShellFileHistoryEntry | null
 > = new Map();
+
 export async function getShellFileHistory(
 	accessor: ServicesAccessor,
 	shellType: TerminalShellType | undefined,

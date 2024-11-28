@@ -29,6 +29,7 @@ const colorThresholds = [
 	{ color: `var(${asCssVariableName(chartsYellow)})`, key: "yellow" },
 	{ color: `var(${asCssVariableName(chartsGreen)})`, key: "green" },
 ] as const;
+
 export const getCoverageColor = (
 	pct: number,
 	thresholds: ITestingCoverageBarThresholds,
@@ -48,6 +49,7 @@ export const getCoverageColor = (
 };
 
 const epsilon = 10e-8;
+
 export const displayPercent = (value: number, precision = 2) => {
 	const display = (value * 100).toFixed(precision);
 	// avoid showing 100% coverage if it just rounds up:
@@ -56,6 +58,7 @@ export const displayPercent = (value: number, precision = 2) => {
 	}
 	return `${display}%`;
 };
+
 export const calculateDisplayedStat = (
 	coverage: CoverageBarSource,
 	method: TestingDisplayedCoveragePercent,
@@ -86,6 +89,7 @@ export const calculateDisplayedStat = (
 			assertNever(method);
 	}
 };
+
 export function getLabelForItem(
 	result: LiveTestResult,
 	testId: TestId,

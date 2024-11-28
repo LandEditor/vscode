@@ -55,6 +55,7 @@ const regexpModuleLocationAsar: AppResourcePath = `${nodeModulesAsarPath}/vscode
 const moduleLocation: AppResourcePath = `${nodeModulesPath}/@vscode/vscode-languagedetection`;
 
 const moduleLocationAsar: AppResourcePath = `${nodeModulesAsarPath}/@vscode/vscode-languagedetection`;
+
 export class LanguageDetectionService
 	extends Disposable
 	implements ILanguageDetectionService

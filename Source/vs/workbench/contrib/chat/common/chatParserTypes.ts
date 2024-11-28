@@ -61,7 +61,9 @@ export class ChatRequestTextPart implements IParsedChatRequestPart {
 }
 // warning, these also show up in a regex in the parser
 export const chatVariableLeader = "#";
+
 export const chatAgentLeader = "@";
+
 export const chatSubcommandLeader = "/";
 /**
  * An invocation of a static variable that can be resolved by the variable service

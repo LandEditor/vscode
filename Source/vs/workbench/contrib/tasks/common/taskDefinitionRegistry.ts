@@ -131,6 +131,7 @@ const taskDefinitionsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 		items: taskDefinitionSchema,
 	},
 });
+
 export interface ITaskDefinitionRegistry {
 	onReady(): Promise<void>;
 

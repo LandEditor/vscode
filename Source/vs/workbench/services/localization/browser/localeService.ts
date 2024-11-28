@@ -57,6 +57,7 @@ const localeStorage = new (class LocaleStorage {
 		localStorage.removeItem(LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY);
 	}
 })();
+
 export class WebLocaleService implements ILocaleService {
 	declare readonly _serviceBrand: undefined;
 

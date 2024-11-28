@@ -46,6 +46,7 @@ const INSERT_MARKDOWN_CELL_BELOW_COMMAND_ID =
 
 const INSERT_MARKDOWN_CELL_AT_TOP_COMMAND_ID =
 	"notebook.cell.insertMarkdownCellAtTop";
+
 export function insertNewCell(
 	accessor: ServicesAccessor,
 	context: INotebookActionContext,

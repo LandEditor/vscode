@@ -47,6 +47,7 @@ export type IndexedDBFileSystemProviderErrorDataClassification = {
 		comment: "error code";
 	};
 };
+
 export type IndexedDBFileSystemProviderErrorData = {
 	readonly scheme: string;
 	readonly operation: string;

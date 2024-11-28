@@ -28,6 +28,7 @@ const ChatEditorIcon = registerIcon(
 	Codicon.commentDiscussion,
 	nls.localize("chatEditorLabelIcon", "Icon of the chat editor label."),
 );
+
 export class ChatEditorInput extends EditorInput {
 	static readonly countsInUse = new Set<number>();
 	static readonly TypeID: string = "workbench.input.chatSession";

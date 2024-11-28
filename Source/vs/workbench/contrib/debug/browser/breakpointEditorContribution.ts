@@ -104,6 +104,7 @@ const breakpointHelperDecoration: IModelDecorationOptions = {
 	),
 	stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 };
+
 export function createBreakpointDecorations(
 	accessor: ServicesAccessor,
 	model: ITextModel,
@@ -1602,6 +1603,7 @@ registerThemingParticipant((theme, collector) => {
 		}`);
 	}
 });
+
 export const debugIconBreakpointForeground = registerColor(
 	"debugIcon.breakpointForeground",
 	"#E51400",

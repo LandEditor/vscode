@@ -14,6 +14,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 // SEE https://nodejs.org/docs/latest/api/module.html#initialize
 const _specifierToUrl: Record<string, string> = {};
+
 export async function initialize(injectPath: string): Promise<void> {
 	// populate mappings
 	const injectPackageJSONPath = fileURLToPath(

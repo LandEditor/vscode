@@ -22,6 +22,7 @@ import { IWorkspaceExtensionsConfigService } from "./workspaceExtensionsConfig.j
 
 const ignoredRecommendationsStorageKey =
 	"extensionsAssistant/ignored_recommendations";
+
 export class ExtensionIgnoredRecommendationsService
 	extends Disposable
 	implements IExtensionIgnoredRecommendationsService

@@ -13,6 +13,7 @@ import { IRemoteService } from "./services.js";
 
 export const IMainProcessService =
 	createDecorator<IMainProcessService>("mainProcessService");
+
 export interface IMainProcessService extends IRemoteService {}
 /**
  * An implementation of `IMainProcessService` that leverages `IPCServer`.

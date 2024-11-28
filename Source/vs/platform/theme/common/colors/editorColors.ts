@@ -32,6 +32,7 @@ export const editorBackground = registerColor(
 	},
 	nls.localize("editorBackground", "Editor background color."),
 );
+
 export const editorForeground = registerColor(
 	"editor.foreground",
 	{
@@ -42,6 +43,7 @@ export const editorForeground = registerColor(
 	},
 	nls.localize("editorForeground", "Editor default foreground color."),
 );
+
 export const editorStickyScrollBackground = registerColor(
 	"editorStickyScroll.background",
 	editorBackground,
@@ -50,6 +52,7 @@ export const editorStickyScrollBackground = registerColor(
 		"Background color of sticky scroll in the editor",
 	),
 );
+
 export const editorStickyScrollHoverBackground = registerColor(
 	"editorStickyScrollHover.background",
 	{
@@ -63,6 +66,7 @@ export const editorStickyScrollHoverBackground = registerColor(
 		"Background color of sticky scroll on hover in the editor",
 	),
 );
+
 export const editorStickyScrollBorder = registerColor(
 	"editorStickyScroll.border",
 	{
@@ -76,6 +80,7 @@ export const editorStickyScrollBorder = registerColor(
 		"Border color of sticky scroll in the editor",
 	),
 );
+
 export const editorStickyScrollShadow = registerColor(
 	"editorStickyScroll.shadow",
 	scrollbarShadow,
@@ -84,6 +89,7 @@ export const editorStickyScrollShadow = registerColor(
 		" Shadow color of sticky scroll in the editor",
 	),
 );
+
 export const editorWidgetBackground = registerColor(
 	"editorWidget.background",
 	{
@@ -97,6 +103,7 @@ export const editorWidgetBackground = registerColor(
 		"Background color of editor widgets, such as find/replace.",
 	),
 );
+
 export const editorWidgetForeground = registerColor(
 	"editorWidget.foreground",
 	foreground,
@@ -105,6 +112,7 @@ export const editorWidgetForeground = registerColor(
 		"Foreground color of editor widgets, such as find/replace.",
 	),
 );
+
 export const editorWidgetBorder = registerColor(
 	"editorWidget.border",
 	{
@@ -118,6 +126,7 @@ export const editorWidgetBorder = registerColor(
 		"Border color of editor widgets. The color is only used if the widget chooses to have a border and if the color is not overridden by a widget.",
 	),
 );
+
 export const editorWidgetResizeBorder = registerColor(
 	"editorWidget.resizeBorder",
 	null,
@@ -126,6 +135,7 @@ export const editorWidgetResizeBorder = registerColor(
 		"Border color of the resize bar of editor widgets. The color is only used if the widget chooses to have a resize border and if the color is not overridden by a widget.",
 	),
 );
+
 export const editorErrorBackground = registerColor(
 	"editorError.background",
 	null,
@@ -135,6 +145,7 @@ export const editorErrorBackground = registerColor(
 	),
 	true,
 );
+
 export const editorErrorForeground = registerColor(
 	"editorError.foreground",
 	{
@@ -148,6 +159,7 @@ export const editorErrorForeground = registerColor(
 		"Foreground color of error squigglies in the editor.",
 	),
 );
+
 export const editorErrorBorder = registerColor(
 	"editorError.border",
 	{
@@ -161,6 +173,7 @@ export const editorErrorBorder = registerColor(
 		"If set, color of double underlines for errors in the editor.",
 	),
 );
+
 export const editorWarningBackground = registerColor(
 	"editorWarning.background",
 	null,
@@ -170,6 +183,7 @@ export const editorWarningBackground = registerColor(
 	),
 	true,
 );
+
 export const editorWarningForeground = registerColor(
 	"editorWarning.foreground",
 	{
@@ -183,6 +197,7 @@ export const editorWarningForeground = registerColor(
 		"Foreground color of warning squigglies in the editor.",
 	),
 );
+
 export const editorWarningBorder = registerColor(
 	"editorWarning.border",
 	{
@@ -196,6 +211,7 @@ export const editorWarningBorder = registerColor(
 		"If set, color of double underlines for warnings in the editor.",
 	),
 );
+
 export const editorInfoBackground = registerColor(
 	"editorInfo.background",
 	null,
@@ -205,6 +221,7 @@ export const editorInfoBackground = registerColor(
 	),
 	true,
 );
+
 export const editorInfoForeground = registerColor(
 	"editorInfo.foreground",
 	{
@@ -218,6 +235,7 @@ export const editorInfoForeground = registerColor(
 		"Foreground color of info squigglies in the editor.",
 	),
 );
+
 export const editorInfoBorder = registerColor(
 	"editorInfo.border",
 	{
@@ -231,6 +249,7 @@ export const editorInfoBorder = registerColor(
 		"If set, color of double underlines for infos in the editor.",
 	),
 );
+
 export const editorHintForeground = registerColor(
 	"editorHint.foreground",
 	{
@@ -244,6 +263,7 @@ export const editorHintForeground = registerColor(
 		"Foreground color of hint squigglies in the editor.",
 	),
 );
+
 export const editorHintBorder = registerColor(
 	"editorHint.border",
 	{
@@ -257,6 +277,7 @@ export const editorHintBorder = registerColor(
 		"If set, color of double underlines for hints in the editor.",
 	),
 );
+
 export const editorActiveLinkForeground = registerColor(
 	"editorLink.activeForeground",
 	{
@@ -278,6 +299,7 @@ export const editorSelectionBackground = registerColor(
 	},
 	nls.localize("editorSelectionBackground", "Color of the editor selection."),
 );
+
 export const editorSelectionForeground = registerColor(
 	"editor.selectionForeground",
 	{ light: null, dark: null, hcDark: "#000000", hcLight: Color.white },
@@ -286,6 +308,7 @@ export const editorSelectionForeground = registerColor(
 		"Color of the selected text for high contrast.",
 	),
 );
+
 export const editorInactiveSelection = registerColor(
 	"editor.inactiveSelectionBackground",
 	{
@@ -300,6 +323,7 @@ export const editorInactiveSelection = registerColor(
 	),
 	true,
 );
+
 export const editorSelectionHighlight = registerColor(
 	"editor.selectionHighlightBackground",
 	{
@@ -324,6 +348,7 @@ export const editorSelectionHighlight = registerColor(
 	),
 	true,
 );
+
 export const editorSelectionHighlightBorder = registerColor(
 	"editor.selectionHighlightBorder",
 	{
@@ -337,6 +362,7 @@ export const editorSelectionHighlightBorder = registerColor(
 		"Border color for regions with the same content as the selection.",
 	),
 );
+
 export const editorCompositionBorder = registerColor(
 	"editor.compositionBorder",
 	{
@@ -356,6 +382,7 @@ export const editorFindMatch = registerColor(
 	{ light: "#A8AC94", dark: "#515C6A", hcDark: null, hcLight: null },
 	nls.localize("editorFindMatch", "Color of the current search match."),
 );
+
 export const editorFindMatchForeground = registerColor(
 	"editor.findMatchForeground",
 	null,
@@ -364,6 +391,7 @@ export const editorFindMatchForeground = registerColor(
 		"Text color of the current search match.",
 	),
 );
+
 export const editorFindMatchHighlight = registerColor(
 	"editor.findMatchHighlightBackground",
 	{ light: "#EA5C0055", dark: "#EA5C0055", hcDark: null, hcLight: null },
@@ -373,6 +401,7 @@ export const editorFindMatchHighlight = registerColor(
 	),
 	true,
 );
+
 export const editorFindMatchHighlightForeground = registerColor(
 	"editor.findMatchHighlightForeground",
 	null,
@@ -382,6 +411,7 @@ export const editorFindMatchHighlightForeground = registerColor(
 	),
 	true,
 );
+
 export const editorFindRangeHighlight = registerColor(
 	"editor.findRangeHighlightBackground",
 	{ dark: "#3a3d4166", light: "#b4b4b44d", hcDark: null, hcLight: null },
@@ -391,6 +421,7 @@ export const editorFindRangeHighlight = registerColor(
 	),
 	true,
 );
+
 export const editorFindMatchBorder = registerColor(
 	"editor.findMatchBorder",
 	{
@@ -404,6 +435,7 @@ export const editorFindMatchBorder = registerColor(
 		"Border color of the current search match.",
 	),
 );
+
 export const editorFindMatchHighlightBorder = registerColor(
 	"editor.findMatchHighlightBorder",
 	{
@@ -417,6 +449,7 @@ export const editorFindMatchHighlightBorder = registerColor(
 		"Border color of the other search matches.",
 	),
 );
+
 export const editorFindRangeHighlightBorder = registerColor(
 	"editor.findRangeHighlightBorder",
 	{
@@ -446,21 +479,25 @@ export const editorHoverHighlight = registerColor(
 	),
 	true,
 );
+
 export const editorHoverBackground = registerColor(
 	"editorHoverWidget.background",
 	editorWidgetBackground,
 	nls.localize("hoverBackground", "Background color of the editor hover."),
 );
+
 export const editorHoverForeground = registerColor(
 	"editorHoverWidget.foreground",
 	editorWidgetForeground,
 	nls.localize("hoverForeground", "Foreground color of the editor hover."),
 );
+
 export const editorHoverBorder = registerColor(
 	"editorHoverWidget.border",
 	editorWidgetBorder,
 	nls.localize("hoverBorder", "Border color of the editor hover."),
 );
+
 export const editorHoverStatusBarBackground = registerColor(
 	"editorHoverWidget.statusBarBackground",
 	{
@@ -488,6 +525,7 @@ export const editorInlayHintForeground = registerColor(
 		"Foreground color of inline hints",
 	),
 );
+
 export const editorInlayHintBackground = registerColor(
 	"editorInlayHint.background",
 	{
@@ -501,6 +539,7 @@ export const editorInlayHintBackground = registerColor(
 		"Background color of inline hints",
 	),
 );
+
 export const editorInlayHintTypeForeground = registerColor(
 	"editorInlayHint.typeForeground",
 	editorInlayHintForeground,
@@ -509,6 +548,7 @@ export const editorInlayHintTypeForeground = registerColor(
 		"Foreground color of inline hints for types",
 	),
 );
+
 export const editorInlayHintTypeBackground = registerColor(
 	"editorInlayHint.typeBackground",
 	editorInlayHintBackground,
@@ -517,6 +557,7 @@ export const editorInlayHintTypeBackground = registerColor(
 		"Background color of inline hints for types",
 	),
 );
+
 export const editorInlayHintParameterForeground = registerColor(
 	"editorInlayHint.parameterForeground",
 	editorInlayHintForeground,
@@ -525,6 +566,7 @@ export const editorInlayHintParameterForeground = registerColor(
 		"Foreground color of inline hints for parameters",
 	),
 );
+
 export const editorInlayHintParameterBackground = registerColor(
 	"editorInlayHint.parameterBackground",
 	editorInlayHintBackground,
@@ -547,6 +589,7 @@ export const editorLightBulbForeground = registerColor(
 		"The color used for the lightbulb actions icon.",
 	),
 );
+
 export const editorLightBulbAutoFixForeground = registerColor(
 	"editorLightBulbAutoFix.foreground",
 	{
@@ -560,6 +603,7 @@ export const editorLightBulbAutoFixForeground = registerColor(
 		"The color used for the lightbulb auto fix actions icon.",
 	),
 );
+
 export const editorLightBulbAiForeground = registerColor(
 	"editorLightBulbAi.foreground",
 	editorLightBulbForeground,
@@ -582,6 +626,7 @@ export const snippetTabstopHighlightBackground = registerColor(
 		"Highlight background color of a snippet tabstop.",
 	),
 );
+
 export const snippetTabstopHighlightBorder = registerColor(
 	"editor.snippetTabstopHighlightBorder",
 	null,
@@ -590,6 +635,7 @@ export const snippetTabstopHighlightBorder = registerColor(
 		"Highlight border color of a snippet tabstop.",
 	),
 );
+
 export const snippetFinalTabstopHighlightBackground = registerColor(
 	"editor.snippetFinalTabstopHighlightBackground",
 	null,
@@ -598,6 +644,7 @@ export const snippetFinalTabstopHighlightBackground = registerColor(
 		"Highlight background color of the final tabstop of a snippet.",
 	),
 );
+
 export const snippetFinalTabstopHighlightBorder = registerColor(
 	"editor.snippetFinalTabstopHighlightBorder",
 	{
@@ -613,7 +660,9 @@ export const snippetFinalTabstopHighlightBorder = registerColor(
 );
 // ----- diff editor
 export const defaultInsertColor = new Color(new RGBA(155, 185, 85, 0.2));
+
 export const defaultRemoveColor = new Color(new RGBA(255, 0, 0, 0.2));
+
 export const diffInserted = registerColor(
 	"diffEditor.insertedTextBackground",
 	{ dark: "#9ccc2c33", light: "#9ccc2c40", hcDark: null, hcLight: null },
@@ -623,6 +672,7 @@ export const diffInserted = registerColor(
 	),
 	true,
 );
+
 export const diffRemoved = registerColor(
 	"diffEditor.removedTextBackground",
 	{ dark: "#ff000033", light: "#ff000033", hcDark: null, hcLight: null },
@@ -632,6 +682,7 @@ export const diffRemoved = registerColor(
 	),
 	true,
 );
+
 export const diffInsertedLine = registerColor(
 	"diffEditor.insertedLineBackground",
 	{
@@ -646,6 +697,7 @@ export const diffInsertedLine = registerColor(
 	),
 	true,
 );
+
 export const diffRemovedLine = registerColor(
 	"diffEditor.removedLineBackground",
 	{
@@ -660,6 +712,7 @@ export const diffRemovedLine = registerColor(
 	),
 	true,
 );
+
 export const diffInsertedLineGutter = registerColor(
 	"diffEditorGutter.insertedLineBackground",
 	null,
@@ -668,6 +721,7 @@ export const diffInsertedLineGutter = registerColor(
 		"Background color for the margin where lines got inserted.",
 	),
 );
+
 export const diffRemovedLineGutter = registerColor(
 	"diffEditorGutter.removedLineBackground",
 	null,
@@ -676,6 +730,7 @@ export const diffRemovedLineGutter = registerColor(
 		"Background color for the margin where lines got removed.",
 	),
 );
+
 export const diffOverviewRulerInserted = registerColor(
 	"diffEditorOverview.insertedForeground",
 	null,
@@ -684,6 +739,7 @@ export const diffOverviewRulerInserted = registerColor(
 		"Diff overview ruler foreground for inserted content.",
 	),
 );
+
 export const diffOverviewRulerRemoved = registerColor(
 	"diffEditorOverview.removedForeground",
 	null,
@@ -692,6 +748,7 @@ export const diffOverviewRulerRemoved = registerColor(
 		"Diff overview ruler foreground for removed content.",
 	),
 );
+
 export const diffInsertedOutline = registerColor(
 	"diffEditor.insertedTextBorder",
 	{ dark: null, light: null, hcDark: "#33ff2eff", hcLight: "#374E06" },
@@ -700,6 +757,7 @@ export const diffInsertedOutline = registerColor(
 		"Outline color for the text that got inserted.",
 	),
 );
+
 export const diffRemovedOutline = registerColor(
 	"diffEditor.removedTextBorder",
 	{ dark: null, light: null, hcDark: "#FF008F", hcLight: "#AD0707" },
@@ -708,6 +766,7 @@ export const diffRemovedOutline = registerColor(
 		"Outline color for text that got removed.",
 	),
 );
+
 export const diffBorder = registerColor(
 	"diffEditor.border",
 	{
@@ -721,6 +780,7 @@ export const diffBorder = registerColor(
 		"Border color between the two text editors.",
 	),
 );
+
 export const diffDiagonalFill = registerColor(
 	"diffEditor.diagonalFill",
 	{ dark: "#cccccc33", light: "#22222233", hcDark: null, hcLight: null },
@@ -729,6 +789,7 @@ export const diffDiagonalFill = registerColor(
 		"Color of the diff editor's diagonal fill. The diagonal fill is used in side-by-side diff views.",
 	),
 );
+
 export const diffUnchangedRegionBackground = registerColor(
 	"diffEditor.unchangedRegionBackground",
 	"sideBar.background",
@@ -737,6 +798,7 @@ export const diffUnchangedRegionBackground = registerColor(
 		"The background color of unchanged blocks in the diff editor.",
 	),
 );
+
 export const diffUnchangedRegionForeground = registerColor(
 	"diffEditor.unchangedRegionForeground",
 	"foreground",
@@ -745,6 +807,7 @@ export const diffUnchangedRegionForeground = registerColor(
 		"The foreground color of unchanged blocks in the diff editor.",
 	),
 );
+
 export const diffUnchangedTextBackground = registerColor(
 	"diffEditor.unchangedCodeBackground",
 	{ dark: "#74747429", light: "#b8b8b829", hcDark: null, hcLight: null },
@@ -767,6 +830,7 @@ export const widgetShadow = registerColor(
 		"Shadow color of widgets such as find/replace inside the editor.",
 	),
 );
+
 export const widgetBorder = registerColor(
 	"widget.border",
 	{
@@ -789,6 +853,7 @@ export const toolbarHoverBackground = registerColor(
 		"Toolbar background when hovering over actions using the mouse",
 	),
 );
+
 export const toolbarHoverOutline = registerColor(
 	"toolbar.hoverOutline",
 	{
@@ -802,6 +867,7 @@ export const toolbarHoverOutline = registerColor(
 		"Toolbar outline when hovering over actions using the mouse",
 	),
 );
+
 export const toolbarActiveBackground = registerColor(
 	"toolbar.activeBackground",
 	{
@@ -824,6 +890,7 @@ export const breadcrumbsForeground = registerColor(
 		"Color of focused breadcrumb items.",
 	),
 );
+
 export const breadcrumbsBackground = registerColor(
 	"breadcrumb.background",
 	editorBackground,
@@ -832,6 +899,7 @@ export const breadcrumbsBackground = registerColor(
 		"Background color of breadcrumb items.",
 	),
 );
+
 export const breadcrumbsFocusForeground = registerColor(
 	"breadcrumb.focusForeground",
 	{
@@ -845,6 +913,7 @@ export const breadcrumbsFocusForeground = registerColor(
 		"Color of focused breadcrumb items.",
 	),
 );
+
 export const breadcrumbsActiveSelectionForeground = registerColor(
 	"breadcrumb.activeSelectionForeground",
 	{
@@ -858,6 +927,7 @@ export const breadcrumbsActiveSelectionForeground = registerColor(
 		"Color of selected breadcrumb items.",
 	),
 );
+
 export const breadcrumbsPickerBackground = registerColor(
 	"breadcrumbPicker.background",
 	editorWidgetBackground,
@@ -880,6 +950,7 @@ const commonBaseColor = Color.fromHex("#606060").transparent(0.4);
 const contentTransparency = 0.4;
 
 const rulerTransparency = 1;
+
 export const mergeCurrentHeaderBackground = registerColor(
 	"merge.currentHeaderBackground",
 	{
@@ -894,6 +965,7 @@ export const mergeCurrentHeaderBackground = registerColor(
 	),
 	true,
 );
+
 export const mergeCurrentContentBackground = registerColor(
 	"merge.currentContentBackground",
 	transparent(mergeCurrentHeaderBackground, contentTransparency),
@@ -903,6 +975,7 @@ export const mergeCurrentContentBackground = registerColor(
 	),
 	true,
 );
+
 export const mergeIncomingHeaderBackground = registerColor(
 	"merge.incomingHeaderBackground",
 	{
@@ -917,6 +990,7 @@ export const mergeIncomingHeaderBackground = registerColor(
 	),
 	true,
 );
+
 export const mergeIncomingContentBackground = registerColor(
 	"merge.incomingContentBackground",
 	transparent(mergeIncomingHeaderBackground, contentTransparency),
@@ -926,6 +1000,7 @@ export const mergeIncomingContentBackground = registerColor(
 	),
 	true,
 );
+
 export const mergeCommonHeaderBackground = registerColor(
 	"merge.commonHeaderBackground",
 	{
@@ -940,6 +1015,7 @@ export const mergeCommonHeaderBackground = registerColor(
 	),
 	true,
 );
+
 export const mergeCommonContentBackground = registerColor(
 	"merge.commonContentBackground",
 	transparent(mergeCommonHeaderBackground, contentTransparency),
@@ -949,6 +1025,7 @@ export const mergeCommonContentBackground = registerColor(
 	),
 	true,
 );
+
 export const mergeBorder = registerColor(
 	"merge.border",
 	{ dark: null, light: null, hcDark: "#C3DF6F", hcLight: "#007ACC" },
@@ -957,6 +1034,7 @@ export const mergeBorder = registerColor(
 		"Border color on headers and the splitter in inline merge-conflicts.",
 	),
 );
+
 export const overviewRulerCurrentContentForeground = registerColor(
 	"editorOverviewRuler.currentContentForeground",
 	{
@@ -970,6 +1048,7 @@ export const overviewRulerCurrentContentForeground = registerColor(
 		"Current overview ruler foreground for inline merge-conflicts.",
 	),
 );
+
 export const overviewRulerIncomingContentForeground = registerColor(
 	"editorOverviewRuler.incomingContentForeground",
 	{
@@ -983,6 +1062,7 @@ export const overviewRulerIncomingContentForeground = registerColor(
 		"Incoming overview ruler foreground for inline merge-conflicts.",
 	),
 );
+
 export const overviewRulerCommonContentForeground = registerColor(
 	"editorOverviewRuler.commonContentForeground",
 	{
@@ -996,6 +1076,7 @@ export const overviewRulerCommonContentForeground = registerColor(
 		"Common ancestor overview ruler foreground for inline merge-conflicts.",
 	),
 );
+
 export const overviewRulerFindMatchForeground = registerColor(
 	"editorOverviewRuler.findMatchForeground",
 	{
@@ -1010,6 +1091,7 @@ export const overviewRulerFindMatchForeground = registerColor(
 	),
 	true,
 );
+
 export const overviewRulerSelectionHighlightForeground = registerColor(
 	"editorOverviewRuler.selectionHighlightForeground",
 	"#A0A0A0CC",
@@ -1028,6 +1110,7 @@ export const problemsErrorIconForeground = registerColor(
 		"The color used for the problems error icon.",
 	),
 );
+
 export const problemsWarningIconForeground = registerColor(
 	"problemsWarningIcon.foreground",
 	editorWarningForeground,
@@ -1036,6 +1119,7 @@ export const problemsWarningIconForeground = registerColor(
 		"The color used for the problems warning icon.",
 	),
 );
+
 export const problemsInfoIconForeground = registerColor(
 	"problemsInfoIcon.foreground",
 	editorInfoForeground,

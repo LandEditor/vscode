@@ -36,9 +36,12 @@ import {
 import { IAnyWorkspaceIdentifier } from "../../workspace/common/workspace.js";
 
 export const IS_NEW_KEY = "__$__isNewStorageMarker";
+
 export const TARGET_KEY = "__$__targetStorageMarker";
+
 export const IStorageService =
 	createDecorator<IStorageService>("storageService");
+
 export enum WillSaveStateReason {
 	/**
 	 * No specific reason to save state.

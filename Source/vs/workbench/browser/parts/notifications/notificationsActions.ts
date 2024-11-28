@@ -69,6 +69,7 @@ const doNotDisturbIcon = registerIcon(
 		"Icon for the mute all action in notifications.",
 	),
 );
+
 export class ClearNotificationAction extends Action {
 	static readonly ID = CLEAR_NOTIFICATION;
 	static readonly LABEL = localize("clearNotification", "Clear Notification");

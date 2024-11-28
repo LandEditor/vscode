@@ -102,6 +102,7 @@ import { INewReplElementData, ReplModel } from "../common/replModel.js";
 import { RawDebugSession } from "./rawDebugSession.js";
 
 const TRIGGERED_BREAKPOINT_MAX_DELAY = 1500;
+
 export class DebugSession implements IDebugSession, IDisposable {
 	parentSession: IDebugSession | undefined;
 	rememberedCapabilities?: DebugProtocol.Capabilities;

@@ -7,6 +7,7 @@ import { ITerminalEnvironment } from "../../terminal/common/terminal.js";
 
 export const IExternalTerminalService =
 	createDecorator<IExternalTerminalService>("externalTerminal");
+
 export interface IExternalTerminalSettings {
 	linuxExec?: string;
 	osxExec?: string;

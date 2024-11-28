@@ -145,6 +145,7 @@ const diffEditorOptions: IDiffEditorConstructionOptions = {
 	modifiedAriaLabel: localize("testingOutputActual", "Actual result"),
 	diffAlgorithm: "advanced",
 };
+
 export class DiffContentProvider
 	extends Disposable
 	implements IPeekOutputRenderer

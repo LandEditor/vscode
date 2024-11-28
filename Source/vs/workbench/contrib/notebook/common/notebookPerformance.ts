@@ -12,6 +12,7 @@ export type PerfName =
 type PerformanceMark = {
 	[key in PerfName]?: number;
 };
+
 export class NotebookPerfMarks {
 	private _marks: PerformanceMark = {};
 

@@ -11,6 +11,7 @@ import { getHtmlFlatNode, offsetRangeToSelection, validate } from "./util";
 let balanceOutStack: Array<readonly vscode.Selection[]> = [];
 
 let lastBalancedSelections: readonly vscode.Selection[] = [];
+
 export function balanceOut() {
 	balance(true);
 }

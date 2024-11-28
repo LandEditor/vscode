@@ -60,6 +60,7 @@ const EDIT_SESSIONS_COUNT_CONTEXT_KEY = new RawContextKey<number>(
 	EDIT_SESSIONS_COUNT_KEY,
 	0,
 );
+
 export class EditSessionsDataViews extends Disposable {
 	constructor(
 		container: ViewContainer,

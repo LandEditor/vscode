@@ -403,6 +403,7 @@ export type IManagedHoverContent =
 	| IManagedHoverTooltipMarkdownString
 	| HTMLElement
 	| undefined;
+
 export type IManagedHoverContentOrFactory =
 	| IManagedHoverContent
 	| (() => IManagedHoverContent);

@@ -17,6 +17,7 @@ import { InlineAnchorWidget } from "../chatInlineAnchorWidget.js";
 
 export const IChatMarkdownAnchorService =
 	createDecorator<IChatMarkdownAnchorService>("chatMarkdownAnchorService");
+
 export interface IChatMarkdownAnchorService {
 	readonly _serviceBrand: undefined;
 	/**

@@ -20,8 +20,11 @@ import {
 } from "../../workspace/common/workspace.js";
 
 export type Key = string;
+
 export type Value = string;
+
 export type Item = [Key, Value];
+
 export interface IBaseSerializableStorageRequest {
 	/**
 	 * Profile to correlate storage. Only used when no

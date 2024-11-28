@@ -21,6 +21,7 @@ const schemes = isWindows
 
 const refRegEx =
 	/^$|[~\^:\\\*\s\[\]]|^-|^\.|\/\.|\.\.|\.lock\/|\.lock$|\/$|\.$/;
+
 export class GitProtocolHandler implements UriHandler {
 	private disposables: Disposable[] = [];
 

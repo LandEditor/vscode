@@ -15,6 +15,7 @@ import {
 
 export const IReplaceService =
 	createDecorator<IReplaceService>("replaceService");
+
 export interface IReplaceService {
 	readonly _serviceBrand: undefined;
 	/**

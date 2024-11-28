@@ -45,6 +45,7 @@ import {
 
 export const IWindowsMainService =
 	createDecorator<IWindowsMainService>("windowsMainService");
+
 export interface IWindowsMainService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeWindowsCount: Event<IWindowsCountChangedEvent>;
@@ -261,9 +262,11 @@ export function defaultBrowserWindowOptions(
 	return options;
 }
 export function getLastFocused(windows: ICodeWindow[]): ICodeWindow | undefined;
+
 export function getLastFocused(
 	windows: IAuxiliaryWindow[],
 ): IAuxiliaryWindow | undefined;
+
 export function getLastFocused(
 	windows: ICodeWindow[] | IAuxiliaryWindow[],
 ): ICodeWindow | IAuxiliaryWindow | undefined {

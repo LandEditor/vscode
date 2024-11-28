@@ -99,6 +99,7 @@ export interface IExtHostTunnelService extends ExtHostTunnelServiceShape {
 export const IExtHostTunnelService = createDecorator<IExtHostTunnelService>(
 	"IExtHostTunnelService",
 );
+
 export class ExtHostTunnelService
 	extends Disposable
 	implements IExtHostTunnelService

@@ -16,6 +16,7 @@ const VALID_DESKTOP_CALLBACK_SCHEMES = [
 	"vscode-wsl",
 	"vscode-exploration",
 ];
+
 export function isSupportedClient(uri: Uri): boolean {
 	return (
 		VALID_DESKTOP_CALLBACK_SCHEMES.includes(uri.scheme) ||

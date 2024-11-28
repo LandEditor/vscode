@@ -42,6 +42,7 @@ export interface VariablesResult {
 	indexedChildrenCount: number;
 }
 export const variablePageSize = 100;
+
 export interface INotebookKernel {
 	readonly id: string;
 	readonly viewType: string;
@@ -102,6 +103,7 @@ export interface INotebookTextModelLike {
 export const INotebookKernelService = createDecorator<INotebookKernelService>(
 	"INotebookKernelService",
 );
+
 export interface INotebookKernelService {
 	_serviceBrand: undefined;
 	readonly onDidAddKernel: Event<INotebookKernel>;
@@ -177,6 +179,7 @@ export const INotebookKernelHistoryService =
 	createDecorator<INotebookKernelHistoryService>(
 		"INotebookKernelHistoryService",
 	);
+
 export interface INotebookKernelHistoryService {
 	_serviceBrand: undefined;
 

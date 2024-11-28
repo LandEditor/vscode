@@ -250,6 +250,7 @@ Registry.as<IExtensionFeaturesRegistry>(
 	},
 	renderer: new SyncDescriptor(ThemeDataRenderer),
 });
+
 export interface ThemeChangeEvent<T> {
 	themes: T[];
 	added: T[];

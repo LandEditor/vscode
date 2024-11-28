@@ -21,6 +21,7 @@ export const multiDiffEditorHeaderBackground = registerColor(
 		"The background color of the diff editor's header",
 	),
 );
+
 export const multiDiffEditorBackground = registerColor(
 	"multiDiffEditor.background",
 	editorBackground,
@@ -29,6 +30,7 @@ export const multiDiffEditorBackground = registerColor(
 		"The background color of the multi file diff editor",
 	),
 );
+
 export const multiDiffEditorBorder = registerColor(
 	"multiDiffEditor.border",
 	{

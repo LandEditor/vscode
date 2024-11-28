@@ -38,6 +38,7 @@ type FileInfo = {
 	path: FileElement[];
 	folder?: IWorkspaceFolder;
 };
+
 export class OutlineElement2 {
 	constructor(
 		readonly element: IOutline<any> | any,

@@ -48,6 +48,7 @@ import {
 
 export const ITextEditorService =
 	createDecorator<ITextEditorService>("textEditorService");
+
 export interface ITextEditorService {
 	readonly _serviceBrand: undefined;
 	/**

@@ -18,6 +18,7 @@ import {
 
 export const IStatusbarService =
 	createDecorator<IStatusbarService>("statusbarService");
+
 export interface IStatusbarService extends IStatusbarEntryContainer {
 	readonly _serviceBrand: undefined;
 	/**
@@ -106,6 +107,7 @@ export const ShowTooltipCommand: Command = {
 	id: "statusBar.entry.showTooltip",
 	title: "",
 };
+
 export interface IStatusbarStyleOverride {
 	readonly priority: number; // lower has higher priority
 	readonly foreground?: ColorIdentifier;
@@ -119,6 +121,7 @@ export type StatusbarEntryKind =
 	| "prominent"
 	| "remote"
 	| "offline";
+
 export const StatusbarEntryKinds: StatusbarEntryKind[] = [
 	"standard",
 	"warning",

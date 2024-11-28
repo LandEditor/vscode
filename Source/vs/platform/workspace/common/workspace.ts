@@ -19,6 +19,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IWorkspaceContextService =
 	createDecorator<IWorkspaceContextService>("contextService");
+
 export interface IWorkspaceContextService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -125,6 +126,7 @@ export type IAnyWorkspaceIdentifier =
 	| IWorkspaceIdentifier
 	| ISingleFolderWorkspaceIdentifier
 	| IEmptyWorkspaceIdentifier;
+
 export function isSingleFolderWorkspaceIdentifier(
 	obj: unknown,
 ): obj is ISingleFolderWorkspaceIdentifier {
@@ -152,16 +154,20 @@ export function isEmptyWorkspaceIdentifier(
 }
 export const EXTENSION_DEVELOPMENT_EMPTY_WINDOW_WORKSPACE: IEmptyWorkspaceIdentifier =
 	{ id: "ext-dev" };
+
 export const UNKNOWN_EMPTY_WINDOW_WORKSPACE: IEmptyWorkspaceIdentifier = {
 	id: "empty-window",
 };
+
 export function toWorkspaceIdentifier(
 	workspace: IWorkspace,
 ): IAnyWorkspaceIdentifier;
+
 export function toWorkspaceIdentifier(
 	backupPath: string | undefined,
 	isExtensionDevelopment: boolean,
 ): IEmptyWorkspaceIdentifier;
+
 export function toWorkspaceIdentifier(
 	arg0: IWorkspace | string | undefined,
 	isExtensionDevelopment?: boolean,
@@ -222,15 +228,19 @@ export interface ISerializedWorkspaceIdentifier
 	readonly configPath: UriComponents;
 }
 export function reviveIdentifier(identifier: undefined): undefined;
+
 export function reviveIdentifier(
 	identifier: ISerializedWorkspaceIdentifier,
 ): IWorkspaceIdentifier;
+
 export function reviveIdentifier(
 	identifier: ISerializedSingleFolderWorkspaceIdentifier,
 ): ISingleFolderWorkspaceIdentifier;
+
 export function reviveIdentifier(
 	identifier: IEmptyWorkspaceIdentifier,
 ): IEmptyWorkspaceIdentifier;
+
 export function reviveIdentifier(
 	identifier:
 		| ISerializedWorkspaceIdentifier
@@ -238,6 +248,7 @@ export function reviveIdentifier(
 		| IEmptyWorkspaceIdentifier
 		| undefined,
 ): IAnyWorkspaceIdentifier | undefined;
+
 export function reviveIdentifier(
 	identifier:
 		| ISerializedWorkspaceIdentifier
@@ -460,14 +471,18 @@ export function toWorkspaceFolder(resource: URI): WorkspaceFolder {
 	);
 }
 export const WORKSPACE_EXTENSION = "code-workspace";
+
 export const WORKSPACE_SUFFIX = `.${WORKSPACE_EXTENSION}`;
+
 export const WORKSPACE_FILTER = [
 	{
 		name: localize("codeWorkspace", "Code Workspace"),
 		extensions: [WORKSPACE_EXTENSION],
 	},
 ];
+
 export const UNTITLED_WORKSPACE_NAME = "workspace.json";
+
 export function isUntitledWorkspace(
 	path: URI,
 	environmentService: IEnvironmentService,
@@ -478,7 +493,9 @@ export function isUntitledWorkspace(
 	);
 }
 export function isTemporaryWorkspace(workspace: IWorkspace): boolean;
+
 export function isTemporaryWorkspace(path: URI): boolean;
+
 export function isTemporaryWorkspace(arg1: IWorkspace | URI): boolean {
 	let path: URI | null | undefined;
 
@@ -491,6 +508,7 @@ export function isTemporaryWorkspace(arg1: IWorkspace | URI): boolean {
 }
 export const STANDALONE_EDITOR_WORKSPACE_ID =
 	"4064f6ec-cb38-4ad0-af64-ee6467e63c82";
+
 export function isStandaloneEditorWorkspace(workspace: IWorkspace): boolean {
 	return workspace.id === STANDALONE_EDITOR_WORKSPACE_ID;
 }

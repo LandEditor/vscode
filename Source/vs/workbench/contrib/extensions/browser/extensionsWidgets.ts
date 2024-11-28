@@ -1310,6 +1310,7 @@ export const extensionRatingIconColor = registerColor(
 	),
 	false,
 );
+
 export const extensionVerifiedPublisherIconColor = registerColor(
 	"extensionIcon.verifiedForeground",
 	textLinkForeground,
@@ -1319,6 +1320,7 @@ export const extensionVerifiedPublisherIconColor = registerColor(
 	),
 	false,
 );
+
 export const extensionPreReleaseIconColor = registerColor(
 	"extensionIcon.preReleaseForeground",
 	{
@@ -1333,6 +1335,7 @@ export const extensionPreReleaseIconColor = registerColor(
 	),
 	false,
 );
+
 export const extensionSponsorIconColor = registerColor(
 	"extensionIcon.sponsorForeground",
 	{ light: "#B51E78", dark: "#D758B3", hcDark: null, hcLight: "#B51E78" },

@@ -12,6 +12,7 @@ import { ExtensionIdentifier } from "../../../../platform/extensions/common/exte
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 
 export const ISpeechService = createDecorator<ISpeechService>("speechService");
+
 export const HasSpeechProvider = new RawContextKey<boolean>(
 	"hasSpeechProvider",
 	false,
@@ -23,6 +24,7 @@ export const HasSpeechProvider = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const SpeechToTextInProgress = new RawContextKey<boolean>(
 	"speechToTextInProgress",
 	false,
@@ -34,6 +36,7 @@ export const SpeechToTextInProgress = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const TextToSpeechInProgress = new RawContextKey<boolean>(
 	"textToSpeechInProgress",
 	false,
@@ -45,6 +48,7 @@ export const TextToSpeechInProgress = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export interface ISpeechProviderMetadata {
 	readonly extension: ExtensionIdentifier;
 	readonly displayName: string;
@@ -158,6 +162,7 @@ export const enum AccessibilityVoiceSettingId {
 }
 export const SPEECH_LANGUAGE_CONFIG =
 	AccessibilityVoiceSettingId.SpeechLanguage;
+
 export const SPEECH_LANGUAGES = {
 	["da-DK"]: {
 		name: localize("speechLanguage.da-DK", "Danish (Denmark)"),
@@ -242,6 +247,7 @@ export const SPEECH_LANGUAGES = {
 		name: localize("speechLanguage.zh-TW", "Chinese (Traditional, Taiwan)"),
 	},
 };
+
 export function speechLanguageConfigToLanguage(
 	config: unknown,
 	lang = language,

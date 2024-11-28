@@ -20,6 +20,7 @@ import {
 } from "../common/userDataProfile.js";
 
 type BroadcastedProfileChanges = UriDto<Omit<DidChangeProfilesEvent, "all">>;
+
 export class BrowserUserDataProfilesService
 	extends UserDataProfilesService
 	implements IUserDataProfilesService

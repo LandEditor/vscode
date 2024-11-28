@@ -35,8 +35,10 @@ type LoginEvent = {
 	authInfo: AuthInfo;
 	callback?: (username?: string, password?: string) => void;
 };
+
 export const IProxyAuthService =
 	createDecorator<IProxyAuthService>("proxyAuthService");
+
 export interface IProxyAuthService {
 	lookupAuthorization(authInfo: AuthInfo): Promise<Credentials | undefined>;
 }

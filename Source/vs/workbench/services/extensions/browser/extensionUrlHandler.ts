@@ -102,6 +102,7 @@ class UserTrustedExtensionIdStorage {
 export const IExtensionUrlHandler = createDecorator<IExtensionUrlHandler>(
 	"extensionUrlHandler",
 );
+
 export interface IExtensionContributedURLHandler extends IURLHandler {
 	extensionDisplayName: string;
 }

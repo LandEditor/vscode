@@ -38,6 +38,7 @@ const CHAR_CODE_TO_KEY_CODE: ({
 	keyCode: KeyCode;
 	shiftKey: boolean;
 } | null)[] = [];
+
 export class NativeResolvedKeybinding extends BaseResolvedKeybinding<ScanCodeChord> {
 	private readonly _mapper: MacLinuxKeyboardMapper;
 

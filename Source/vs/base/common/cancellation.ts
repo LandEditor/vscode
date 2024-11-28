@@ -36,6 +36,7 @@ const shortcutEvent: Event<any> = Object.freeze(
 		};
 	},
 );
+
 export namespace CancellationToken {
 	export function isCancellationToken(
 		thing: unknown,

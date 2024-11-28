@@ -24,6 +24,7 @@ let _emmetHelper: typeof EmmetHelper;
 let _currentExtensionsPath: string[] | undefined;
 
 let _homeDir: vscode.Uri | undefined;
+
 export function setHomeDir(homeDir: vscode.Uri) {
 	_homeDir = homeDir;
 }
@@ -283,6 +284,7 @@ export const LANGUAGE_MODES: {
 		"9",
 	],
 };
+
 export function isStyleSheet(syntax: string): boolean {
 	const stylesheetSyntaxes = ["css", "scss", "sass", "less", "stylus"];
 

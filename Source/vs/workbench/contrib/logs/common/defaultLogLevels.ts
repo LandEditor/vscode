@@ -33,8 +33,10 @@ interface ParsedArgvLogLevels {
 	extensions?: [string, LogLevel][];
 }
 export type DefaultLogLevels = Required<Readonly<ParsedArgvLogLevels>>;
+
 export const IDefaultLogLevelsService =
 	createDecorator<IDefaultLogLevelsService>("IDefaultLogLevelsService");
+
 export interface IDefaultLogLevelsService {
 	readonly _serviceBrand: undefined;
 	/**

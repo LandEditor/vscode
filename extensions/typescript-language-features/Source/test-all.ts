@@ -21,4 +21,5 @@ testRunner.configure({
 	color: true,
 	timeout: 60000,
 });
+
 export = testRunner;

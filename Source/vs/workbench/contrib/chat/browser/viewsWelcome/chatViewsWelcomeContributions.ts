@@ -72,6 +72,7 @@ const chatViewsWelcomeExtensionPoint =
 			required: ["icon", "title", "contents", "when"],
 		},
 	});
+
 export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.chatViewsWelcomeHandler";
 

@@ -60,6 +60,7 @@ import {
 const emptyArr: never[] = [];
 
 const width = 35;
+
 export class DiffEditorGutter extends Disposable {
 	private readonly _menu = this._register(
 		this._menuService.createMenu(

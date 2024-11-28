@@ -59,6 +59,7 @@ export const TERMINAL_CREATION_COMMANDS = [
 export const TERMINAL_CONFIG_SECTION = "terminal.integrated";
 
 export const DEFAULT_LETTER_SPACING = 0;
+
 export const MINIMUM_LETTER_SPACING = -5;
 // HACK: On Linux it's common for fonts to include an underline that is rendered lower than the
 // bottom of the cell which causes it to be cut off due to `overflow:hidden` in the DOM renderer.
@@ -68,9 +69,13 @@ export const MINIMUM_LETTER_SPACING = -5;
 export const DEFAULT_LINE_HEIGHT = isLinux ? 1.1 : 1;
 
 export const MINIMUM_FONT_WEIGHT = 1;
+
 export const MAXIMUM_FONT_WEIGHT = 1000;
+
 export const DEFAULT_FONT_WEIGHT = "normal";
+
 export const DEFAULT_BOLD_FONT_WEIGHT = "bold";
+
 export const SUGGESTIONS_FONT_WEIGHT = [
 	"normal",
 	"bold",
@@ -89,6 +94,7 @@ export const ITerminalProfileResolverService =
 	createDecorator<ITerminalProfileResolverService>(
 		"terminalProfileResolverService",
 	);
+
 export interface ITerminalProfileResolverService {
 	readonly _serviceBrand: undefined;
 
@@ -139,6 +145,7 @@ export interface IRegisterContributedProfileArgs {
 export const ITerminalProfileService = createDecorator<ITerminalProfileService>(
 	"terminalProfileService",
 );
+
 export interface ITerminalProfileService {
 	readonly _serviceBrand: undefined;
 	readonly availableProfiles: ITerminalProfile[];
@@ -192,6 +199,7 @@ export interface ITerminalProfiles {
 }
 
 export type ConfirmOnKill = "never" | "always" | "editor" | "panel";
+
 export type ConfirmOnExit = "never" | "always" | "hasChildProcesses";
 
 export interface ICompleteTerminalConfiguration {

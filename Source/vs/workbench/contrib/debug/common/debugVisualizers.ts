@@ -134,6 +134,7 @@ const emptyRef: IReference<DebugVisualizer[]> = {
 	object: [],
 	dispose: () => {},
 };
+
 export class DebugVisualizerService implements IDebugVisualizerService {
 	public declare readonly _serviceBrand: undefined;
 	private readonly handles = new Map<

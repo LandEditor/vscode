@@ -23,6 +23,7 @@ import { IJSONContribution, ISuggestionsCollector } from "./jsonContributions";
 const LIMIT = 40;
 
 const USER_AGENT = "Visual Studio Code";
+
 export class PackageJSONContribution implements IJSONContribution {
 	private mostDependedOn = [
 		"lodash",

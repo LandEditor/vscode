@@ -18,11 +18,14 @@ import { IconContribution, IconDefinition } from "./iconRegistry.js";
 import { ColorScheme } from "./theme.js";
 
 export const IThemeService = createDecorator<IThemeService>("themeService");
+
 export function themeColorFromId(id: ColorIdentifier) {
 	return { id };
 }
 export const FileThemeIcon = Codicon.file;
+
 export const FolderThemeIcon = Codicon.folder;
+
 export function getThemeTypeSelector(type: ColorScheme): string {
 	switch (type) {
 		case ColorScheme.DARK:
@@ -116,6 +119,7 @@ export interface IThemeService {
 export const Extensions = {
 	ThemingContribution: "base.contributions.theming",
 };
+
 export interface IThemingRegistry {
 	/**
 	 * Register a theming participant that is invoked on every theme change.
@@ -153,6 +157,7 @@ class ThemingRegistry implements IThemingRegistry {
 
 const themingRegistry = new ThemingRegistry();
 platform.Registry.add(Extensions.ThemingContribution, themingRegistry);
+
 export function registerThemingParticipant(
 	participant: IThemingParticipant,
 ): IDisposable {

@@ -36,6 +36,7 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import { getColors, IColorData } from "./color.js";
 
 export const ColorDecorationInjectedTextMarker = Object.create({});
+
 export class ColorDetector extends Disposable implements IEditorContribution {
 	public static readonly ID: string = "editor.contrib.colorDetector";
 	static readonly RECOMPUTE_TIME = 1000; // ms

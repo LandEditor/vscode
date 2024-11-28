@@ -58,7 +58,9 @@ export const ctxCommentEditorFocused = new RawContextKey<boolean>(
 	"commentEditorFocused",
 	false,
 );
+
 export const MIN_EDITOR_HEIGHT = 5 * 18;
+
 export const MAX_EDITOR_HEIGHT = 25 * 18;
 
 export interface LayoutableEditor {

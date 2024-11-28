@@ -10,6 +10,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const IQuickDiffService =
 	createDecorator<IQuickDiffService>("quickDiff");
+
 export interface QuickDiffProvider {
 	label: string;
 	rootUri: URI | undefined;

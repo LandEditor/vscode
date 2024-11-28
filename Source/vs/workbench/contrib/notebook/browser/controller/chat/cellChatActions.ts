@@ -930,6 +930,7 @@ registerAction2(
 		}
 	},
 );
+
 export class AcceptChangesAndRun extends AbstractInlineChatAction {
 	constructor() {
 		super({

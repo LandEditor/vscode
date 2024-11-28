@@ -32,6 +32,7 @@ let cachedLastParse:
 	| undefined;
 
 let documentChangeListener: vscode.Disposable | undefined;
+
 export function activate(context: vscode.ExtensionContext) {
 	const contextLineDecorations = vscode.window.createTextEditorDecorationType(
 		{ opacity: "0.7" },

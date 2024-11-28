@@ -22,6 +22,7 @@ import { CompletionItem } from "./suggest.js";
 import { WordDistance } from "./wordDistance.js";
 
 type StrictCompletionItem = Required<CompletionItem>;
+
 export interface ICompletionStats {
 	pLabelLen: number;
 }

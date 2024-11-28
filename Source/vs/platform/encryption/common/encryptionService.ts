@@ -6,6 +6,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IEncryptionService =
 	createDecorator<IEncryptionService>("encryptionService");
+
 export interface IEncryptionService extends ICommonEncryptionService {
 	setUsePlainTextEncryption(): Promise<void>;
 
@@ -14,6 +15,7 @@ export interface IEncryptionService extends ICommonEncryptionService {
 export const IEncryptionMainService = createDecorator<IEncryptionMainService>(
 	"encryptionMainService",
 );
+
 export interface IEncryptionMainService extends IEncryptionService {}
 export interface ICommonEncryptionService {
 	readonly _serviceBrand: undefined;

@@ -34,6 +34,7 @@ const previewStrings = {
 	),
 	cspAlertMessageLabel: vscode.l10n.t("Content Disabled Security Warning"),
 };
+
 export interface MarkdownContentProviderOutput {
 	html: string;
 	containingImages: Set<string>;

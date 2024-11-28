@@ -39,6 +39,7 @@ import {
 } from "../services/editor/common/editorService.js";
 
 export const inQuickPickContextKeyValue = "inQuickOpen";
+
 export const InQuickPickContextKey = new RawContextKey<boolean>(
 	inQuickPickContextKeyValue,
 	false,
@@ -47,14 +48,18 @@ export const InQuickPickContextKey = new RawContextKey<boolean>(
 		"Whether keyboard focus is inside the quick open control",
 	),
 );
+
 export const inQuickPickContext = ContextKeyExpr.has(
 	inQuickPickContextKeyValue,
 );
+
 export const defaultQuickAccessContextKeyValue = "inFilesPicker";
+
 export const defaultQuickAccessContext = ContextKeyExpr.and(
 	inQuickPickContext,
 	ContextKeyExpr.has(defaultQuickAccessContextKeyValue),
 );
+
 export interface IWorkbenchQuickAccessConfiguration {
 	readonly workbench: {
 		readonly commandPalette: {

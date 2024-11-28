@@ -41,6 +41,7 @@ const inputOptions: WalkThroughInputOptions = {
 	}),
 	telemetryFrom: "walkThrough",
 };
+
 export class EditorWalkThroughAction extends Action2 {
 	public static readonly ID = "workbench.action.showInteractivePlayground";
 	public static readonly LABEL = localize2(

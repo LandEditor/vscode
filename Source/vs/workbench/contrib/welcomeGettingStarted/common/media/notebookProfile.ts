@@ -9,6 +9,7 @@ const profileArg = (profile: string) =>
 	encodeURIComponent(JSON.stringify({ profile }));
 
 const imageSize = 400;
+
 export default () => `
 <vertically-centered>
 <checklist>

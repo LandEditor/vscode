@@ -77,6 +77,7 @@ export const unthemedButtonStyles: IButtonStyles = {
 	buttonSecondaryForeground: undefined,
 	buttonSecondaryHoverBackground: undefined,
 };
+
 export interface IButton extends IDisposable {
 	readonly element: HTMLElement;
 	readonly onDidClick: BaseEvent<Event | undefined>;

@@ -22,6 +22,7 @@ export const Context = {
 		false,
 	),
 };
+
 export async function provideSignatureHelp(
 	registry: LanguageFeatureRegistry<languages.SignatureHelpProvider>,
 	model: ITextModel,

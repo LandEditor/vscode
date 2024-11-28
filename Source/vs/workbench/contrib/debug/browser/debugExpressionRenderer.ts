@@ -90,6 +90,7 @@ const allClasses: readonly Cls[] = Object.keys({
 } satisfies {
 	[key in Cls]: unknown;
 }) as Cls[];
+
 export class DebugExpressionRenderer {
 	private displayType: IObservable<boolean>;
 	private readonly linkDetector: LinkDetector;

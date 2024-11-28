@@ -27,6 +27,7 @@ import {
 
 export const IWorkspaceIdentityService =
 	createDecorator<IWorkspaceIdentityService>("IWorkspaceIdentityService");
+
 export interface IWorkspaceIdentityService {
 	_serviceBrand: undefined;
 	matches(

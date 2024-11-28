@@ -67,6 +67,7 @@ type IListViewItem<TDataItem extends object> = TDataItem & {
 	editing?: boolean;
 	selected?: boolean;
 };
+
 export class ListSettingListModel<TDataItem extends object> {
 	protected _dataItems: TDataItem[] = [];
 	private _editKey: EditKey | null = null;
@@ -161,6 +162,7 @@ export type SettingListEvent<TDataItem extends object> =
 	| ISettingListMoveEvent<TDataItem>
 	| ISettingListRemoveEvent<TDataItem>
 	| ISettingListResetEvent<TDataItem>;
+
 export abstract class AbstractListSettingWidget<
 	TDataItem extends object,
 > extends Disposable {
@@ -1094,8 +1096,10 @@ interface IObjectBoolData {
 	data: boolean;
 }
 type ObjectKey = IObjectStringData | IObjectEnumData;
+
 export type ObjectValue = IObjectStringData | IObjectEnumData | IObjectBoolData;
 type ObjectWidget = InputBox | SelectBox;
+
 export interface IObjectDataItem {
 	key: ObjectKey;
 	value: ObjectValue;

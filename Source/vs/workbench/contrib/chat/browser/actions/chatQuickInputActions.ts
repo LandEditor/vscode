@@ -21,6 +21,7 @@ import { IQuickChatOpenOptions, IQuickChatService } from "../chat.js";
 import { CHAT_CATEGORY } from "./chatActions.js";
 
 export const ASK_QUICK_QUESTION_ACTION_ID = "workbench.action.quickchat.toggle";
+
 export function registerQuickChatActions() {
 	registerAction2(QuickChatGlobalAction);
 	registerAction2(AskQuickChatAction);

@@ -135,6 +135,7 @@ export interface ICodeBlockActionContext {
 }
 
 const defaultCodeblockPadding = 10;
+
 export class CodeBlockPart extends Disposable {
 	protected readonly _onDidChangeContentHeight = this._register(new Emitter<void>());
 	public readonly onDidChangeContentHeight = this._onDidChangeContentHeight.event;

@@ -123,6 +123,7 @@ function filterValidBrackets(
 	return bracketPairs.filter(([open, close]) => open !== "" && close !== "");
 }
 export type BracketKind = OpeningBracketKind | ClosingBracketKind;
+
 export class BracketKindBase {
 	constructor(
 		protected readonly config: LanguageBracketsConfiguration,

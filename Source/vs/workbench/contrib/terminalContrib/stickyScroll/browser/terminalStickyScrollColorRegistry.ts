@@ -13,6 +13,7 @@ export const terminalStickyScrollBackground = registerColor(
 		"The background color of the sticky scroll overlay in the terminal.",
 	),
 );
+
 export const terminalStickyScrollHoverBackground = registerColor(
 	"terminalStickyScrollHover.background",
 	{

@@ -23,6 +23,7 @@ const CSS_INFINITE = "infinite";
 const CSS_INFINITE_LONG_RUNNING = "infinite-long-running";
 
 const CSS_DISCRETE = "discrete";
+
 export interface IProgressBarOptions extends IProgressBarStyles {}
 export interface IProgressBarStyles {
 	progressBarBackground: string | undefined;

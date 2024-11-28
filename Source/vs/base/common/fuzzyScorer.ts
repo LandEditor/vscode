@@ -18,6 +18,7 @@ import { equalsIgnoreCase, stripWildcards } from "./strings.js";
 
 //#region Fuzzy scorer
 export type FuzzyScore = [number /* score */, number[] /* match positions */];
+
 export type FuzzyScorerCache = {
 	[key: string]: IItemScore;
 };
@@ -27,6 +28,7 @@ const NO_MATCH = 0;
 const NO_SCORE: FuzzyScore = [NO_MATCH, []];
 // const DEBUG = true;
 // const DEBUG_MATRIX = false;
+
 export function scoreFuzzy(
 	target: string,
 	query: string,
@@ -307,6 +309,7 @@ function scoreSeparatorAtPos(charCode: number): number {
 export type FuzzyScore2 = [number | undefined /* score */, IMatch[]];
 
 const NO_SCORE2: FuzzyScore2 = [undefined, []];
+
 export function scoreFuzzy2(
 	target: string,
 	query: IPreparedQuery | IPreparedQueryPiece,
@@ -399,6 +402,7 @@ export interface IItemScore {
 }
 
 const NO_ITEM_SCORE = Object.freeze<IItemScore>({ score: 0 });
+
 export interface IItemAccessor<T> {
 	/**
 	 * Just the label of the item to score on.
@@ -1013,6 +1017,7 @@ function queryExpectsExactMatch(query: string) {
  * and allowing to score on multiple pieces separated by whitespace character.
  */
 const MULTIPLE_QUERY_VALUES_SEPARATOR = " ";
+
 export function prepareQuery(original: string): IPreparedQuery {
 	if (typeof original !== "string") {
 		original = "";
@@ -1088,7 +1093,9 @@ function normalizeQuery(original: string): {
 	};
 }
 export function pieceToQuery(piece: IPreparedQueryPiece): IPreparedQuery;
+
 export function pieceToQuery(pieces: IPreparedQueryPiece[]): IPreparedQuery;
+
 export function pieceToQuery(
 	arg1: IPreparedQueryPiece | IPreparedQueryPiece[],
 ): IPreparedQuery {

@@ -19,6 +19,7 @@ const rgDiskPath = rgPath.replace(
 	/\bnode_modules\.asar\b/,
 	"node_modules.asar.unpacked",
 );
+
 export function spawnRipgrepCmd(
 	config: IFileQuery,
 	folderQuery: IFolderQuery,

@@ -130,6 +130,7 @@ const STARTUP_PROMPT_SHOWN_KEY = "workspace.trust.startupPrompt.shown";
 
 const BANNER_RESTRICTED_MODE_DISMISSED_KEY =
 	"workbench.banner.restrictedMode.dismissed";
+
 export class WorkspaceTrustContextKeys
 	extends Disposable
 	implements IWorkbenchContribution

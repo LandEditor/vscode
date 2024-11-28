@@ -16,6 +16,7 @@ import {
 } from "vscode";
 
 export const isMacintosh = process.platform === "darwin";
+
 export const isWindows = process.platform === "win32";
 
 export function log(...args: any[]): void {
@@ -79,10 +80,12 @@ export function runAndSubscribeEvent<T>(
 	handler: (e: T) => any,
 	initial: T,
 ): IDisposable;
+
 export function runAndSubscribeEvent<T>(
 	event: Event<T>,
 	handler: (e: T | undefined) => any,
 ): IDisposable;
+
 export function runAndSubscribeEvent<T>(
 	event: Event<T>,
 	handler: (e: T | undefined) => any,

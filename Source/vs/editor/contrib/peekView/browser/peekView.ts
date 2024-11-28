@@ -58,6 +58,7 @@ import {
 
 export const IPeekViewService =
 	createDecorator<IPeekViewService>("IPeekViewService");
+
 export interface IPeekViewService {
 	readonly _serviceBrand: undefined;
 	addExclusiveWidget(editor: ICodeEditor, widget: PeekViewWidget): void;
@@ -96,6 +97,7 @@ registerSingleton(
 	},
 	InstantiationType.Delayed,
 );
+
 export namespace PeekContext {
 	export const inPeekEditor = new RawContextKey<boolean>(
 		"inReferenceSearchEditor",
@@ -150,6 +152,7 @@ const defaultOptions: IPeekViewOptions = {
 	primaryHeadingColor: Color.fromHex("#333333"),
 	secondaryHeadingColor: Color.fromHex("#6c6c6cb3"),
 };
+
 export abstract class PeekViewWidget extends ZoneWidget {
 	declare readonly _serviceBrand: undefined;
 	private readonly _onDidClose = new Emitter<PeekViewWidget>();
@@ -358,6 +361,7 @@ export const peekViewTitleBackground = registerColor(
 		"Background color of the peek view title area.",
 	),
 );
+
 export const peekViewTitleForeground = registerColor(
 	"peekViewTitleLabel.foreground",
 	{
@@ -368,6 +372,7 @@ export const peekViewTitleForeground = registerColor(
 	},
 	nls.localize("peekViewTitleForeground", "Color of the peek view title."),
 );
+
 export const peekViewTitleInfoForeground = registerColor(
 	"peekViewTitleDescription.foreground",
 	{
@@ -381,6 +386,7 @@ export const peekViewTitleInfoForeground = registerColor(
 		"Color of the peek view title info.",
 	),
 );
+
 export const peekViewBorder = registerColor(
 	"peekView.border",
 	{
@@ -391,6 +397,7 @@ export const peekViewBorder = registerColor(
 	},
 	nls.localize("peekViewBorder", "Color of the peek view borders and arrow."),
 );
+
 export const peekViewResultsBackground = registerColor(
 	"peekViewResult.background",
 	{
@@ -404,6 +411,7 @@ export const peekViewResultsBackground = registerColor(
 		"Background color of the peek view result list.",
 	),
 );
+
 export const peekViewResultsMatchForeground = registerColor(
 	"peekViewResult.lineForeground",
 	{
@@ -417,6 +425,7 @@ export const peekViewResultsMatchForeground = registerColor(
 		"Foreground color for line nodes in the peek view result list.",
 	),
 );
+
 export const peekViewResultsFileForeground = registerColor(
 	"peekViewResult.fileForeground",
 	{
@@ -430,6 +439,7 @@ export const peekViewResultsFileForeground = registerColor(
 		"Foreground color for file nodes in the peek view result list.",
 	),
 );
+
 export const peekViewResultsSelectionBackground = registerColor(
 	"peekViewResult.selectionBackground",
 	{ dark: "#3399ff33", light: "#3399ff33", hcDark: null, hcLight: null },
@@ -438,6 +448,7 @@ export const peekViewResultsSelectionBackground = registerColor(
 		"Background color of the selected entry in the peek view result list.",
 	),
 );
+
 export const peekViewResultsSelectionForeground = registerColor(
 	"peekViewResult.selectionForeground",
 	{
@@ -451,6 +462,7 @@ export const peekViewResultsSelectionForeground = registerColor(
 		"Foreground color of the selected entry in the peek view result list.",
 	),
 );
+
 export const peekViewEditorBackground = registerColor(
 	"peekViewEditor.background",
 	{
@@ -464,6 +476,7 @@ export const peekViewEditorBackground = registerColor(
 		"Background color of the peek view editor.",
 	),
 );
+
 export const peekViewEditorGutterBackground = registerColor(
 	"peekViewEditorGutter.background",
 	peekViewEditorBackground,
@@ -472,6 +485,7 @@ export const peekViewEditorGutterBackground = registerColor(
 		"Background color of the gutter in the peek view editor.",
 	),
 );
+
 export const peekViewEditorStickyScrollBackground = registerColor(
 	"peekViewEditorStickyScroll.background",
 	peekViewEditorBackground,
@@ -480,6 +494,7 @@ export const peekViewEditorStickyScrollBackground = registerColor(
 		"Background color of sticky scroll in the peek view editor.",
 	),
 );
+
 export const peekViewResultsMatchHighlight = registerColor(
 	"peekViewResult.matchHighlightBackground",
 	{ dark: "#ea5c004d", light: "#ea5c004d", hcDark: null, hcLight: null },
@@ -488,6 +503,7 @@ export const peekViewResultsMatchHighlight = registerColor(
 		"Match highlight color in the peek view result list.",
 	),
 );
+
 export const peekViewEditorMatchHighlight = registerColor(
 	"peekViewEditor.matchHighlightBackground",
 	{ dark: "#ff8f0099", light: "#f5d802de", hcDark: null, hcLight: null },
@@ -496,6 +512,7 @@ export const peekViewEditorMatchHighlight = registerColor(
 		"Match highlight color in the peek view editor.",
 	),
 );
+
 export const peekViewEditorMatchHighlightBorder = registerColor(
 	"peekViewEditor.matchHighlightBorder",
 	{

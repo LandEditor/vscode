@@ -33,6 +33,7 @@ interface ISubjectCommon {
 }
 export const inspectSubjectHasStack = (subject: InspectSubject | undefined) =>
 	subject instanceof MessageSubject && !!subject.stack?.length;
+
 export class MessageSubject implements ISubjectCommon {
 	public readonly test: ITestItem;
 	public readonly message: ITestMessage;
@@ -139,6 +140,7 @@ export class TestOutputSubject implements ISubjectCommon {
 	}
 }
 export type InspectSubject = MessageSubject | TaskSubject | TestOutputSubject;
+
 export const equalsSubject = (a: InspectSubject, b: InspectSubject) =>
 	(a instanceof MessageSubject &&
 		b instanceof MessageSubject &&
@@ -151,6 +153,7 @@ export const equalsSubject = (a: InspectSubject, b: InspectSubject) =>
 		b instanceof TestOutputSubject &&
 		a.test === b.test &&
 		a.taskIndex === b.taskIndex);
+
 export const mapFindTestMessage = <T>(
 	test: TestResultItem,
 	fn: (
@@ -182,6 +185,7 @@ export const mapFindTestMessage = <T>(
 	}
 	return undefined;
 };
+
 export const getSubjectTestItem = (subject: InspectSubject) => {
 	if (subject instanceof MessageSubject) {
 		return subject.test;

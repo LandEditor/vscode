@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 declare function require(path: string): any;
 
 const markdownMathSetting = "markdown.math";
+
 export function activate(context: vscode.ExtensionContext) {
 	function isEnabled(): boolean {
 		const config = vscode.workspace.getConfiguration("markdown");

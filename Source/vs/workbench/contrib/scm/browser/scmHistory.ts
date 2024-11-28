@@ -27,6 +27,7 @@ import {
 import { compareHistoryItemRefs } from "./util.js";
 
 export const SWIMLANE_HEIGHT = 22;
+
 export const SWIMLANE_WIDTH = 11;
 
 const SWIMLANE_CURVE_RADIUS = 5;
@@ -42,6 +43,7 @@ export const historyItemRefColor = registerColor(
 	chartsBlue,
 	localize("scmGraphHistoryItemRefColor", "History item reference color."),
 );
+
 export const historyItemRemoteRefColor = registerColor(
 	"scmGraph.historyItemRemoteRefColor",
 	chartsPurple,
@@ -50,6 +52,7 @@ export const historyItemRemoteRefColor = registerColor(
 		"History item remote reference color.",
 	),
 );
+
 export const historyItemBaseRefColor = registerColor(
 	"scmGraph.historyItemBaseRefColor",
 	"#EA5C00",
@@ -69,6 +72,7 @@ export const historyItemHoverDefaultLabelForeground = registerColor(
 		"History item hover default label foreground color.",
 	),
 );
+
 export const historyItemHoverDefaultLabelBackground = registerColor(
 	"scmGraph.historyItemHoverDefaultLabelBackground",
 	badgeBackground,
@@ -77,6 +81,7 @@ export const historyItemHoverDefaultLabelBackground = registerColor(
 		"History item hover default label background color.",
 	),
 );
+
 export const historyItemHoverLabelForeground = registerColor(
 	"scmGraph.historyItemHoverLabelForeground",
 	buttonForeground,
@@ -85,6 +90,7 @@ export const historyItemHoverLabelForeground = registerColor(
 		"History item hover label foreground color.",
 	),
 );
+
 export const historyItemHoverAdditionsForeground = registerColor(
 	"scmGraph.historyItemHoverAdditionsForeground",
 	{
@@ -98,6 +104,7 @@ export const historyItemHoverAdditionsForeground = registerColor(
 		"History item hover additions foreground color.",
 	),
 );
+
 export const historyItemHoverDeletionsForeground = registerColor(
 	"scmGraph.historyItemHoverDeletionsForeground",
 	{

@@ -6,6 +6,7 @@ import { ConsoleObservableLogger, setLogger } from "./logging.js";
  *--------------------------------------------------------------------------------------------*/
 // This is a facade for the observable implementation. Only import from here!
 export { observableValueOpts } from "./api.js";
+
 export {
 	autorun,
 	autorunDelta,
@@ -14,6 +15,7 @@ export {
 	autorunWithStore,
 	autorunWithStoreHandleChanges,
 } from "./autorun.js";
+
 export {
 	asyncTransaction,
 	disposableObservableValue,
@@ -31,6 +33,7 @@ export {
 	type ISettableObservable,
 	type ITransaction,
 } from "./base.js";
+
 export {
 	derived,
 	derivedDisposable,
@@ -39,16 +42,19 @@ export {
 	derivedWithSetter,
 	derivedWithStore,
 } from "./derived.js";
+
 export {
 	ObservableLazy,
 	ObservableLazyPromise,
 	ObservablePromise,
 	PromiseResult,
 } from "./promise.js";
+
 export {
 	derivedWithCancellationToken,
 	waitForState,
 } from "./utilsCancellation.js";
+
 export {
 	constObservable,
 	debouncedObservable,
@@ -72,6 +78,7 @@ export {
 	wasEventTriggeredRecently,
 	type IObservableSignal,
 } from "./utils.js";
+
 export { type DebugOwner } from "./debugName.js";
 
 // Remove "//" in the next line to enable logging

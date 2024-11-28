@@ -25,6 +25,7 @@ let endCommentStylesheet: string;
 let startCommentHTML: string;
 
 let endCommentHTML: string;
+
 export function toggleComment(): Thenable<boolean> | undefined {
 	if (!validate() || !vscode.window.activeTextEditor) {
 		return;

@@ -78,6 +78,7 @@ import { TerminalProcess } from "./terminalProcess.js";
 type XtermTerminal = pkg.Terminal;
 
 const { Terminal: XtermTerminal } = pkg;
+
 export function traceRpc(_target: any, key: string, descriptor: any) {
 	if (typeof descriptor.value !== "function") {
 		throw new Error("not supported");
@@ -120,6 +121,7 @@ type WorkspaceId = string;
 let SerializeAddon: typeof XtermSerializeAddon;
 
 let Unicode11Addon: typeof XtermUnicode11Addon;
+
 export class PtyService extends Disposable implements IPtyService {
 	declare readonly _serviceBrand: undefined;
 	private readonly _ptys: Map<number, PersistentTerminalProcess> = new Map();

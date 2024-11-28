@@ -19,18 +19,21 @@ import { Derived } from "./derived.js";
 export function waitForState<T>(
 	observable: IObservable<T | null | undefined>,
 ): Promise<T>;
+
 export function waitForState<T, TState extends T>(
 	observable: IObservable<T>,
 	predicate: (state: T) => state is TState,
 	isError?: (state: T) => boolean | unknown | undefined,
 	cancellationToken?: CancellationToken,
 ): Promise<TState>;
+
 export function waitForState<T>(
 	observable: IObservable<T>,
 	predicate: (state: T) => boolean,
 	isError?: (state: T) => boolean | unknown | undefined,
 	cancellationToken?: CancellationToken,
 ): Promise<T>;
+
 export function waitForState<T>(
 	observable: IObservable<T>,
 	predicate?: (state: T) => boolean,
@@ -98,10 +101,12 @@ export function waitForState<T>(
 export function derivedWithCancellationToken<T>(
 	computeFn: (reader: IReader, cancellationToken: CancellationToken) => T,
 ): IObservable<T>;
+
 export function derivedWithCancellationToken<T>(
 	owner: object,
 	computeFn: (reader: IReader, cancellationToken: CancellationToken) => T,
 ): IObservable<T>;
+
 export function derivedWithCancellationToken<T>(
 	computeFnOrOwner:
 		| ((reader: IReader, cancellationToken: CancellationToken) => T)

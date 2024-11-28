@@ -51,6 +51,7 @@ import { AbstractVariableResolverService } from "../common/variableResolver.js";
 const LAST_INPUT_STORAGE_KEY = "configResolveInputLru";
 
 const LAST_INPUT_CACHE_SIZE = 5;
+
 export abstract class BaseConfigurationResolverService extends AbstractVariableResolverService {
 	static readonly INPUT_OR_COMMAND_VARIABLES_PATTERN =
 		/\${((input|command):(.*?))}/g;

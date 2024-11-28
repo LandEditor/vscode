@@ -25,6 +25,7 @@ import {
 
 export const IWorkingCopyService =
 	createDecorator<IWorkingCopyService>("workingCopyService");
+
 export interface IWorkingCopySaveEvent extends IBaseWorkingCopySaveEvent {
 	/**
 	 * The working copy that was saved.

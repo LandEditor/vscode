@@ -11,6 +11,7 @@ import { IKeyboardMapper } from "./keyboardMapper.js";
 export const IKeyboardLayoutService = createDecorator<IKeyboardLayoutService>(
 	"keyboardLayoutService",
 );
+
 export interface IWindowsKeyMapping {
 	vkey: string;
 	value: string;
@@ -44,13 +45,16 @@ export interface IMacKeyboardMapping {
 	[code: string]: IMacKeyMapping;
 }
 export type IMacLinuxKeyMapping = IMacKeyMapping | ILinuxKeyMapping;
+
 export type IMacLinuxKeyboardMapping =
 	| IMacKeyboardMapping
 	| ILinuxKeyboardMapping;
+
 export type IKeyboardMapping =
 	| IWindowsKeyboardMapping
 	| ILinuxKeyboardMapping
 	| IMacKeyboardMapping;
+
 export interface IWindowsKeyboardLayoutInfo {
 	name: string;
 	id: string;
@@ -78,6 +82,7 @@ export type IKeyboardLayoutInfo = (
 	isUserKeyboardLayout?: boolean;
 	isUSStandard?: true;
 };
+
 export interface IKeyboardLayoutService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeKeyboardLayout: Event<void>;

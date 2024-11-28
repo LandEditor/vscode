@@ -17,6 +17,7 @@ export const CorruptZipMessage: string =
 	"end of central directory record signature not found";
 
 const CORRUPT_ZIP_PATTERN = new RegExp(CorruptZipMessage);
+
 export interface IExtractOptions {
 	overwrite?: boolean;
 	/**
@@ -29,6 +30,7 @@ interface IOptions {
 	sourcePathRegex: RegExp;
 }
 export type ExtractErrorType = "CorruptZip" | "Incomplete";
+
 export class ExtractError extends Error {
 	readonly type?: ExtractErrorType;
 

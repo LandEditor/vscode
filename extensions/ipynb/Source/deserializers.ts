@@ -24,6 +24,7 @@ const jupyterLanguageToMonacoLanguageMapping = new Map([
 	["c++12", "c++"],
 	["c++14", "c++"],
 ]);
+
 export function getPreferredLanguage(metadata?: nbformat.INotebookMetadata) {
 	const jupyterLanguage =
 		metadata?.language_info?.name ||
@@ -311,6 +312,7 @@ cellOutputMappers.set("execute_result", translateDisplayDataOutput);
 cellOutputMappers.set("update_display_data", translateDisplayDataOutput);
 cellOutputMappers.set("error", translateErrorOutput);
 cellOutputMappers.set("stream", translateStreamOutput);
+
 export function jupyterCellOutputToCellOutput(
 	output: nbformat.IOutput,
 ): NotebookCellOutput {

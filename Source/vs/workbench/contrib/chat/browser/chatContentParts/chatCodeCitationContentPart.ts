@@ -23,6 +23,7 @@ type ChatCodeCitationOpenedClassification = {
 	owner: "roblourens";
 	comment: "Indicates when a user opens chat code citations";
 };
+
 export class ChatCodeCitationContentPart
 	extends Disposable
 	implements IChatContentPart

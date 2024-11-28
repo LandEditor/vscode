@@ -34,6 +34,7 @@ export const ITestingContinuousRunService =
 	createDecorator<ITestingContinuousRunService>(
 		"testingContinuousRunService",
 	);
+
 export interface ITestingContinuousRunService {
 	readonly _serviceBrand: undefined;
 	/**

@@ -70,6 +70,7 @@ export const DataTransfers = {
 	 */
 	INTERNAL_URI_LIST: "application/vnd.code.uri-list",
 };
+
 export function applyDragImage(
 	event: DragEvent,
 	label: string | null,

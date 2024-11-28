@@ -69,6 +69,7 @@ const toFileResource = (replaceResource: URI): URI => {
 		query: "",
 	});
 };
+
 export class ReplacePreviewContentProvider
 	implements ITextModelContentProvider, IWorkbenchContribution
 {

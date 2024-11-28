@@ -48,6 +48,7 @@ export function equalsIfDefined<T>(
 export function equalsIfDefined<T>(
 	equals: EqualityComparer<T>,
 ): EqualityComparer<T | undefined | null>;
+
 export function equalsIfDefined<T>(
 	equalsOrV1: EqualityComparer<T> | T,
 	v2?: T | undefined | null,

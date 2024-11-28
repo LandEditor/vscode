@@ -89,6 +89,7 @@ export function raceCancellation<T>(
 	token: CancellationToken,
 	defaultValue: T,
 ): Promise<T>;
+
 export function raceCancellation<T>(
 	promise: Promise<T>,
 	token: CancellationToken,
@@ -548,10 +549,12 @@ export class AutoOpenBarrier extends Barrier {
 	}
 }
 export function timeout(millis: number): CancelablePromise<void>;
+
 export function timeout(
 	millis: number,
 	token: CancellationToken,
 ): Promise<void>;
+
 export function timeout(
 	millis: number,
 	token?: CancellationToken,
@@ -675,11 +678,13 @@ export function firstParallel<T>(
 	shouldStop?: (t: T) => boolean,
 	defaultValue?: T | null,
 ): Promise<T | null>;
+
 export function firstParallel<T, R extends T>(
 	promiseList: Promise<T>[],
 	shouldStop: (t: T) => t is R,
 	defaultValue?: R | null,
 ): Promise<R | null>;
+
 export function firstParallel<T>(
 	promiseList: Promise<T>[],
 	shouldStop: (t: T) => boolean = (t) => !!t,
@@ -1349,6 +1354,7 @@ export let runWhenGlobalIdle: (
 	callback: (idle: IdleDeadline) => void,
 	timeout?: number,
 ) => IDisposable;
+
 export let _runWhenIdle: (
 	targetWindow: IdleApi,
 	callback: (idle: IdleDeadline) => void,
@@ -1408,6 +1414,7 @@ export let _runWhenIdle: (
 	runWhenGlobalIdle = (runner, timeout) =>
 		_runWhenIdle(globalThis, runner, timeout);
 })();
+
 export abstract class AbstractIdleValue<T> {
 	private readonly _executor: () => void;
 	private readonly _handle: IDisposable;

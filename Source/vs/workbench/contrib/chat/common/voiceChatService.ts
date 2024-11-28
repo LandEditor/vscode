@@ -26,6 +26,7 @@ import { chatAgentLeader, chatSubcommandLeader } from "./chatParserTypes.js";
 
 export const IVoiceChatService =
 	createDecorator<IVoiceChatService>("voiceChatService");
+
 export interface IVoiceChatSessionOptions {
 	readonly usesAgents?: boolean;
 	readonly model?: IChatModel;
@@ -74,6 +75,7 @@ export const VoiceChatInProgress = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export class VoiceChatService extends Disposable implements IVoiceChatService {
 	readonly _serviceBrand: undefined;
 	private static readonly AGENT_PREFIX = chatAgentLeader;

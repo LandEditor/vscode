@@ -48,6 +48,7 @@ const killCmds = new Set<() => void>();
 process.on("exit", () => {
 	killCmds.forEach((cmd) => cmd());
 });
+
 export class FileWalker {
 	private config: IFileQuery;
 	private filePattern: string;

@@ -34,6 +34,7 @@ const RETAIN_MIN_RESULTS = 16;
 const RETAIN_MAX_BYTES = 1024 * 128;
 
 const CLEANUP_PROBABILITY = 0.2;
+
 export interface ITestResultStorage {
 	_serviceBrand: undefined;
 	/**
@@ -52,6 +53,7 @@ export const ITestResultStorage = createDecorator("ITestResultStorage");
  * revisions to be discarded.
  */
 const currentRevision = 1;
+
 export abstract class BaseTestResultStorage
 	extends Disposable
 	implements ITestResultStorage

@@ -40,6 +40,7 @@ export const topStackFrameColor = registerColor(
 		"Background color for the highlight of line at the top stack frame position.",
 	),
 );
+
 export const focusedStackFrameColor = registerColor(
 	"editor.focusedStackFrameHighlightBackground",
 	{
@@ -79,18 +80,21 @@ const FOCUSED_STACK_FRAME_MARGIN: IModelDecorationOptions = {
 		color: themeColorFromId(focusedStackFrameColor),
 	},
 };
+
 export const TOP_STACK_FRAME_DECORATION: IModelDecorationOptions = {
 	description: "top-stack-frame-decoration",
 	isWholeLine: true,
 	className: "debug-top-stack-frame-line",
 	stickiness,
 };
+
 export const FOCUSED_STACK_FRAME_DECORATION: IModelDecorationOptions = {
 	description: "focused-stack-frame-decoration",
 	isWholeLine: true,
 	className: "debug-focused-stack-frame-line",
 	stickiness,
 };
+
 export const makeStackFrameColumnDecoration = (
 	noCharactersBefore: boolean,
 ): IModelDecorationOptions => ({
@@ -103,6 +107,7 @@ export const makeStackFrameColumnDecoration = (
 		inlineClassNameAffectsLetterSpacing: true,
 	},
 });
+
 export function createDecorationsForStackFrame(
 	stackFrame: IStackFrame,
 	isFocusedSession: boolean,

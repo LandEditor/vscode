@@ -98,133 +98,201 @@ import { openBreakpointSource } from "./breakpointsView.js";
 import { showDebugSessionMenu } from "./debugSessionPicker.js";
 
 export const ADD_CONFIGURATION_ID = "debug.addConfiguration";
+
 export const TOGGLE_INLINE_BREAKPOINT_ID =
 	"editor.debug.action.toggleInlineBreakpoint";
+
 export const COPY_STACK_TRACE_ID = "debug.copyStackTrace";
+
 export const REVERSE_CONTINUE_ID = "workbench.action.debug.reverseContinue";
+
 export const STEP_BACK_ID = "workbench.action.debug.stepBack";
+
 export const RESTART_SESSION_ID = "workbench.action.debug.restart";
+
 export const TERMINATE_THREAD_ID = "workbench.action.debug.terminateThread";
+
 export const STEP_OVER_ID = "workbench.action.debug.stepOver";
+
 export const STEP_INTO_ID = "workbench.action.debug.stepInto";
+
 export const STEP_INTO_TARGET_ID = "workbench.action.debug.stepIntoTarget";
+
 export const STEP_OUT_ID = "workbench.action.debug.stepOut";
+
 export const PAUSE_ID = "workbench.action.debug.pause";
+
 export const DISCONNECT_ID = "workbench.action.debug.disconnect";
+
 export const DISCONNECT_AND_SUSPEND_ID =
 	"workbench.action.debug.disconnectAndSuspend";
+
 export const STOP_ID = "workbench.action.debug.stop";
+
 export const RESTART_FRAME_ID = "workbench.action.debug.restartFrame";
+
 export const CONTINUE_ID = "workbench.action.debug.continue";
+
 export const FOCUS_REPL_ID = "workbench.debug.action.focusRepl";
+
 export const JUMP_TO_CURSOR_ID = "debug.jumpToCursor";
+
 export const FOCUS_SESSION_ID = "workbench.action.debug.focusProcess";
+
 export const SELECT_AND_START_ID = "workbench.action.debug.selectandstart";
+
 export const SELECT_DEBUG_CONSOLE_ID =
 	"workbench.action.debug.selectDebugConsole";
+
 export const SELECT_DEBUG_SESSION_ID =
 	"workbench.action.debug.selectDebugSession";
+
 export const DEBUG_CONFIGURE_COMMAND_ID = "workbench.action.debug.configure";
+
 export const DEBUG_START_COMMAND_ID = "workbench.action.debug.start";
+
 export const DEBUG_RUN_COMMAND_ID = "workbench.action.debug.run";
+
 export const EDIT_EXPRESSION_COMMAND_ID = "debug.renameWatchExpression";
+
 export const SET_EXPRESSION_COMMAND_ID = "debug.setWatchExpression";
+
 export const REMOVE_EXPRESSION_COMMAND_ID = "debug.removeWatchExpression";
+
 export const NEXT_DEBUG_CONSOLE_ID = "workbench.action.debug.nextConsole";
+
 export const PREV_DEBUG_CONSOLE_ID = "workbench.action.debug.prevConsole";
+
 export const SHOW_LOADED_SCRIPTS_ID =
 	"workbench.action.debug.showLoadedScripts";
+
 export const CALLSTACK_TOP_ID = "workbench.action.debug.callStackTop";
+
 export const CALLSTACK_BOTTOM_ID = "workbench.action.debug.callStackBottom";
+
 export const CALLSTACK_UP_ID = "workbench.action.debug.callStackUp";
+
 export const CALLSTACK_DOWN_ID = "workbench.action.debug.callStackDown";
+
 export const ADD_TO_WATCH_ID = "debug.addToWatchExpressions";
+
 export const COPY_EVALUATE_PATH_ID = "debug.copyEvaluatePath";
+
 export const COPY_VALUE_ID = "workbench.debug.viewlet.action.copyValue";
+
 export const DEBUG_COMMAND_CATEGORY: ILocalizedString = nls.localize2(
 	"debug",
 	"Debug",
 );
+
 export const RESTART_LABEL = nls.localize2("restartDebug", "Restart");
+
 export const STEP_OVER_LABEL = nls.localize2("stepOverDebug", "Step Over");
+
 export const STEP_INTO_LABEL = nls.localize2("stepIntoDebug", "Step Into");
+
 export const STEP_INTO_TARGET_LABEL = nls.localize2(
 	"stepIntoTargetDebug",
 	"Step Into Target",
 );
+
 export const STEP_OUT_LABEL = nls.localize2("stepOutDebug", "Step Out");
+
 export const PAUSE_LABEL = nls.localize2("pauseDebug", "Pause");
+
 export const DISCONNECT_LABEL = nls.localize2("disconnect", "Disconnect");
+
 export const DISCONNECT_AND_SUSPEND_LABEL = nls.localize2(
 	"disconnectSuspend",
 	"Disconnect and Suspend",
 );
+
 export const STOP_LABEL = nls.localize2("stop", "Stop");
+
 export const CONTINUE_LABEL = nls.localize2("continueDebug", "Continue");
+
 export const FOCUS_SESSION_LABEL = nls.localize2(
 	"focusSession",
 	"Focus Session",
 );
+
 export const SELECT_AND_START_LABEL = nls.localize2(
 	"selectAndStartDebugging",
 	"Select and Start Debugging",
 );
+
 export const DEBUG_CONFIGURE_LABEL = nls.localize(
 	"openLaunchJson",
 	"Open '{0}'",
 	"launch.json",
 );
+
 export const DEBUG_START_LABEL = nls.localize2("startDebug", "Start Debugging");
+
 export const DEBUG_RUN_LABEL = nls.localize2(
 	"startWithoutDebugging",
 	"Start Without Debugging",
 );
+
 export const NEXT_DEBUG_CONSOLE_LABEL = nls.localize2(
 	"nextDebugConsole",
 	"Focus Next Debug Console",
 );
+
 export const PREV_DEBUG_CONSOLE_LABEL = nls.localize2(
 	"prevDebugConsole",
 	"Focus Previous Debug Console",
 );
+
 export const OPEN_LOADED_SCRIPTS_LABEL = nls.localize2(
 	"openLoadedScript",
 	"Open Loaded Script...",
 );
+
 export const CALLSTACK_TOP_LABEL = nls.localize2(
 	"callStackTop",
 	"Navigate to Top of Call Stack",
 );
+
 export const CALLSTACK_BOTTOM_LABEL = nls.localize2(
 	"callStackBottom",
 	"Navigate to Bottom of Call Stack",
 );
+
 export const CALLSTACK_UP_LABEL = nls.localize2(
 	"callStackUp",
 	"Navigate Up Call Stack",
 );
+
 export const CALLSTACK_DOWN_LABEL = nls.localize2(
 	"callStackDown",
 	"Navigate Down Call Stack",
 );
+
 export const COPY_EVALUATE_PATH_LABEL = nls.localize2(
 	"copyAsExpression",
 	"Copy as Expression",
 );
+
 export const COPY_VALUE_LABEL = nls.localize2("copyValue", "Copy Value");
+
 export const ADD_TO_WATCH_LABEL = nls.localize2(
 	"addToWatchExpressions",
 	"Add to Watch",
 );
+
 export const SELECT_DEBUG_CONSOLE_LABEL = nls.localize2(
 	"selectDebugConsole",
 	"Select Debug Console",
 );
+
 export const SELECT_DEBUG_SESSION_LABEL = nls.localize2(
 	"selectDebugSession",
 	"Select Debug Session",
 );
+
 export const DEBUG_QUICK_ACCESS_PREFIX = "debug ";
+
 export const DEBUG_CONSOLE_QUICK_ACCESS_PREFIX = "debug consoles ";
 interface CallStackContext {
 	sessionId: string;

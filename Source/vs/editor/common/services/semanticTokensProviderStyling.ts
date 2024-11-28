@@ -18,6 +18,7 @@ const enum SemanticTokensProviderStylingConstants {
 }
 
 const ENABLE_TRACE = false;
+
 export class SemanticTokensProviderStyling {
 	private readonly _hashTable: HashTable;
 	private _hasWarnedOverlappingTokens = false;

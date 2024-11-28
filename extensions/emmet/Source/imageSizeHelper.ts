@@ -11,6 +11,7 @@ import { imageSize } from "image-size";
 import { ISizeCalculationResult } from "image-size/dist/types/interface";
 
 const reUrl = /^https?:/;
+
 export type ImageInfoWithScale = {
 	realWidth: number;
 	realHeight: number;

@@ -19,6 +19,7 @@ import { IEditorPane } from "../../../common/editor.js";
 
 export const IOutlineService =
 	createDecorator<IOutlineService>("IOutlineService");
+
 export const enum OutlineTarget {
 	OutlinePane = 1,
 	Breadcrumbs = 2,

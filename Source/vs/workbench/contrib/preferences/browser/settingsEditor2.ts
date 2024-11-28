@@ -208,6 +208,7 @@ const searchBoxLabel = localize("SearchSettings.AriaLabel", "Search settings");
 const SEARCH_TOC_BEHAVIOR_KEY = "workbench.settings.settingsSearchTocBehavior";
 
 const SETTINGS_EDITOR_STATE_KEY = "settingsEditorState";
+
 export class SettingsEditor2 extends EditorPane {
 	static readonly ID: string = "workbench.editor.settings2";
 	private static NUM_INSTANCES: number = 0;

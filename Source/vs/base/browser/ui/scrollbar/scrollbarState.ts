@@ -6,6 +6,7 @@
  * The minimal size of the slider (such that it can still be clickable) -- it is artificially enlarged.
  */
 const MINIMUM_SLIDER_SIZE = 20;
+
 export class ScrollbarState {
 	/**
 	 * For the vertical scrollbar: the width.

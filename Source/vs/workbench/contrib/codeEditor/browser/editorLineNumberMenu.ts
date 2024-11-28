@@ -69,9 +69,11 @@ export class GutterActionsRegistryImpl {
 	}
 }
 Registry.add("gutterActionsRegistry", new GutterActionsRegistryImpl());
+
 export const GutterActionsRegistry: GutterActionsRegistryImpl = Registry.as(
 	"gutterActionsRegistry",
 );
+
 export class EditorLineNumberContextMenu
 	extends Disposable
 	implements IEditorContribution

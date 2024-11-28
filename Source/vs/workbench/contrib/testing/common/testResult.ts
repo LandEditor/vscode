@@ -125,6 +125,7 @@ const emptyRawOutput: ITaskRawOutput = {
 	getRange: () => VSBuffer.alloc(0),
 	getRangeIter: () => [],
 };
+
 export class TaskRawOutput implements ITaskRawOutput {
 	private readonly writeDataEmitter = new Emitter<VSBuffer>();
 	private readonly endDeferred = new DeferredPromise<void>();
@@ -240,6 +241,7 @@ export const resultItemParents = function* (
 		yield results.getStateById(id.toString())!;
 	}
 };
+
 export const maxCountPriority = (counts: Readonly<TestStateCount>) => {
 	for (const state of statesInOrder) {
 		if (counts[state] > 0) {
@@ -269,6 +271,7 @@ const itemToNode = (
 	ownComputedState: TestResultState.Unset,
 	computedState: TestResultState.Unset,
 });
+
 export const enum TestResultItemChangeReason {
 	ComputedStateChange,
 	OwnStateChange,

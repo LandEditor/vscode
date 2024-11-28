@@ -26,6 +26,7 @@ export const allCharCodes: ReadonlyArray<number> = (() => {
 
 	return v;
 })();
+
 export const getCharIndex = (chCode: number, fontScale: number) => {
 	chCode -= Constants.START_CH_CODE;
 

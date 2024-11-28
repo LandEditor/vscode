@@ -46,6 +46,7 @@ export type TsServerLog =
 			readonly type: "output";
 			readonly output: vscode.OutputChannel;
 	  };
+
 export interface ITypeScriptServer {
 	readonly onEvent: vscode.Event<Proto.Event>;
 	readonly onExit: vscode.Event<TypeScriptServerExitEvent>;

@@ -33,6 +33,7 @@ import {
 
 export const IDiffProviderFactoryService =
 	createDecorator<IDiffProviderFactoryService>("diffProviderFactoryService");
+
 export interface IDocumentDiffFactoryOptions {
 	readonly diffAlgorithm?: "legacy" | "advanced";
 }
@@ -65,6 +66,7 @@ registerSingleton(
 	WorkerBasedDiffProviderFactoryService,
 	InstantiationType.Delayed,
 );
+
 export class WorkerBasedDocumentDiffProvider
 	implements IDocumentDiffProvider, IDisposable
 {

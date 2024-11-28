@@ -21,6 +21,7 @@ import { IConfigurationService } from "../../configuration/common/configuration.
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IHoverService = createDecorator<IHoverService>("hoverService");
+
 export interface IHoverService extends IHoverDelegate2 {
 	readonly _serviceBrand: undefined;
 }

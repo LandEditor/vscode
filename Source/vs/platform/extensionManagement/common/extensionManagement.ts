@@ -16,11 +16,17 @@ import { IFileService } from '../../files/common/files.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9-A-Z]*)\\.([a-z0-9A-Z][a-z0-9-A-Z]*)$';
+
 export const EXTENSION_IDENTIFIER_REGEX = new RegExp(EXTENSION_IDENTIFIER_PATTERN);
+
 export const WEB_EXTENSION_TAG = '__web_extension';
+
 export const EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT = 'skipWalkthrough';
+
 export const EXTENSION_INSTALL_SOURCE_CONTEXT = 'extensionInstallSource';
+
 export const EXTENSION_INSTALL_DEP_PACK_CONTEXT = 'dependecyOrPackExtensionInstall';
+
 export const EXTENSION_INSTALL_CLIENT_TARGET_PLATFORM_CONTEXT = 'clientTargetPlatform';
 
 export const enum ExtensionInstallSource {
@@ -549,9 +555,11 @@ export interface IExtensionManagementParticipant {
 }
 
 export type InstallExtensionInfo = { readonly extension: IGalleryExtension; readonly options: InstallOptions };
+
 export type UninstallExtensionInfo = { readonly extension: ILocalExtension; readonly options?: UninstallOptions };
 
 export const IExtensionManagementService = createDecorator<IExtensionManagementService>('extensionManagementService');
+
 export interface IExtensionManagementService {
 	readonly _serviceBrand: undefined;
 
@@ -588,7 +596,9 @@ export interface IExtensionManagementService {
 }
 
 export const DISABLED_EXTENSIONS_STORAGE_PATH = 'extensionsIdentifiers/disabled';
+
 export const ENABLED_EXTENSIONS_STORAGE_PATH = 'extensionsIdentifiers/enabled';
+
 export const IGlobalExtensionEnablementService = createDecorator<IGlobalExtensionEnablementService>('IGlobalExtensionEnablementService');
 
 export interface IGlobalExtensionEnablementService {
@@ -621,6 +631,7 @@ export type IExecutableBasedExtensionTip = {
 };
 
 export const IExtensionTipsService = createDecorator<IExtensionTipsService>('IExtensionTipsService');
+
 export interface IExtensionTipsService {
 	readonly _serviceBrand: undefined;
 
@@ -630,6 +641,7 @@ export interface IExtensionTipsService {
 }
 
 export const IAllowedExtensionsService = createDecorator<IAllowedExtensionsService>('IAllowedExtensionsService');
+
 export interface IAllowedExtensionsService {
 	readonly _serviceBrand: undefined;
 
@@ -649,6 +661,9 @@ export async function computeSize(location: URI, fileService: IFileService): Pro
 }
 
 export const ExtensionsLocalizedLabel = localize2('extensions', "Extensions");
+
 export const PreferencesLocalizedLabel = localize2('preferences', 'Preferences');
+
 export const UseUnpkgResourceApiConfigKey = 'extensions.gallery.useUnpkgResourceApi';
+
 export const AllowedExtensionsConfigKey = 'extensions.allowed';

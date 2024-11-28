@@ -102,6 +102,7 @@ registerSingleton(
 	},
 	InstantiationType.Delayed,
 );
+
 export class EditorKeybindingCancellationTokenSource extends CancellationTokenSource {
 	private readonly _unregister: Function;
 

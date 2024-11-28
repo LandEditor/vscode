@@ -5,6 +5,7 @@
 import { SettingsManager } from "./settings";
 
 const codeLineClass = "code-line";
+
 export class CodeLineElement {
 	private readonly _detailParentElements: readonly HTMLDetailsElement[];
 

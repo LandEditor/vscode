@@ -38,6 +38,7 @@ import { SmoothScrollableElement } from "../scrollbar/scrollableElement.js";
 import "./splitview.css";
 
 export { Orientation } from "../sash/sash.js";
+
 export interface ISplitViewStyles {
 	readonly separatorBorder: Color;
 }
@@ -45,6 +46,7 @@ export interface ISplitViewStyles {
 const defaultStyles: ISplitViewStyles = {
 	separatorBorder: Color.transparent,
 };
+
 export const enum LayoutPriority {
 	Normal,
 	Low,
@@ -392,6 +394,7 @@ export type Sizing =
 	| SplitSizing
 	| AutoSizing
 	| InvisibleSizing;
+
 export namespace Sizing {
 	/**
 	 * When adding or removing views, distribute the delta space among

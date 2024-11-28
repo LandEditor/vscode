@@ -36,6 +36,7 @@ import {
 } from "../common/taskService.js";
 
 const ALLOW_AUTOMATIC_TASKS = "task.allowAutomaticTasks";
+
 export class RunAutomaticTasks
 	extends Disposable
 	implements IWorkbenchContribution

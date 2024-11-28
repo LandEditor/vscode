@@ -23,6 +23,7 @@ export const CodeActionKind = new (class {
 	public readonly SourceFixAll = this.Source.append("fixAll");
 	public readonly SurroundWith = this.Refactor.append("surround");
 })();
+
 export const enum CodeActionAutoApply {
 	IfSingle = "ifSingle",
 	First = "first",

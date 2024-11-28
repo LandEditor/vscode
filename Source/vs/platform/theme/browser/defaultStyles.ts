@@ -148,6 +148,7 @@ export const defaultKeybindingLabelStyles: IKeybindingLabelStyles = {
 	keybindingLabelBottomBorder: asCssVariable(keybindingLabelBottomBorder),
 	keybindingLabelShadow: asCssVariable(widgetShadow),
 };
+
 export function getKeybindingLabelStyles(
 	override: IStyleOverride<IKeybindingLabelStyles>,
 ): IKeybindingLabelStyles {
@@ -165,6 +166,7 @@ export const defaultButtonStyles: IButtonStyles = {
 	),
 	buttonBorder: asCssVariable(buttonBorder),
 };
+
 export function getButtonStyles(
 	override: IStyleOverride<IButtonStyles>,
 ): IButtonStyles {
@@ -173,6 +175,7 @@ export function getButtonStyles(
 export const defaultProgressBarStyles: IProgressBarStyles = {
 	progressBarBackground: asCssVariable(progressBarBackground),
 };
+
 export function getProgressBarStyles(
 	override: IStyleOverride<IProgressBarStyles>,
 ): IProgressBarStyles {
@@ -183,6 +186,7 @@ export const defaultToggleStyles: IToggleStyles = {
 	inputActiveOptionForeground: asCssVariable(inputActiveOptionForeground),
 	inputActiveOptionBackground: asCssVariable(inputActiveOptionBackground),
 };
+
 export const defaultRadioStyles: IRadioStyles = {
 	activeForeground: asCssVariable(radioActiveForeground),
 	activeBackground: asCssVariable(radioActiveBackground),
@@ -192,6 +196,7 @@ export const defaultRadioStyles: IRadioStyles = {
 	inactiveBorder: asCssVariable(radioInactiveBorder),
 	inactiveHoverBackground: asCssVariable(radioInactiveHoverBackground),
 };
+
 export function getToggleStyles(
 	override: IStyleOverride<IToggleStyles>,
 ): IToggleStyles {
@@ -202,6 +207,7 @@ export const defaultCheckboxStyles: ICheckboxStyles = {
 	checkboxBorder: asCssVariable(checkboxBorder),
 	checkboxForeground: asCssVariable(checkboxForeground),
 };
+
 export function getCheckboxStyles(
 	override: IStyleOverride<ICheckboxStyles>,
 ): ICheckboxStyles {
@@ -217,6 +223,7 @@ export const defaultDialogStyles: IDialogStyles = {
 	infoIconForeground: asCssVariable(problemsInfoIconForeground),
 	textLinkForeground: asCssVariable(textLinkForeground),
 };
+
 export function getDialogStyle(
 	override: IStyleOverride<IDialogStyles>,
 ): IDialogStyles {
@@ -244,6 +251,7 @@ export const defaultInputBoxStyles: IInputBoxStyles = {
 		inputValidationErrorForeground,
 	),
 };
+
 export function getInputBoxStyle(
 	override: IStyleOverride<IInputBoxStyles>,
 ): IInputBoxStyles {
@@ -259,11 +267,13 @@ export const defaultFindWidgetStyles: IFindWidgetStyles = {
 	inputBoxStyles: defaultInputBoxStyles,
 	toggleStyles: defaultToggleStyles,
 };
+
 export const defaultCountBadgeStyles: ICountBadgeStyles = {
 	badgeBackground: asCssVariable(badgeBackground),
 	badgeForeground: asCssVariable(badgeForeground),
 	badgeBorder: asCssVariable(contrastBorder),
 };
+
 export function getCountBadgeStyle(
 	override: IStyleOverride<ICountBadgeStyles>,
 ): ICountBadgeStyles {
@@ -278,6 +288,7 @@ export const defaultBreadcrumbsWidgetStyles: IBreadcrumbsWidgetStyles = {
 		breadcrumbsActiveSelectionForeground,
 	),
 };
+
 export function getBreadcrumbsWidgetStyles(
 	override: IStyleOverride<IBreadcrumbsWidgetStyles>,
 ): IBreadcrumbsWidgetStyles {
@@ -328,6 +339,7 @@ export const defaultListStyles: IListStyles = {
 	tableColumnsBorder: asCssVariable(tableColumnsBorder),
 	tableOddRowsBackgroundColor: asCssVariable(tableOddRowsBackgroundColor),
 };
+
 export function getListStyles(
 	override: IStyleOverride<IListStyles>,
 ): IListStyles {
@@ -376,6 +388,7 @@ export const defaultSelectBoxStyles: ISelectBoxStyles = {
 	treeStickyScrollBorder: undefined,
 	treeStickyScrollShadow: undefined,
 };
+
 export function getSelectBoxStyles(
 	override: IStyleOverride<ISelectBoxStyles>,
 ): ISelectBoxStyles {
@@ -399,6 +412,7 @@ export const defaultMenuStyles: IMenuStyles = {
 		scrollbarSliderActiveBackground,
 	),
 };
+
 export function getMenuStyles(
 	override: IStyleOverride<IMenuStyles>,
 ): IMenuStyles {

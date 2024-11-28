@@ -8,6 +8,7 @@ import { ITypeScriptServiceClient } from "../typescriptService";
 import { Disposable } from "../utils/dispose";
 
 const typingsInstallTimeout = 30 * 1000;
+
 export default class TypingsStatus extends Disposable {
 	private readonly _acquiringTypings = new Map<number, NodeJS.Timeout>();
 	private readonly _client: ITypeScriptServiceClient;

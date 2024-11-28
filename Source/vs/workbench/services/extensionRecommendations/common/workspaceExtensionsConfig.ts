@@ -38,6 +38,7 @@ import {
 } from "../../configuration/common/jsonEditing.js";
 
 export const EXTENSIONS_CONFIG = ".vscode/extensions.json";
+
 export interface IExtensionsConfigContent {
 	recommendations?: string[];
 	unwantedRecommendations?: string[];
@@ -46,6 +47,7 @@ export const IWorkspaceExtensionsConfigService =
 	createDecorator<IWorkspaceExtensionsConfigService>(
 		"IWorkspaceExtensionsConfigService",
 	);
+
 export interface IWorkspaceExtensionsConfigService {
 	readonly _serviceBrand: undefined;
 	onDidChangeExtensionsConfigs: Event<void>;

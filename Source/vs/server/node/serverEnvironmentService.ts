@@ -185,6 +185,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 	"compatibility": { type: "string" },
 	_: OPTIONS["_"],
 };
+
 export interface ServerParsedArgs {
 	/* ----- server setup ----- */
 	host?: string;
@@ -281,6 +282,7 @@ export const IServerEnvironmentService = refineServiceDecorator<
 	IEnvironmentService,
 	IServerEnvironmentService
 >(IEnvironmentService);
+
 export interface IServerEnvironmentService extends INativeEnvironmentService {
 	readonly args: ServerParsedArgs;
 }

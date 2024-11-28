@@ -11,6 +11,7 @@ import {
 export const quadVertices = new Float32Array([
 	1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0,
 ]);
+
 export function ensureNonNullable<T>(value: T | null): T {
 	if (!value) {
 		throw new Error(`Value "${value}" cannot be null`);

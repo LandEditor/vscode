@@ -18,6 +18,7 @@ let alertContainer2: HTMLElement;
 let statusContainer: HTMLElement;
 
 let statusContainer2: HTMLElement;
+
 export function setARIAContainer(parent: HTMLElement) {
 	ariaContainer = document.createElement("div");
 	ariaContainer.className = "monaco-aria-container";

@@ -33,6 +33,7 @@ export interface IExtensionIdWithVersion {
 }
 export const IExtensionStorageService =
 	createDecorator<IExtensionStorageService>("IExtensionStorageService");
+
 export interface IExtensionStorageService {
 	readonly _serviceBrand: undefined;
 
@@ -68,6 +69,7 @@ export interface IExtensionStorageService {
 
 const EXTENSION_KEYS_ID_VERSION_REGEX =
 	/^extensionKeys\/([^.]+\..+)@(\d+\.\d+\.\d+(-.*)?)$/;
+
 export class ExtensionStorageService
 	extends Disposable
 	implements IExtensionStorageService

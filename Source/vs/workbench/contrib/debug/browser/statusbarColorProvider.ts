@@ -44,6 +44,7 @@ export const STATUS_BAR_DEBUGGING_BACKGROUND = registerColor(
 		"Status bar background color when a program is being debugged. The status bar is shown in the bottom of the window",
 	),
 );
+
 export const STATUS_BAR_DEBUGGING_FOREGROUND = registerColor(
 	"statusBar.debuggingForeground",
 	{
@@ -57,6 +58,7 @@ export const STATUS_BAR_DEBUGGING_FOREGROUND = registerColor(
 		"Status bar foreground color when a program is being debugged. The status bar is shown in the bottom of the window",
 	),
 );
+
 export const STATUS_BAR_DEBUGGING_BORDER = registerColor(
 	"statusBar.debuggingBorder",
 	STATUS_BAR_BORDER,
@@ -65,6 +67,7 @@ export const STATUS_BAR_DEBUGGING_BORDER = registerColor(
 		"Status bar border color separating to the sidebar and editor when a program is being debugged. The status bar is shown in the bottom of the window",
 	),
 );
+
 export const COMMAND_CENTER_DEBUGGING_BACKGROUND = registerColor(
 	"commandCenter.debuggingBackground",
 	transparent(STATUS_BAR_DEBUGGING_BACKGROUND, 0.258),
@@ -74,6 +77,7 @@ export const COMMAND_CENTER_DEBUGGING_BACKGROUND = registerColor(
 	),
 	true,
 );
+
 export class StatusBarColorProvider implements IWorkbenchContribution {
 	private readonly disposables = new DisposableStore();
 	private disposable: IDisposable | undefined;

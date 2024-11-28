@@ -81,6 +81,7 @@ export const IExtensionsProfileScannerService =
 	createDecorator<IExtensionsProfileScannerService>(
 		"IExtensionsProfileScannerService",
 	);
+
 export interface IExtensionsProfileScannerService {
 	readonly _serviceBrand: undefined;
 	readonly onAddExtensions: Event<ProfileExtensionsEvent>;

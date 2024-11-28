@@ -7,6 +7,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 export const INotebookKeymapService = createDecorator<INotebookKeymapService>(
 	"notebookKeymapService",
 );
+
 export interface INotebookKeymapService {
 	readonly _serviceBrand: undefined;
 }

@@ -34,9 +34,11 @@ export type IChatRequestVariableValue =
 	| Location
 	| unknown
 	| Uint8Array;
+
 export type IChatVariableResolverProgress =
 	| IChatContentReference
 	| IChatProgressMessage;
+
 export interface IChatVariableResolver {
 	(
 		messageText: string,
@@ -49,6 +51,7 @@ export interface IChatVariableResolver {
 export const IChatVariablesService = createDecorator<IChatVariablesService>(
 	"IChatVariablesService",
 );
+
 export interface IChatVariablesService {
 	_serviceBrand: undefined;
 	registerVariable(

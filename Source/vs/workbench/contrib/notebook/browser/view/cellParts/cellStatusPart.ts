@@ -50,6 +50,7 @@ import { CellContentPart } from "../cellPart.js";
 import { ClickTargetType, IClickTarget } from "./cellWidgets.js";
 
 const $ = DOM.$;
+
 export class CellEditorStatusBar extends CellContentPart {
 	readonly statusBarContainer: HTMLElement;
 	private readonly leftItemsContainer: HTMLElement;

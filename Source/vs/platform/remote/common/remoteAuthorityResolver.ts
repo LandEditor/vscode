@@ -11,6 +11,7 @@ export const IRemoteAuthorityResolverService =
 	createDecorator<IRemoteAuthorityResolverService>(
 		"remoteAuthorityResolverService",
 	);
+
 export const enum RemoteConnectionType {
 	WebSocket,
 	Managed,
@@ -37,10 +38,12 @@ export class WebSocketRemoteConnection {
 export type RemoteConnection =
 	| WebSocketRemoteConnection
 	| ManagedRemoteConnection;
+
 export type RemoteConnectionOfType<T extends RemoteConnectionType> =
 	RemoteConnection & {
 		type: T;
 	};
+
 export interface ResolvedAuthority {
 	readonly authority: string;
 	readonly connectTo: RemoteConnection;

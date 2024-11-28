@@ -57,6 +57,7 @@ export interface ITestTreeProjection extends IDisposable {
 let idCounter = 0;
 
 const getId = () => String(idCounter++);
+
 export abstract class TestItemTreeElement {
 	protected readonly changeEmitter = new Emitter<void>();
 	/**
@@ -132,6 +133,7 @@ export class TestTreeErrorMessage {
 export type TestExplorerTreeElement =
 	| TestItemTreeElement
 	| TestTreeErrorMessage;
+
 export const testIdentityProvider: IIdentityProvider<TestExplorerTreeElement> =
 	{
 		getId(element) {
@@ -147,6 +149,7 @@ export const testIdentityProvider: IIdentityProvider<TestExplorerTreeElement> =
 			return element.treeId + "\0" + expandComponent;
 		},
 	};
+
 export const getChildrenForParent = (
 	serialized: ISerializedTestTreeCollapseState,
 	rootsWithChildren: Iterable<TestExplorerTreeElement>,

@@ -9,6 +9,7 @@ import { IWorkspaceFolderCreationData } from "../../../../platform/workspaces/co
 
 export const IWorkspaceEditingService =
 	createDecorator<IWorkspaceEditingService>("workspaceEditingService");
+
 export interface IWorkspaceEditingService {
 	readonly _serviceBrand: undefined;
 	/**

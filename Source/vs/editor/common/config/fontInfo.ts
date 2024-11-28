@@ -227,6 +227,7 @@ export class BareFontInfo {
 }
 // change this whenever `FontInfo` members are changed
 export const SERIALIZED_FONT_INFO_VERSION = 2;
+
 export class FontInfo extends BareFontInfo {
 	readonly _editorStylingBrand: void = undefined;
 	readonly version: number = SERIALIZED_FONT_INFO_VERSION;

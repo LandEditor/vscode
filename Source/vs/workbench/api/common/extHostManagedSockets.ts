@@ -28,6 +28,7 @@ export interface IExtHostManagedSockets extends ExtHostManagedSocketsShape {
 export const IExtHostManagedSockets = createDecorator<IExtHostManagedSockets>(
 	"IExtHostManagedSockets",
 );
+
 export class ExtHostManagedSockets implements IExtHostManagedSockets {
 	declare readonly _serviceBrand: undefined;
 	private readonly _proxy: MainThreadManagedSocketsShape;

@@ -20,6 +20,7 @@ import { IWorkingCopy, IWorkingCopyIdentifier } from "./workingCopy.js";
 
 export const IWorkingCopyEditorService =
 	createDecorator<IWorkingCopyEditorService>("workingCopyEditorService");
+
 export interface IWorkingCopyEditorHandler {
 	/**
 	 * Whether the handler is capable of opening the specific backup in

@@ -7,6 +7,7 @@ import { IExtensionHostExitInfo } from "../../workbench/services/remote/common/r
 
 export const IExtensionHostStatusService =
 	createDecorator<IExtensionHostStatusService>("extensionHostStatusService");
+
 export interface IExtensionHostStatusService {
 	readonly _serviceBrand: undefined;
 

@@ -5,6 +5,7 @@
 import { Iterable } from "./iterator.js";
 
 const unset = Symbol("unset");
+
 export interface IPrefixTreeNode<T> {
 	/** Possible children of the node. */
 	children?: ReadonlyMap<string, Node<T>>;

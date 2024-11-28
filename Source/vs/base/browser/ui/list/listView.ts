@@ -84,6 +84,7 @@ interface IItem<T> {
 const StaticDND = {
 	CurrentDragAndDropData: undefined as IDragAndDropData | undefined,
 };
+
 export interface IListViewDragAndDrop<T> extends IListDragAndDrop<T> {
 	getDragElements(element: T): T[];
 }
@@ -151,6 +152,7 @@ const DefaultOptions = {
 	transformOptimization: true,
 	alwaysConsumeMouseWheel: true,
 };
+
 export class ElementsDragAndDropData<T, TContext = void>
 	implements IDragAndDropData
 {

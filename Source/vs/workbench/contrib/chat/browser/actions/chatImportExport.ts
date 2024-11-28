@@ -26,6 +26,7 @@ const defaultFileName = "chat.json";
 const filters = [
 	{ name: localize("chat.file.label", "Chat Session"), extensions: ["json"] },
 ];
+
 export function registerChatExportActions() {
 	registerAction2(
 		class ExportChatAction extends Action2 {

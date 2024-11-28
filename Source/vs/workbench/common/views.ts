@@ -35,7 +35,9 @@ import { Registry } from "../../platform/registry/common/platform.js";
 import { registerIcon } from "../../platform/theme/common/iconRegistry.js";
 
 export const VIEWS_LOG_ID = "views";
+
 export const VIEWS_LOG_NAME = localize("views log", "Views");
+
 export const defaultViewIcon = registerIcon(
 	"default-view-icon",
 	Codicon.window,

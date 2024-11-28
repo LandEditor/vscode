@@ -80,6 +80,7 @@ export const hiddenEntriesConfigurationKey =
 
 export const walkthroughMetadataConfigurationKey =
 	"workbench.welcomePage.walkthroughMetadata";
+
 export type WalkthroughMetaDataType = Map<
 	string,
 	{ firstSeen: number; stepIDs: string[]; manaullyOpened: boolean }

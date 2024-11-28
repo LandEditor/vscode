@@ -52,6 +52,7 @@ const gitDiffMatchers = [
 	// @@ -8,11 +8,11 @@ file content...
 	/^(?<link>@@ .+ \+(?<toFileLine>\d+),(?<toFileCount>\d+) @@)/,
 ];
+
 export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 	static id = "multiline";
 	// This was chosen as a reasonable maximum line length given the tradeoff between performance

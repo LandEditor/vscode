@@ -8,6 +8,7 @@ import * as vscode from "vscode";
 import { provideInstalledExtensionProposals } from "./extensionsProposals";
 
 const OVERRIDE_IDENTIFIER_REGEX = /\[([^\[\]]*)\]/g;
+
 export class SettingsDocument {
 	constructor(private document: vscode.TextDocument) {}
 	public async provideCompletionItems(

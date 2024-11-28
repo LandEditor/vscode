@@ -194,6 +194,7 @@ export interface IDiffElementLayoutInfo {
 type IDiffElementSelfLayoutChangeEvent = {
 	[K in keyof IDiffElementLayoutInfo]?: boolean;
 };
+
 export interface CellDiffViewModelLayoutChangeEvent
 	extends IDiffElementSelfLayoutChangeEvent {
 	font?: BareFontInfo;
@@ -203,28 +204,35 @@ export interface CellDiffViewModelLayoutChangeEvent
 	outputView?: boolean;
 }
 export const DIFF_CELL_MARGIN = 16;
+
 export const NOTEBOOK_DIFF_CELL_INPUT = new RawContextKey<boolean>(
 	"notebook.diffEditor.cell.inputChanged",
 	false,
 );
+
 export const NOTEBOOK_DIFF_METADATA = new RawContextKey<boolean>(
 	"notebook.diffEditor.metadataChanged",
 	false,
 );
+
 export const NOTEBOOK_DIFF_CELL_IGNORE_WHITESPACE_KEY =
 	"notebook.diffEditor.cell.ignoreWhitespace";
+
 export const NOTEBOOK_DIFF_CELL_IGNORE_WHITESPACE = new RawContextKey<boolean>(
 	NOTEBOOK_DIFF_CELL_IGNORE_WHITESPACE_KEY,
 	false,
 );
+
 export const NOTEBOOK_DIFF_CELL_PROPERTY = new RawContextKey<boolean>(
 	"notebook.diffEditor.cell.property.changed",
 	false,
 );
+
 export const NOTEBOOK_DIFF_CELL_PROPERTY_EXPANDED = new RawContextKey<boolean>(
 	"notebook.diffEditor.cell.property.expanded",
 	false,
 );
+
 export const NOTEBOOK_DIFF_CELLS_COLLAPSED = new RawContextKey<boolean>(
 	"notebook.diffEditor.allCollapsed",
 	undefined,
@@ -233,6 +241,7 @@ export const NOTEBOOK_DIFF_CELLS_COLLAPSED = new RawContextKey<boolean>(
 		"Whether all cells in notebook diff editor are collapsed",
 	),
 );
+
 export const NOTEBOOK_DIFF_HAS_UNCHANGED_CELLS = new RawContextKey<boolean>(
 	"notebook.diffEditor.hasUnchangedCells",
 	undefined,
@@ -241,6 +250,7 @@ export const NOTEBOOK_DIFF_HAS_UNCHANGED_CELLS = new RawContextKey<boolean>(
 		"Whether there are unchanged cells in the notebook diff editor",
 	),
 );
+
 export const NOTEBOOK_DIFF_UNCHANGED_CELLS_HIDDEN = new RawContextKey<boolean>(
 	"notebook.diffEditor.unchangedCellsAreHidden",
 	undefined,
@@ -249,6 +259,7 @@ export const NOTEBOOK_DIFF_UNCHANGED_CELLS_HIDDEN = new RawContextKey<boolean>(
 		"Whether the unchanged cells in the notebook diff editor are hidden",
 	),
 );
+
 export const NOTEBOOK_DIFF_ITEM_KIND = new RawContextKey<boolean>(
 	"notebook.diffEditor.item.kind",
 	undefined,
@@ -257,6 +268,7 @@ export const NOTEBOOK_DIFF_ITEM_KIND = new RawContextKey<boolean>(
 		"The kind of item in the notebook diff editor, Cell, Metadata or Output",
 	),
 );
+
 export const NOTEBOOK_DIFF_ITEM_DIFF_STATE = new RawContextKey<boolean>(
 	"notebook.diffEditor.item.state",
 	undefined,
@@ -265,6 +277,7 @@ export const NOTEBOOK_DIFF_ITEM_DIFF_STATE = new RawContextKey<boolean>(
 		"The diff state of item in the notebook diff editor, delete, insert, modified or unchanged",
 	),
 );
+
 export interface INotebookDiffViewModelUpdateEvent {
 	readonly start: number;
 	readonly deleteCount: number;

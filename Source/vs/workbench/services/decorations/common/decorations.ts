@@ -13,6 +13,7 @@ import { ColorIdentifier } from "../../../../platform/theme/common/colorRegistry
 export const IDecorationsService = createDecorator<IDecorationsService>(
 	"IFileDecorationsService",
 );
+
 export interface IDecorationData {
 	readonly weight?: number;
 	readonly color?: ColorIdentifier;

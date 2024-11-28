@@ -32,6 +32,7 @@ type SyncEnablementClassification = {
 };
 
 const enablementKey = "sync.enable";
+
 export class UserDataSyncEnablementService
 	extends Disposable
 	implements IUserDataSyncEnablementService

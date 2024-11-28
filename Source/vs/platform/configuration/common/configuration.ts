@@ -375,11 +375,13 @@ export function getConfigurationValue<T>(
 	config: any,
 	settingPath: string,
 ): T | undefined;
+
 export function getConfigurationValue<T>(
 	config: any,
 	settingPath: string,
 	defaultValue: T,
 ): T;
+
 export function getConfigurationValue<T>(
 	config: any,
 	settingPath: string,

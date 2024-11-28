@@ -27,11 +27,13 @@ export const inputBackground = registerColor(
 	},
 	nls.localize("inputBoxBackground", "Input box background."),
 );
+
 export const inputForeground = registerColor(
 	"input.foreground",
 	foreground,
 	nls.localize("inputBoxForeground", "Input box foreground."),
 );
+
 export const inputBorder = registerColor(
 	"input.border",
 	{
@@ -42,6 +44,7 @@ export const inputBorder = registerColor(
 	},
 	nls.localize("inputBoxBorder", "Input box border."),
 );
+
 export const inputActiveOptionBorder = registerColor(
 	"inputOption.activeBorder",
 	{
@@ -55,6 +58,7 @@ export const inputActiveOptionBorder = registerColor(
 		"Border color of activated options in input fields.",
 	),
 );
+
 export const inputActiveOptionHoverBackground = registerColor(
 	"inputOption.hoverBackground",
 	{ dark: "#5a5d5e80", light: "#b8b8b850", hcDark: null, hcLight: null },
@@ -63,6 +67,7 @@ export const inputActiveOptionHoverBackground = registerColor(
 		"Background color of activated options in input fields.",
 	),
 );
+
 export const inputActiveOptionBackground = registerColor(
 	"inputOption.activeBackground",
 	{
@@ -76,6 +81,7 @@ export const inputActiveOptionBackground = registerColor(
 		"Background hover color of options in input fields.",
 	),
 );
+
 export const inputActiveOptionForeground = registerColor(
 	"inputOption.activeForeground",
 	{
@@ -89,6 +95,7 @@ export const inputActiveOptionForeground = registerColor(
 		"Foreground color of activated options in input fields.",
 	),
 );
+
 export const inputPlaceholderForeground = registerColor(
 	"input.placeholderForeground",
 	{
@@ -116,6 +123,7 @@ export const inputValidationInfoBackground = registerColor(
 		"Input validation background color for information severity.",
 	),
 );
+
 export const inputValidationInfoForeground = registerColor(
 	"inputValidation.infoForeground",
 	{ dark: null, light: null, hcDark: null, hcLight: foreground },
@@ -124,6 +132,7 @@ export const inputValidationInfoForeground = registerColor(
 		"Input validation foreground color for information severity.",
 	),
 );
+
 export const inputValidationInfoBorder = registerColor(
 	"inputValidation.infoBorder",
 	{
@@ -137,6 +146,7 @@ export const inputValidationInfoBorder = registerColor(
 		"Input validation border color for information severity.",
 	),
 );
+
 export const inputValidationWarningBackground = registerColor(
 	"inputValidation.warningBackground",
 	{
@@ -150,6 +160,7 @@ export const inputValidationWarningBackground = registerColor(
 		"Input validation background color for warning severity.",
 	),
 );
+
 export const inputValidationWarningForeground = registerColor(
 	"inputValidation.warningForeground",
 	{ dark: null, light: null, hcDark: null, hcLight: foreground },
@@ -158,6 +169,7 @@ export const inputValidationWarningForeground = registerColor(
 		"Input validation foreground color for warning severity.",
 	),
 );
+
 export const inputValidationWarningBorder = registerColor(
 	"inputValidation.warningBorder",
 	{
@@ -171,6 +183,7 @@ export const inputValidationWarningBorder = registerColor(
 		"Input validation border color for warning severity.",
 	),
 );
+
 export const inputValidationErrorBackground = registerColor(
 	"inputValidation.errorBackground",
 	{
@@ -184,6 +197,7 @@ export const inputValidationErrorBackground = registerColor(
 		"Input validation background color for error severity.",
 	),
 );
+
 export const inputValidationErrorForeground = registerColor(
 	"inputValidation.errorForeground",
 	{ dark: null, light: null, hcDark: null, hcLight: foreground },
@@ -192,6 +206,7 @@ export const inputValidationErrorForeground = registerColor(
 		"Input validation foreground color for error severity.",
 	),
 );
+
 export const inputValidationErrorBorder = registerColor(
 	"inputValidation.errorBorder",
 	{
@@ -216,11 +231,13 @@ export const selectBackground = registerColor(
 	},
 	nls.localize("dropdownBackground", "Dropdown background."),
 );
+
 export const selectListBackground = registerColor(
 	"dropdown.listBackground",
 	{ dark: null, light: null, hcDark: Color.black, hcLight: Color.white },
 	nls.localize("dropdownListBackground", "Dropdown list background."),
 );
+
 export const selectForeground = registerColor(
 	"dropdown.foreground",
 	{
@@ -231,6 +248,7 @@ export const selectForeground = registerColor(
 	},
 	nls.localize("dropdownForeground", "Dropdown foreground."),
 );
+
 export const selectBorder = registerColor(
 	"dropdown.border",
 	{
@@ -247,16 +265,19 @@ export const buttonForeground = registerColor(
 	Color.white,
 	nls.localize("buttonForeground", "Button foreground color."),
 );
+
 export const buttonSeparator = registerColor(
 	"button.separator",
 	transparent(buttonForeground, 0.4),
 	nls.localize("buttonSeparator", "Button separator color."),
 );
+
 export const buttonBackground = registerColor(
 	"button.background",
 	{ dark: "#0E639C", light: "#007ACC", hcDark: null, hcLight: "#0F4A85" },
 	nls.localize("buttonBackground", "Button background color."),
 );
+
 export const buttonHoverBackground = registerColor(
 	"button.hoverBackground",
 	{
@@ -270,11 +291,13 @@ export const buttonHoverBackground = registerColor(
 		"Button background color when hovering.",
 	),
 );
+
 export const buttonBorder = registerColor(
 	"button.border",
 	contrastBorder,
 	nls.localize("buttonBorder", "Button border color."),
 );
+
 export const buttonSecondaryForeground = registerColor(
 	"button.secondaryForeground",
 	{
@@ -288,6 +311,7 @@ export const buttonSecondaryForeground = registerColor(
 		"Secondary button foreground color.",
 	),
 );
+
 export const buttonSecondaryBackground = registerColor(
 	"button.secondaryBackground",
 	{ dark: "#3A3D41", light: "#5F6A79", hcDark: null, hcLight: Color.white },
@@ -296,6 +320,7 @@ export const buttonSecondaryBackground = registerColor(
 		"Secondary button background color.",
 	),
 );
+
 export const buttonSecondaryHoverBackground = registerColor(
 	"button.secondaryHoverBackground",
 	{
@@ -318,11 +343,13 @@ export const radioActiveForeground = registerColor(
 		"Foreground color of active radio option.",
 	),
 );
+
 export const radioActiveBackground = registerColor(
 	"radio.activeBackground",
 	inputActiveOptionBackground,
 	nls.localize("radioBackground", "Background color of active radio option."),
 );
+
 export const radioActiveBorder = registerColor(
 	"radio.activeBorder",
 	inputActiveOptionBorder,
@@ -331,6 +358,7 @@ export const radioActiveBorder = registerColor(
 		"Border color of the active radio option.",
 	),
 );
+
 export const radioInactiveForeground = registerColor(
 	"radio.inactiveForeground",
 	null,
@@ -339,6 +367,7 @@ export const radioInactiveForeground = registerColor(
 		"Foreground color of inactive radio option.",
 	),
 );
+
 export const radioInactiveBackground = registerColor(
 	"radio.inactiveBackground",
 	null,
@@ -347,6 +376,7 @@ export const radioInactiveBackground = registerColor(
 		"Background color of inactive radio option.",
 	),
 );
+
 export const radioInactiveBorder = registerColor(
 	"radio.inactiveBorder",
 	{
@@ -360,6 +390,7 @@ export const radioInactiveBorder = registerColor(
 		"Border color of the inactive radio option.",
 	),
 );
+
 export const radioInactiveHoverBackground = registerColor(
 	"radio.inactiveHoverBackground",
 	inputActiveOptionHoverBackground,
@@ -374,6 +405,7 @@ export const checkboxBackground = registerColor(
 	selectBackground,
 	nls.localize("checkbox.background", "Background color of checkbox widget."),
 );
+
 export const checkboxSelectBackground = registerColor(
 	"checkbox.selectBackground",
 	editorWidgetBackground,
@@ -382,16 +414,19 @@ export const checkboxSelectBackground = registerColor(
 		"Background color of checkbox widget when the element it's in is selected.",
 	),
 );
+
 export const checkboxForeground = registerColor(
 	"checkbox.foreground",
 	selectForeground,
 	nls.localize("checkbox.foreground", "Foreground color of checkbox widget."),
 );
+
 export const checkboxBorder = registerColor(
 	"checkbox.border",
 	selectBorder,
 	nls.localize("checkbox.border", "Border color of checkbox widget."),
 );
+
 export const checkboxSelectBorder = registerColor(
 	"checkbox.selectBorder",
 	iconForeground,
@@ -414,6 +449,7 @@ export const keybindingLabelBackground = registerColor(
 		"Keybinding label background color. The keybinding label is used to represent a keyboard shortcut.",
 	),
 );
+
 export const keybindingLabelForeground = registerColor(
 	"keybindingLabel.foreground",
 	{
@@ -427,6 +463,7 @@ export const keybindingLabelForeground = registerColor(
 		"Keybinding label foreground color. The keybinding label is used to represent a keyboard shortcut.",
 	),
 );
+
 export const keybindingLabelBorder = registerColor(
 	"keybindingLabel.border",
 	{
@@ -440,6 +477,7 @@ export const keybindingLabelBorder = registerColor(
 		"Keybinding label border color. The keybinding label is used to represent a keyboard shortcut.",
 	),
 );
+
 export const keybindingLabelBottomBorder = registerColor(
 	"keybindingLabel.bottomBorder",
 	{

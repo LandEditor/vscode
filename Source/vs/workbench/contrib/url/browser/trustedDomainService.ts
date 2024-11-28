@@ -23,6 +23,7 @@ import {
 export const ITrustedDomainService = createDecorator<ITrustedDomainService>(
 	"ITrustedDomainService",
 );
+
 export interface ITrustedDomainService {
 	_serviceBrand: undefined;
 	isValid(resource: URI): boolean;

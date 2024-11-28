@@ -38,7 +38,9 @@ export const makeRawSocketHeaders = (
 
 	return headers.join("\r\n") + "\r\n\r\n";
 };
+
 export const socketRawEndHeaderSequence = VSBuffer.fromString("\r\n\r\n");
+
 export interface RemoteSocketHalf {
 	onData: Emitter<VSBuffer>;
 	onClose: Emitter<SocketCloseEvent>;

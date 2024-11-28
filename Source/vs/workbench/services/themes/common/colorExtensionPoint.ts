@@ -129,6 +129,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 		},
 	},
 });
+
 export class ColorExtensionPoint {
 	constructor() {
 		configurationExtPoint.setHandler((extensions, delta) => {

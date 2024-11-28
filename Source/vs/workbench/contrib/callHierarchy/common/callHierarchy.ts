@@ -71,6 +71,7 @@ export interface CallHierarchyProvider {
 }
 export const CallHierarchyProviderRegistry =
 	new LanguageFeatureRegistry<CallHierarchyProvider>();
+
 export class CallHierarchyModel {
 	static async create(
 		model: ITextModel,

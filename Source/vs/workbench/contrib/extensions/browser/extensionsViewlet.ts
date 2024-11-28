@@ -168,14 +168,17 @@ export const DefaultViewsContext = new RawContextKey<boolean>(
 	"defaultExtensionViews",
 	true,
 );
+
 export const ExtensionsSortByContext = new RawContextKey<string>(
 	"extensionsSortByValue",
 	"",
 );
+
 export const SearchMarketplaceExtensionsContext = new RawContextKey<boolean>(
 	"searchMarketplaceExtensions",
 	false,
 );
+
 export const SearchHasTextContext = new RawContextKey<boolean>(
 	"extensionSearchHasText",
 	false,
@@ -220,6 +223,7 @@ const HasInstalledExtensionsContext = new RawContextKey<boolean>(
 	"hasInstalledExtensions",
 	true,
 );
+
 export const BuiltInExtensionsContext = new RawContextKey<boolean>(
 	"builtInExtensions",
 	false,
@@ -239,6 +243,7 @@ const SearchDeprecatedExtensionsContext = new RawContextKey<boolean>(
 	"searchDeprecatedExtensions",
 	false,
 );
+
 export const RecommendedExtensionsContext = new RawContextKey<boolean>(
 	"recommendedExtensions",
 	false,
@@ -253,6 +258,7 @@ const REMOTE_CATEGORY: ILocalizedString = localize2(
 	{ key: "remote", comment: ["Remote as in remote machine"] },
 	"Remote",
 );
+
 export class ExtensionsViewletViewsContribution
 	extends Disposable
 	implements IWorkbenchContribution

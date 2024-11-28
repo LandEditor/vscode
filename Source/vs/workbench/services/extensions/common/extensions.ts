@@ -45,10 +45,14 @@ export const nullExtensionDescription = Object.freeze<IExtensionDescription>({
 	isUnderDevelopment: false,
 	preRelease: false,
 });
+
 export type WebWorkerExtHostConfigValue = boolean | "auto";
+
 export const webWorkerExtHostConfig = "extensions.webWorker";
+
 export const IExtensionService =
 	createDecorator<IExtensionService>("extensionService");
+
 export interface IMessage {
 	type: Severity;
 	message: string;
@@ -382,6 +386,7 @@ export function checkProposedApiEnabled(
  * Extension id or one of the four known program states.
  */
 export type ProfileSegmentId = string | "idle" | "program" | "gc" | "self";
+
 export interface ExtensionActivationReason {
 	readonly startup: boolean;
 	readonly extensionId: ExtensionIdentifier;

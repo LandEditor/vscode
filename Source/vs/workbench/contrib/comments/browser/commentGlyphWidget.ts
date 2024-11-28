@@ -84,6 +84,7 @@ registerColor(
 		"Editor gutter decoration color for commenting glyphs for unresolved comment threads.",
 	),
 );
+
 export class CommentGlyphWidget extends Disposable {
 	public static description = "comment-glyph-widget";
 	private _lineNumber!: number;

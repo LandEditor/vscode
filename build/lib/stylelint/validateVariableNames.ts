@@ -26,6 +26,7 @@ function getKnownVariableNames() {
 }
 
 const iconVariable = /^--vscode-icon-.+-(content|font-family)$/;
+
 export interface IValidator {
 	(value: string, report: (message: string) => void): void;
 }

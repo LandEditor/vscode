@@ -18,6 +18,7 @@ export const IAccessibleViewInformationService =
 	createDecorator<IAccessibleViewInformationService>(
 		"accessibleViewInformationService",
 	);
+
 export class AccessibleViewInformationService
 	extends Disposable
 	implements IAccessibleViewInformationService

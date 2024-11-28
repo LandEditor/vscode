@@ -137,7 +137,9 @@ export type IDialogResult =
 	| IConfirmationResult
 	| IInputResult
 	| IAsyncPromptResult<unknown>;
+
 export type DialogType = "none" | "info" | "error" | "question" | "warning";
+
 export interface ICheckbox {
 	readonly label: string;
 	readonly checked?: boolean;
@@ -222,6 +224,7 @@ export interface IOpenDialogOptions {
 	availableFileSystems?: readonly string[];
 }
 export const IDialogService = createDecorator<IDialogService>("dialogService");
+
 export interface ICustomDialogOptions {
 	readonly buttonDetails?: string[];
 	readonly markdownDetails?: ICustomDialogMarkdown[];
@@ -551,6 +554,7 @@ export const enum ConfirmResult {
 }
 
 const MAX_CONFIRM_FILES = 10;
+
 export function getFileNamesMessage(
 	fileNamesOrResources: readonly (string | URI)[],
 ): string {

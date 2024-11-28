@@ -518,6 +518,7 @@ const editorProject: string = "vscode-editor",
 	extensionsProject: string = "vscode-extensions",
 	setupProject: string = "vscode-setup",
 	serverProject: string = "vscode-server";
+
 export function getResource(sourceFile: string): Resource {
 	let resource: string;
 
@@ -718,6 +719,7 @@ export const EXTERNAL_EXTENSIONS = [
 	"ms-vscode.js-debug-companion",
 	"ms-vscode.vscode-js-profile-table",
 ];
+
 export function createXlfFilesForExtensions(): ThroughStream {
 	let counter: number = 0;
 
@@ -990,6 +992,7 @@ interface I18nPack {
 }
 
 const i18nPackVersion = "1.0.0";
+
 export interface TranslationPath {
 	id: string;
 	resourceName: string;

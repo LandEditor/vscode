@@ -138,6 +138,7 @@ registerColor(
 		"Icon foreground color of the selected entry in the suggest widget.",
 	),
 );
+
 export const editorSuggestWidgetSelectedBackground = registerColor(
 	"editorSuggestWidget.selectedBackground",
 	quickInputListFocusBackground,

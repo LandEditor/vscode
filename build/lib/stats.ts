@@ -36,6 +36,7 @@ class Entry {
 }
 
 const _entries = new Map<string, Entry>();
+
 export function createStatsStream(
 	group: string,
 	log?: boolean,

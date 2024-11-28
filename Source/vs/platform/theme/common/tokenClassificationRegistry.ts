@@ -26,11 +26,13 @@ const CLASSIFIER_MODIFIER_SEPARATOR = ".";
 type TokenClassificationString = string;
 
 const idPattern = "\\w+[-_\\w+]*";
+
 export const typeAndModifierIdPattern = `^${idPattern}$`;
 
 const selectorPattern = `^(${idPattern}|\\*)(\\${CLASSIFIER_MODIFIER_SEPARATOR}${idPattern})*(${TOKEN_CLASSIFIER_LANGUAGE_SEPARATOR}${idPattern})?$`;
 
 const fontStylePattern = "^(\\s*(italic|bold|underline|strikethrough))*\\s*$";
+
 export interface TokenSelector {
 	match(type: string, modifiers: string[], language: string): number;
 	readonly id: string;
@@ -192,6 +194,7 @@ export namespace TokenStyle {
 	}
 }
 export type ProbeScope = string[];
+
 export interface TokenStyleFunction {
 	(theme: IColorTheme): TokenStyle | undefined;
 }
@@ -269,6 +272,7 @@ export type TokenStyleValue = TokenStyle | TokenClassificationString;
 const Extensions = {
 	TokenClassificationContribution: "base.contributions.tokenClassification",
 };
+
 export interface ITokenClassificationRegistry {
 	readonly onDidChangeSchema: Event<void>;
 	/**
@@ -640,6 +644,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
 const CHAR_LANGUAGE = TOKEN_CLASSIFIER_LANGUAGE_SEPARATOR.charCodeAt(0);
 
 const CHAR_MODIFIER = CLASSIFIER_MODIFIER_SEPARATOR.charCodeAt(0);
+
 export function parseClassifierString(
 	s: string,
 	defaultLanguage: string,
@@ -648,6 +653,7 @@ export function parseClassifierString(
 	modifiers: string[];
 	language: string;
 };
+
 export function parseClassifierString(
 	s: string,
 	defaultLanguage?: string,
@@ -656,6 +662,7 @@ export function parseClassifierString(
 	modifiers: string[];
 	language: string | undefined;
 };
+
 export function parseClassifierString(
 	s: string,
 	defaultLanguage: string | undefined,

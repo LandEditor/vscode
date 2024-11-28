@@ -382,6 +382,7 @@ const makeFrameElements = () =>
 		]),
 		dom.h("div.editorParent", [dom.h("div.editorContainer@editor")]),
 	]);
+
 export const CALL_STACK_WIDGET_HEADER_HEIGHT = 24;
 interface IAbstractFrameRendererTemplateData {
 	container: HTMLElement;

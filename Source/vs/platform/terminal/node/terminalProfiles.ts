@@ -37,6 +37,7 @@ const enum Constants {
 let profileSources: Map<string, IPotentialTerminalProfile> | undefined;
 
 let logIfWslNotInstalled: boolean = true;
+
 export function detectAvailableProfiles(
 	profiles: unknown,
 	defaultProfile: unknown,

@@ -31,10 +31,12 @@ export function validatePackageNameWorker(
 	packageName: string,
 	supportScopedPackage: true,
 ): ScopedPackageNameValidationResult;
+
 export function validatePackageNameWorker(
 	packageName: string,
 	supportScopedPackage: false,
 ): NameValidationResult;
+
 export function validatePackageNameWorker(
 	packageName: string,
 	supportScopedPackage: boolean,

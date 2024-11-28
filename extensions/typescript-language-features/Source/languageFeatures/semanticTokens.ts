@@ -17,6 +17,7 @@ import {
 
 // as we don't do deltas, for performance reasons, don't compute semantic tokens for documents above that limit
 const CONTENT_LENGTH_LIMIT = 100000;
+
 export function register(
 	selector: DocumentSelector,
 	client: ITypeScriptServiceClient,

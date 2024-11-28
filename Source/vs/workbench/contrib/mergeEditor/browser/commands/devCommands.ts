@@ -27,6 +27,7 @@ const MERGE_EDITOR_CATEGORY: ILocalizedString = localize2(
 	"mergeEditor",
 	"Merge Editor (Dev)",
 );
+
 export class MergeEditorCopyContentsToJSON extends Action2 {
 	constructor() {
 		super({

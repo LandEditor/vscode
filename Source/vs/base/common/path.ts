@@ -1177,6 +1177,7 @@ const posixCwd = (() => {
 	// We're already on POSIX, no need for any transformations
 	return () => process.cwd();
 })();
+
 export const posix: IPath = {
 	// path.resolve([from ...], to)
 	resolve(...pathSegments: string[]): string {
@@ -1622,18 +1623,31 @@ export const posix: IPath = {
 };
 posix.win32 = win32.win32 = win32;
 posix.posix = win32.posix = posix;
+
 export const normalize = platformIsWin32 ? win32.normalize : posix.normalize;
+
 export const isAbsolute = platformIsWin32 ? win32.isAbsolute : posix.isAbsolute;
+
 export const join = platformIsWin32 ? win32.join : posix.join;
+
 export const resolve = platformIsWin32 ? win32.resolve : posix.resolve;
+
 export const relative = platformIsWin32 ? win32.relative : posix.relative;
+
 export const dirname = platformIsWin32 ? win32.dirname : posix.dirname;
+
 export const basename = platformIsWin32 ? win32.basename : posix.basename;
+
 export const extname = platformIsWin32 ? win32.extname : posix.extname;
+
 export const format = platformIsWin32 ? win32.format : posix.format;
+
 export const parse = platformIsWin32 ? win32.parse : posix.parse;
+
 export const toNamespacedPath = platformIsWin32
 	? win32.toNamespacedPath
 	: posix.toNamespacedPath;
+
 export const sep = platformIsWin32 ? win32.sep : posix.sep;
+
 export const delimiter = platformIsWin32 ? win32.delimiter : posix.delimiter;

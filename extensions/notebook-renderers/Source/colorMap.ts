@@ -6,6 +6,7 @@ export const ansiColorIdentifiers: {
 	colorName: string;
 	colorValue: string;
 }[] = [];
+
 export const ansiColorMap: {
 	[key: string]: {
 		index: number;

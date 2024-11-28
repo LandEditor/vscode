@@ -17,6 +17,7 @@ export const diffMoveBorder = registerColor(
 		"The border color for text that got moved in the diff editor.",
 	),
 );
+
 export const diffMoveBorderActive = registerColor(
 	"diffEditor.moveActive.border",
 	"#FFA500",
@@ -25,6 +26,7 @@ export const diffMoveBorderActive = registerColor(
 		"The active border color for text that got moved in the diff editor.",
 	),
 );
+
 export const diffEditorUnchangedRegionShadow = registerColor(
 	"diffEditor.unchangedRegionShadow",
 	{
@@ -38,6 +40,7 @@ export const diffEditorUnchangedRegionShadow = registerColor(
 		"The color of the shadow around unchanged region widgets.",
 	),
 );
+
 export const diffInsertIcon = registerIcon(
 	"diff-insert",
 	Codicon.add,
@@ -46,6 +49,7 @@ export const diffInsertIcon = registerIcon(
 		"Line decoration for inserts in the diff editor.",
 	),
 );
+
 export const diffRemoveIcon = registerIcon(
 	"diff-remove",
 	Codicon.remove,
@@ -54,6 +58,7 @@ export const diffRemoveIcon = registerIcon(
 		"Line decoration for removals in the diff editor.",
 	),
 );
+
 export const diffLineAddDecorationBackgroundWithIndicator =
 	ModelDecorationOptions.register({
 		className: "line-insert",
@@ -63,6 +68,7 @@ export const diffLineAddDecorationBackgroundWithIndicator =
 			"insert-sign " + ThemeIcon.asClassName(diffInsertIcon),
 		marginClassName: "gutter-insert",
 	});
+
 export const diffLineDeleteDecorationBackgroundWithIndicator =
 	ModelDecorationOptions.register({
 		className: "line-delete",
@@ -72,12 +78,14 @@ export const diffLineDeleteDecorationBackgroundWithIndicator =
 			"delete-sign " + ThemeIcon.asClassName(diffRemoveIcon),
 		marginClassName: "gutter-delete",
 	});
+
 export const diffLineAddDecorationBackground = ModelDecorationOptions.register({
 	className: "line-insert",
 	description: "line-insert",
 	isWholeLine: true,
 	marginClassName: "gutter-insert",
 });
+
 export const diffLineDeleteDecorationBackground =
 	ModelDecorationOptions.register({
 		className: "line-delete",
@@ -85,30 +93,36 @@ export const diffLineDeleteDecorationBackground =
 		isWholeLine: true,
 		marginClassName: "gutter-delete",
 	});
+
 export const diffAddDecoration = ModelDecorationOptions.register({
 	className: "char-insert",
 	description: "char-insert",
 	shouldFillLineOnLineBreak: true,
 });
+
 export const diffWholeLineAddDecoration = ModelDecorationOptions.register({
 	className: "char-insert",
 	description: "char-insert",
 	isWholeLine: true,
 });
+
 export const diffAddDecorationEmpty = ModelDecorationOptions.register({
 	className: "char-insert diff-range-empty",
 	description: "char-insert diff-range-empty",
 });
+
 export const diffDeleteDecoration = ModelDecorationOptions.register({
 	className: "char-delete",
 	description: "char-delete",
 	shouldFillLineOnLineBreak: true,
 });
+
 export const diffWholeLineDeleteDecoration = ModelDecorationOptions.register({
 	className: "char-delete",
 	description: "char-delete",
 	isWholeLine: true,
 });
+
 export const diffDeleteDecorationEmpty = ModelDecorationOptions.register({
 	className: "char-delete diff-range-empty",
 	description: "char-delete diff-range-empty",

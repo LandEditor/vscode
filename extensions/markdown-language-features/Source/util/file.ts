@@ -18,6 +18,7 @@ export const markdownFileExtensions = Object.freeze<string[]>([
 	"mdtext",
 	"workbook",
 ]);
+
 export function isMarkdownFile(document: vscode.TextDocument) {
 	return document.languageId === "markdown";
 }

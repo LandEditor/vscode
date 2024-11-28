@@ -57,6 +57,7 @@ import { IConfigurationService } from '../../configuration/common/configuration.
 import { isLinux } from '../../../base/common/platform.js';
 
 export const INativeServerExtensionManagementService = refineServiceDecorator<IExtensionManagementService, INativeServerExtensionManagementService>(IExtensionManagementService);
+
 export interface INativeServerExtensionManagementService extends IExtensionManagementService {
 	readonly _serviceBrand: undefined;
 	scanAllUserInstalledExtensions(): Promise<ILocalExtension[]>;

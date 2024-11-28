@@ -11,6 +11,7 @@ import { ViewContainerLocation } from "../../../common/views.js";
 
 export const IPaneCompositePartService =
 	createDecorator<IPaneCompositePartService>("paneCompositePartService");
+
 export interface IPaneCompositePartService {
 	readonly _serviceBrand: undefined;
 	readonly onDidPaneCompositeOpen: Event<{

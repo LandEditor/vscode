@@ -20,6 +20,7 @@ export function getLocale(extension: IGalleryExtension): string | undefined {
 export const ILanguagePackService = createDecorator<ILanguagePackService>(
 	"languagePackService",
 );
+
 export interface ILanguagePackItem extends IQuickPickItem {
 	readonly extensionId?: string;
 	readonly galleryExtension?: IGalleryExtension;

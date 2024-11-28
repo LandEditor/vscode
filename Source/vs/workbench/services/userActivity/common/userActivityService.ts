@@ -49,9 +49,11 @@ export interface IUserActivityService {
 }
 
 const MARK_INACTIVE_DEBOUNCE = 10000;
+
 export const IUserActivityService = createDecorator<IUserActivityService>(
 	"IUserActivityService",
 );
+
 export class UserActivityService
 	extends Disposable
 	implements IUserActivityService

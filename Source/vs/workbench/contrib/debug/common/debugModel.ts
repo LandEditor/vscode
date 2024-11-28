@@ -834,6 +834,7 @@ const KEEP_SUBTLE_FRAME_AT_TOP_REASONS: readonly string[] = [
 	"step",
 	"function breakpoint",
 ];
+
 export class Thread implements IThread {
 	private callStack: IStackFrame[];
 	private staleCallStack: IStackFrame[];
@@ -1061,6 +1062,7 @@ export const getUriForDebugMemory = (
 			: undefined,
 	});
 };
+
 export class MemoryRegion extends Disposable implements IMemoryRegion {
 	private readonly invalidateEmitter = this._register(
 		new Emitter<IMemoryInvalidationEvent>(),

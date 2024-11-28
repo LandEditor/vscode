@@ -21,6 +21,7 @@ const SettingsEditorIcon = registerIcon(
 		"Icon of the settings editor label.",
 	),
 );
+
 export class SettingsEditor2Input extends EditorInput {
 	static readonly ID: string = "workbench.input.settings2";
 	private readonly _settingsModel: Settings2EditorModel;

@@ -6,6 +6,7 @@ import { localize } from "../../../../nls.js";
 import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
 
 export type MergeEditorLayoutKind = "mixed" | "columns";
+
 export const ctxIsMergeEditor = new RawContextKey<boolean>(
 	"isMergeEditor",
 	false,
@@ -14,6 +15,7 @@ export const ctxIsMergeEditor = new RawContextKey<boolean>(
 		description: localize("is", "The editor is a merge editor"),
 	},
 );
+
 export const ctxIsMergeResultEditor = new RawContextKey<boolean>(
 	"isMergeResultEditor",
 	false,
@@ -25,6 +27,7 @@ export const ctxIsMergeResultEditor = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ctxMergeEditorLayout = new RawContextKey<MergeEditorLayoutKind>(
 	"mergeEditorLayout",
 	"mixed",
@@ -36,6 +39,7 @@ export const ctxMergeEditorLayout = new RawContextKey<MergeEditorLayoutKind>(
 		),
 	},
 );
+
 export const ctxMergeEditorShowBase = new RawContextKey<boolean>(
 	"mergeEditorShowBase",
 	false,
@@ -47,6 +51,7 @@ export const ctxMergeEditorShowBase = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ctxMergeEditorShowBaseAtTop = new RawContextKey<boolean>(
 	"mergeEditorShowBaseAtTop",
 	false,
@@ -58,6 +63,7 @@ export const ctxMergeEditorShowBaseAtTop = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ctxMergeEditorShowNonConflictingChanges =
 	new RawContextKey<boolean>("mergeEditorShowNonConflictingChanges", false, {
 		type: "boolean",
@@ -66,6 +72,7 @@ export const ctxMergeEditorShowNonConflictingChanges =
 			"If the merge editor shows non-conflicting changes",
 		),
 	});
+
 export const ctxMergeBaseUri = new RawContextKey<string>(
 	"mergeEditorBaseUri",
 	"",
@@ -77,6 +84,7 @@ export const ctxMergeBaseUri = new RawContextKey<string>(
 		),
 	},
 );
+
 export const ctxMergeResultUri = new RawContextKey<string>(
 	"mergeEditorResultUri",
 	"",
@@ -88,6 +96,7 @@ export const ctxMergeResultUri = new RawContextKey<string>(
 		),
 	},
 );
+
 export interface MergeEditorContents {
 	languageId: string;
 	base: string;

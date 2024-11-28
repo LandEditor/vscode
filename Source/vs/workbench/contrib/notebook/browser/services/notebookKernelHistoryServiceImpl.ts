@@ -32,6 +32,7 @@ interface ISerializedKernelsList {
 }
 
 const MAX_KERNELS_IN_HISTORY = 5;
+
 export class NotebookKernelHistoryService
 	extends Disposable
 	implements INotebookKernelHistoryService

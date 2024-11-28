@@ -46,6 +46,7 @@ export type IChatMessagePart =
 	| IChatMessageTextPart
 	| IChatMessageToolResultPart
 	| IChatResponseToolUsePart;
+
 export interface IChatMessage {
 	readonly name?: string | undefined;
 	readonly role: ChatMessageRole;
@@ -68,6 +69,7 @@ export interface IChatResponseToolUsePart {
 export type IChatResponsePart =
 	| IChatResponseTextPart
 	| IChatResponseToolUsePart;
+
 export interface IChatResponseFragment {
 	index: number;
 	part: IChatResponsePart;
@@ -120,6 +122,7 @@ export interface ILanguageModelChatSelector {
 export const ILanguageModelsService = createDecorator<ILanguageModelsService>(
 	"ILanguageModelsService",
 );
+
 export interface ILanguageModelsChangeEvent {
 	added?: {
 		identifier: string;
@@ -202,6 +205,7 @@ export const languageModelExtensionPoint =
 			}
 		},
 	});
+
 export class LanguageModelsService implements ILanguageModelsService {
 	readonly _serviceBrand: undefined;
 	private readonly _store = new DisposableStore();

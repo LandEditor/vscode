@@ -11,6 +11,7 @@ import {
 import { INotebookLoggingService } from "../../common/notebookLoggingService.js";
 
 const logChannelId = "notebook.rendering";
+
 export class NotebookLoggingService
 	extends Disposable
 	implements INotebookLoggingService

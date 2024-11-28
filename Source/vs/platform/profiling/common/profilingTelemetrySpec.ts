@@ -63,6 +63,7 @@ type TelemetrySampleDataClassification = {
 		comment: "The source - either renderer or an extension";
 	};
 };
+
 export interface SampleData {
 	perfBaseline: number;
 	sample: BottomUpSample;

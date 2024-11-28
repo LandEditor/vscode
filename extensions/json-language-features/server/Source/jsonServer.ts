@@ -93,6 +93,7 @@ const workspaceContext = {
 		return Utils.resolvePath(URI.parse(base), relativePath).toString();
 	},
 };
+
 export interface RequestService {
 	getContent(uri: string): Promise<string>;
 }

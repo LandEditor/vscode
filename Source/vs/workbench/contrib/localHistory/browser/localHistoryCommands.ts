@@ -76,6 +76,7 @@ const LOCAL_HISTORY_CATEGORY = localize2(
 const CTX_LOCAL_HISTORY_ENABLED = ContextKeyExpr.has(
 	"config.workbench.localHistory.enabled",
 );
+
 export interface ITimelineCommandArgument {
 	uri: URI;
 	handle: string;
@@ -964,11 +965,13 @@ export function toDiffEditorArguments(
 	resource: URI,
 	options?: IEditorOptions,
 ): unknown[];
+
 export function toDiffEditorArguments(
 	previousEntry: IWorkingCopyHistoryEntry,
 	entry: IWorkingCopyHistoryEntry,
 	options?: IEditorOptions,
 ): unknown[];
+
 export function toDiffEditorArguments(
 	arg1: IWorkingCopyHistoryEntry,
 	arg2: IWorkingCopyHistoryEntry | URI,

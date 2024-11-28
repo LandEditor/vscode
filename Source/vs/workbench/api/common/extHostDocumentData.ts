@@ -18,6 +18,7 @@ import { MainThreadDocumentsShape } from "./extHost.protocol.js";
 import { EndOfLine, Position, Range } from "./extHostTypes.js";
 
 const _languageId2WordDefinition = new Map<string, RegExp>();
+
 export function setWordDefinitionFor(
 	languageId: string,
 	wordDefinition: RegExp | undefined,

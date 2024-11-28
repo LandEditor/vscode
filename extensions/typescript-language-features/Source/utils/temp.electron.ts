@@ -42,12 +42,14 @@ const rootTempDir = lazy(() => {
 
 	return path.join(os.tmpdir(), filename);
 });
+
 export const instanceTempDir = lazy(() => {
 	const dir = path.join(rootTempDir.value, makeRandomHexString(20));
 	fs.mkdirSync(dir, { recursive: true });
 
 	return dir;
 });
+
 export function getTempFile(prefix: string): string {
 	return path.join(
 		instanceTempDir.value,

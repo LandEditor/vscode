@@ -15,6 +15,7 @@ export interface IRemoteTunnelSession {
 export const IRemoteTunnelService = createDecorator<IRemoteTunnelService>(
 	"IRemoteTunnelService",
 );
+
 export interface IRemoteTunnelService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeTunnelStatus: Event<TunnelStatus>;
@@ -41,11 +42,13 @@ export interface InactiveTunnelMode {
 export const INACTIVE_TUNNEL_MODE: InactiveTunnelMode = { active: false };
 /** Saved mode for the tunnel. */
 export type TunnelMode = ActiveTunnelMode | InactiveTunnelMode;
+
 export type TunnelStatus =
 	| TunnelStates.Connected
 	| TunnelStates.Disconnected
 	| TunnelStates.Connecting
 	| TunnelStates.Uninitialized;
+
 export namespace TunnelStates {
 	export interface Uninitialized {
 		readonly type: "uninitialized";
@@ -87,9 +90,13 @@ export interface ConnectionInfo {
 	isAttached: boolean;
 }
 export const CONFIGURATION_KEY_PREFIX = "remote.tunnels.access";
+
 export const CONFIGURATION_KEY_HOST_NAME =
 	CONFIGURATION_KEY_PREFIX + ".hostNameOverride";
+
 export const CONFIGURATION_KEY_PREVENT_SLEEP =
 	CONFIGURATION_KEY_PREFIX + ".preventSleep";
+
 export const LOG_ID = "remoteTunnelService";
+
 export const LOGGER_NAME = localize("remoteTunnelLog", "Remote Tunnel Service");

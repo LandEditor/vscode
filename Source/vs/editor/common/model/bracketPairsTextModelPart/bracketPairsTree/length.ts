@@ -27,7 +27,9 @@ export function lengthDiff(
 export type Length = {
 	_brand: "Length";
 };
+
 export const lengthZero = 0 as any as Length;
+
 export function lengthIsZero(length: Length): boolean {
 	return (length as any as number) === 0;
 }
@@ -68,6 +70,7 @@ export function lengthGetColumnCountIfZeroLineCount(length: Length): number {
 // [10 lines, 5 cols] + [ 0 lines, 3 cols] = [10 lines, 8 cols]
 // [10 lines, 5 cols] + [20 lines, 3 cols] = [30 lines, 3 cols]
 export function lengthAdd(length1: Length, length2: Length): Length;
+
 export function lengthAdd(l1: any, l2: any): Length {
 	let r = l1 + l2;
 

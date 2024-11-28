@@ -44,7 +44,9 @@ export type EditorAssociation = {
 	readonly viewType: string;
 	readonly filenamePattern?: string;
 };
+
 export type EditorAssociations = readonly EditorAssociation[];
+
 export const editorsAssociationsSettingId = "workbench.editorAssociations";
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
@@ -66,6 +68,7 @@ const editorAssociationsConfigurationNode: IConfigurationNode = {
 		},
 	},
 };
+
 export interface IEditorType {
 	readonly id: string;
 	readonly displayName: string;
@@ -92,6 +95,7 @@ export const enum ResolvedStatus {
 	NONE = 2,
 }
 export type ResolvedEditor = EditorInputWithOptionsAndGroup | ResolvedStatus;
+
 export type RegisteredEditorOptions = {
 	/**
 	 * If your editor cannot be opened in multiple groups for the same resource
@@ -103,6 +107,7 @@ export type RegisteredEditorOptions = {
 	 */
 	canSupportResource?: (resource: URI) => boolean;
 };
+
 export type RegisteredEditorInfo = {
 	id: string;
 	label: string;
@@ -112,22 +117,27 @@ export type RegisteredEditorInfo = {
 type EditorInputFactoryResult =
 	| EditorInputWithOptions
 	| Promise<EditorInputWithOptions>;
+
 export type EditorInputFactoryFunction = (
 	editorInput: IResourceEditorInput | ITextResourceEditorInput,
 	group: IEditorGroup,
 ) => EditorInputFactoryResult;
+
 export type UntitledEditorInputFactoryFunction = (
 	untitledEditorInput: IUntitledTextResourceEditorInput,
 	group: IEditorGroup,
 ) => EditorInputFactoryResult;
+
 export type DiffEditorInputFactoryFunction = (
 	diffEditorInput: IResourceDiffEditorInput,
 	group: IEditorGroup,
 ) => EditorInputFactoryResult;
+
 export type MultiDiffEditorInputFactoryFunction = (
 	multiDiffEditorInput: IResourceMultiDiffEditorInput,
 	group: IEditorGroup,
 ) => EditorInputFactoryResult;
+
 export type MergeEditorInputFactoryFunction = (
 	mergeEditorInput: IResourceMergeEditorInput,
 	group: IEditorGroup,
@@ -139,7 +149,9 @@ type EditorInputFactories = {
 	createMultiDiffEditorInput?: MultiDiffEditorInputFactoryFunction;
 	createMergeEditorInput?: MergeEditorInputFactoryFunction;
 };
+
 export type EditorInputFactoryObject = AtLeastOne<EditorInputFactories>;
+
 export interface IEditorResolverService {
 	readonly _serviceBrand: undefined;
 	/**

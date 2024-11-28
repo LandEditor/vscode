@@ -70,6 +70,7 @@ registerAction2(
 		}
 	},
 );
+
 export function getViewsStateStorageId(viewContainerStorageId: string): string {
 	return `${viewContainerStorageId}.hidden`;
 }

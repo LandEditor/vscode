@@ -79,10 +79,12 @@ export interface IToolImpl {
 }
 export const ILanguageModelToolsService =
 	createDecorator<ILanguageModelToolsService>("ILanguageModelToolsService");
+
 export type CountTokensCallback = (
 	input: string,
 	token: CancellationToken,
 ) => Promise<number>;
+
 export interface ILanguageModelToolsService {
 	_serviceBrand: undefined;
 	onDidChangeTools: Event<void>;

@@ -30,6 +30,7 @@ const eventListenerOptions: AddEventListenerOptions = {
 	capture:
 		true /** should dispatch first (before anyone stopPropagation()) */,
 };
+
 export class DomActivityTracker extends Disposable {
 	constructor(userActivityService: IUserActivityService) {
 		super();

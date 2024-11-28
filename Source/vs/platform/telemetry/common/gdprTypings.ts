@@ -24,19 +24,24 @@ type IGDPRPropertyWithoutMetadata = Omit<
 	IGDPRProperty,
 	"owner" | "comment" | "expiration"
 >;
+
 export type OmitMetadata<T> = Omit<T, "owner" | "comment" | "expiration">;
+
 export type ClassifiedEvent<T extends IGDPRPropertyWithoutMetadata> = {
 	[k in keyof T]: any;
 };
+
 export type StrictPropertyChecker<TEvent, TClassification, TError> =
 	keyof TEvent extends keyof OmitMetadata<TClassification>
 		? keyof OmitMetadata<TClassification> extends keyof TEvent
 			? TEvent
 			: TError
 		: TError;
+
 export type StrictPropertyCheckError = {
 	error: "Type of classified event does not match event properties";
 };
+
 export type StrictPropertyCheck<
 	T extends IGDPRProperty,
 	E,

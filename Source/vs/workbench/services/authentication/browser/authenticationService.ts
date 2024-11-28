@@ -51,6 +51,7 @@ export type AuthenticationSessionInfo = {
 	readonly providerId: string;
 	readonly canSignOut?: boolean;
 };
+
 export async function getCurrentAuthenticationSessionInfo(
 	secretStorageService: ISecretStorageService,
 	productService: IProductService,

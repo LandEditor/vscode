@@ -126,4 +126,5 @@ ProblemMatcherRegistry.onReady().then(() => {
 		console.log("Installing problem matcher ids failed");
 	}
 });
+
 export default schema;

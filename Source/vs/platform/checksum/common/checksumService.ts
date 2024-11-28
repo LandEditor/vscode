@@ -7,6 +7,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IChecksumService =
 	createDecorator<IChecksumService>("checksumService");
+
 export interface IChecksumService {
 	readonly _serviceBrand: undefined;
 	/**

@@ -66,6 +66,7 @@ export type TelemetryData = {
 	discardedHunks: number;
 	responseTypes: string;
 };
+
 export type TelemetryDataClassification = {
 	owner: "jrieken";
 	comment: "Data about an interaction editor session";
@@ -130,6 +131,7 @@ export type TelemetryDataClassification = {
 		comment: "Comma separated list of response types like edits, message, mixed";
 	};
 };
+
 export class SessionWholeRange {
 	private static readonly _options: IModelDecorationOptions =
 		ModelDecorationOptions.register({
@@ -844,6 +846,7 @@ type RawHunkData = {
 	state: HunkState;
 	editState: IChatTextEditGroupState;
 };
+
 export const enum HunkState {
 	Pending = 0,
 	Accepted = 1,

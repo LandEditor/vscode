@@ -6,6 +6,7 @@ export type CodeWindow = Window &
 	typeof globalThis & {
 		readonly vscodeWindowId: number;
 	};
+
 export function ensureCodeWindow(
 	targetWindow: Window,
 	fallbackWindowId: number,
@@ -20,6 +21,7 @@ export function ensureCodeWindow(
 }
 // eslint-disable-next-line no-restricted-globals
 export const mainWindow = window as CodeWindow;
+
 export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
 	if (obj === mainWindow) {
 		return false;

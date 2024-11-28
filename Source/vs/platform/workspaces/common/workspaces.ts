@@ -34,6 +34,7 @@ import {
 
 export const IWorkspacesService =
 	createDecorator<IWorkspacesService>("workspacesService");
+
 export interface IWorkspacesService {
 	readonly _serviceBrand: undefined;
 	// Workspaces Management
@@ -65,6 +66,7 @@ export interface IRecentlyOpened {
 	files: IRecentFile[];
 }
 export type IRecent = IRecentWorkspace | IRecentFolder | IRecentFile;
+
 export interface IRecentWorkspace {
 	readonly workspace: IWorkspaceIdentifier;
 	label?: string;
@@ -117,6 +119,7 @@ function isRawUriWorkspaceFolder(obj: unknown): obj is IRawUriWorkspaceFolder {
 export type IStoredWorkspaceFolder =
 	| IRawFileWorkspaceFolder
 	| IRawUriWorkspaceFolder;
+
 export interface IStoredWorkspace extends IBaseWorkspace {
 	folders: IStoredWorkspaceFolder[];
 }

@@ -28,6 +28,7 @@ export interface IResolveAuthorityOKResult {
 export type IResolveAuthorityResult =
 	| IResolveAuthorityErrorResult
 	| IResolveAuthorityOKResult;
+
 export interface IExtensionHostProxy {
 	resolveAuthority(
 		remoteAuthority: string,

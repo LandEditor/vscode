@@ -15,6 +15,7 @@ const SecondLevelDomainMatcher = /([^@:.]+\.[^@:.]+)(:\d+)?$/;
 const RemoteMatcher = /^\s*url\s*=\s*(.+\S)\s*$/gm;
 
 const AnyButDot = /[^.]/g;
+
 export const AllowedSecondLevelDomains = [
 	"github.com",
 	"bitbucket.org",

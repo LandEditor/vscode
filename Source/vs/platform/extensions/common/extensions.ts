@@ -11,8 +11,11 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 import { getRemoteName } from "../../remote/common/remoteHosts.js";
 
 export const USER_MANIFEST_CACHE_FILE = "extensions.user.cache";
+
 export const BUILTIN_MANIFEST_CACHE_FILE = "extensions.builtin.cache";
+
 export const UNDEFINED_PUBLISHER = "undefined_publisher";
+
 export interface ICommand {
 	command: string;
 	title: string | ILocalizedString;
@@ -214,10 +217,13 @@ export const ALL_EXTENSION_KINDS: readonly ExtensionKind[] = [
 	"workspace",
 	"web",
 ];
+
 export type LimitedWorkspaceSupportType = "limited";
+
 export type ExtensionUntrustedWorkspaceSupportType =
 	| boolean
 	| LimitedWorkspaceSupportType;
+
 export type ExtensionUntrustedWorkspaceSupport =
 	| {
 			supported: true;
@@ -231,9 +237,11 @@ export type ExtensionUntrustedWorkspaceSupport =
 			description: string;
 			restrictedConfigurations?: string[];
 	  };
+
 export type ExtensionVirtualWorkspaceSupportType =
 	| boolean
 	| LimitedWorkspaceSupportType;
+
 export type ExtensionVirtualWorkspaceSupport =
 	| boolean
 	| {
@@ -243,6 +251,7 @@ export type ExtensionVirtualWorkspaceSupport =
 			supported: false | LimitedWorkspaceSupportType;
 			description: string;
 	  };
+
 export function getWorkspaceSupportTypeMessage(
 	supportType:
 		| ExtensionUntrustedWorkspaceSupport
@@ -282,6 +291,7 @@ export const EXTENSION_CATEGORIES = [
 	"Visualization",
 	"Other",
 ];
+
 export interface IRelaxedExtensionManifest {
 	name: string;
 	displayName?: string;
@@ -320,6 +330,7 @@ export interface IRelaxedExtensionManifest {
 	capabilities?: IExtensionCapabilities;
 }
 export type IExtensionManifest = Readonly<IRelaxedExtensionManifest>;
+
 export const enum ExtensionType {
 	System,
 	User,
@@ -478,6 +489,7 @@ export interface IRelaxedExtensionDescription
 	preRelease: boolean;
 }
 export type IExtensionDescription = Readonly<IRelaxedExtensionDescription>;
+
 export function isApplicationScopedExtension(
 	manifest: IExtensionManifest,
 ): boolean {
@@ -528,6 +540,7 @@ export const IBuiltinExtensionsScannerService =
 	createDecorator<IBuiltinExtensionsScannerService>(
 		"IBuiltinExtensionsScannerService",
 	);
+
 export interface IBuiltinExtensionsScannerService {
 	readonly _serviceBrand: undefined;
 	scanBuiltinExtensions(): Promise<IExtension[]>;

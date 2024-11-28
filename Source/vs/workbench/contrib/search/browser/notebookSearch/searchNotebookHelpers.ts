@@ -24,9 +24,11 @@ import {
 export type INotebookCellMatch =
 	| INotebookCellMatchWithModel
 	| INotebookCellMatchNoModel;
+
 export type INotebookFileMatch =
 	| INotebookFileMatchWithModel
 	| INotebookFileMatchNoModel;
+
 export function getIDFromINotebookCellMatch(match: INotebookCellMatch): string {
 	if (isINotebookCellMatchWithModel(match)) {
 		return match.cell.id;

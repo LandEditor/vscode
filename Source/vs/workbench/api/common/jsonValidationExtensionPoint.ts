@@ -66,6 +66,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 		},
 	},
 });
+
 export class JSONValidationExtensionPoint {
 	constructor() {
 		configurationExtPoint.setHandler((extensions) => {

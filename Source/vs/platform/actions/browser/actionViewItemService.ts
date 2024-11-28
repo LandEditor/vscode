@@ -19,6 +19,7 @@ import { MenuId } from "../common/actions.js";
 export const IActionViewItemService = createDecorator<IActionViewItemService>(
 	"IActionViewItemService",
 );
+
 export interface IActionViewItemService {
 	_serviceBrand: undefined;
 	onDidChange: Event<MenuId>;

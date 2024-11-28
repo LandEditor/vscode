@@ -38,6 +38,7 @@ export type {
 	Task,
 	ITaskTerminateResponse as TaskTerminateResponse,
 };
+
 export const CustomExecutionSupportedContext = new RawContextKey<boolean>(
 	"customExecutionSupported",
 	false,
@@ -46,6 +47,7 @@ export const CustomExecutionSupportedContext = new RawContextKey<boolean>(
 		"Whether CustomExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution.",
 	),
 );
+
 export const ShellExecutionSupportedContext = new RawContextKey<boolean>(
 	"shellExecutionSupported",
 	false,
@@ -54,6 +56,7 @@ export const ShellExecutionSupportedContext = new RawContextKey<boolean>(
 		"Whether ShellExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution.",
 	),
 );
+
 export const TaskCommandsRegistered = new RawContextKey<boolean>(
 	"taskCommandsRegistered",
 	false,
@@ -62,6 +65,7 @@ export const TaskCommandsRegistered = new RawContextKey<boolean>(
 		"Whether the task commands have been registered yet",
 	),
 );
+
 export const ProcessExecutionSupportedContext = new RawContextKey<boolean>(
 	"processExecutionSupported",
 	false,
@@ -70,6 +74,7 @@ export const ProcessExecutionSupportedContext = new RawContextKey<boolean>(
 		"Whether ProcessExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution.",
 	),
 );
+
 export const ServerlessWebContext = new RawContextKey<boolean>(
 	"serverlessWebContext",
 	false,
@@ -78,6 +83,7 @@ export const ServerlessWebContext = new RawContextKey<boolean>(
 		"True when in the web with no remote authority.",
 	),
 );
+
 export const TaskExecutionSupportedContext = ContextKeyExpr.or(
 	ContextKeyExpr.and(
 		ShellExecutionSupportedContext,
@@ -85,7 +91,9 @@ export const TaskExecutionSupportedContext = ContextKeyExpr.or(
 	),
 	CustomExecutionSupportedContext,
 );
+
 export const ITaskService = createDecorator<ITaskService>("taskService");
+
 export interface ITaskProvider {
 	provideTasks(validTypes: IStringDictionary<boolean>): Promise<ITaskSet>;
 	resolveTask(task: ConfiguringTask): Promise<ContributedTask | undefined>;

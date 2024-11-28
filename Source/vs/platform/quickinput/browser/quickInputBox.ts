@@ -21,6 +21,7 @@ import Severity from "../../../base/common/severity.js";
 import "./media/quickInput.css";
 
 const $ = dom.$;
+
 export class QuickInputBox extends Disposable {
 	private container: HTMLElement;
 	private findInput: FindInput;

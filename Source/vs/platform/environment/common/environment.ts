@@ -11,10 +11,12 @@ import { NativeParsedArgs } from "./argv.js";
 
 export const IEnvironmentService =
 	createDecorator<IEnvironmentService>("environmentService");
+
 export const INativeEnvironmentService = refineServiceDecorator<
 	IEnvironmentService,
 	INativeEnvironmentService
 >(IEnvironmentService);
+
 export interface IDebugParams {
 	port: number | null;
 

@@ -285,6 +285,7 @@ CommandsRegistry.registerCommand(
 //#endregion
 //#region Actions
 const category = localize2("search", "Search Editor");
+
 export type LegacySearchEditorArgs = Partial<{
 	query: string;
 	includes: string;
@@ -322,6 +323,7 @@ const translateLegacyConfig = (
 
 	return config;
 };
+
 export type OpenSearchEditorArgs = Partial<
 	SearchEditorConstants.SearchConfiguration & {
 		triggerSearch: boolean;

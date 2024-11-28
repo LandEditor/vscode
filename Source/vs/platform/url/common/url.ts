@@ -7,6 +7,7 @@ import { URI, UriComponents } from "../../../base/common/uri.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IURLService = createDecorator<IURLService>("urlService");
+
 export interface IOpenURLOptions {
 	/**
 	 * If not provided or `false`, signals that the

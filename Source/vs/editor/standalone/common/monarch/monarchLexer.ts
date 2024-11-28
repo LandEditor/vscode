@@ -465,6 +465,7 @@ export type ILoadStatus =
 			loaded: false;
 			promise: Promise<void>;
 	  };
+
 export class MonarchTokenizer
 	extends Disposable
 	implements languages.ITokenizationSupport, IDisposable

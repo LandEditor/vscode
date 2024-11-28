@@ -8,6 +8,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const IJSONEditingService =
 	createDecorator<IJSONEditingService>("jsonEditingService");
+
 export const enum JSONEditingErrorCode {
 	/**
 	 * Error when trying to write to a file that contains JSON errors.

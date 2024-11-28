@@ -33,6 +33,7 @@ export const parse = new RequestType<
 	Token[],
 	any
 >("markdown/parse");
+
 export const fs_readFile = new RequestType<
 	{
 		uri: string;
@@ -40,6 +41,7 @@ export const fs_readFile = new RequestType<
 	number[],
 	any
 >("markdown/fs/readFile");
+
 export const fs_readDirectory = new RequestType<
 	{
 		uri: string;
@@ -52,6 +54,7 @@ export const fs_readDirectory = new RequestType<
 	][],
 	any
 >("markdown/fs/readDirectory");
+
 export const fs_stat = new RequestType<
 	{
 		uri: string;
@@ -62,6 +65,7 @@ export const fs_stat = new RequestType<
 	| undefined,
 	any
 >("markdown/fs/stat");
+
 export const fs_watcher_create = new RequestType<
 	{
 		id: number;
@@ -72,6 +76,7 @@ export const fs_watcher_create = new RequestType<
 	void,
 	any
 >("markdown/fs/watcher/create");
+
 export const fs_watcher_delete = new RequestType<
 	{
 		id: number;
@@ -79,6 +84,7 @@ export const fs_watcher_delete = new RequestType<
 	void,
 	any
 >("markdown/fs/watcher/delete");
+
 export const findMarkdownFilesInWorkspace = new RequestType<{}, string[], any>(
 	"markdown/findMarkdownFilesInWorkspace",
 );
@@ -91,6 +97,7 @@ export const getReferencesToFileInWorkspace = new RequestType<
 	lsp.Location[],
 	any
 >("markdown/getReferencesToFileInWorkspace");
+
 export const getEditForFileRenames = new RequestType<
 	Array<FileRename>,
 	{
@@ -99,6 +106,7 @@ export const getEditForFileRenames = new RequestType<
 	},
 	any
 >("markdown/getEditForFileRenames");
+
 export const prepareUpdatePastedLinks = new RequestType<
 	{
 		uri: string;
@@ -107,6 +115,7 @@ export const prepareUpdatePastedLinks = new RequestType<
 	string,
 	any
 >("markdown/prepareUpdatePastedLinks");
+
 export const getUpdatePastedLinksEdit = new RequestType<
 	{
 		pasteIntoDoc: string;
@@ -116,6 +125,7 @@ export const getUpdatePastedLinksEdit = new RequestType<
 	lsp.TextEdit[] | undefined,
 	any
 >("markdown/getUpdatePastedLinksEdit");
+
 export const fs_watcher_onChange = new RequestType<
 	{
 		id: number;
@@ -125,6 +135,7 @@ export const fs_watcher_onChange = new RequestType<
 	void,
 	any
 >("markdown/fs/watcher/onChange");
+
 export const resolveLinkTarget = new RequestType<
 	{
 		linkText: string;

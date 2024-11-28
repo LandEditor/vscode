@@ -8,6 +8,7 @@ import { IPartsSplash } from "../../../../platform/theme/common/themeService.js"
 export const ISplashStorageService = createDecorator<ISplashStorageService>(
 	"ISplashStorageService",
 );
+
 export interface ISplashStorageService {
 	readonly _serviceBrand: undefined;
 	saveWindowSplash(splash: IPartsSplash): Promise<void>;

@@ -48,6 +48,7 @@ import { TextSearchEngineAdapter } from "./textSearchAdapter.js";
 
 export type IProgressCallback = (p: ISerializedSearchProgressItem) => void;
 type IFileProgressCallback = (p: IFileSearchProgressItem) => void;
+
 export class SearchService implements IRawSearchService {
 	private static readonly BATCH_SIZE = 512;
 	private caches: {

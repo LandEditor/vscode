@@ -35,6 +35,7 @@ const EditorOpenPositioning = {
 	FIRST: "first",
 	LAST: "last",
 };
+
 export interface IEditorOpenOptions {
 	readonly pinned?: boolean;
 	readonly sticky?: boolean;

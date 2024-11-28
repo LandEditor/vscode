@@ -297,6 +297,7 @@ export class CustomEditorLabelService
 }
 export const ICustomEditorLabelService =
 	createDecorator<ICustomEditorLabelService>("ICustomEditorLabelService");
+
 export interface ICustomEditorLabelService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChange: Event<void>;

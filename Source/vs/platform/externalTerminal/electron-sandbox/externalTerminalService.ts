@@ -8,6 +8,7 @@ import { IExternalTerminalService as ICommonExternalTerminalService } from "../c
 
 export const IExternalTerminalService =
 	createDecorator<IExternalTerminalService>("externalTerminal");
+
 export interface IExternalTerminalService
 	extends ICommonExternalTerminalService {
 	readonly _serviceBrand: undefined;

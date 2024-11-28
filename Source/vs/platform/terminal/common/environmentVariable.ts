@@ -28,6 +28,7 @@ export interface IEnvironmentVariableMutatorOptions {
 export type EnvironmentVariableScope = {
 	workspaceFolder?: IWorkspaceFolderData;
 };
+
 export interface IEnvironmentVariableCollection {
 	readonly map: ReadonlyMap<string, IEnvironmentVariableMutator>;
 	readonly descriptionMap?: ReadonlyMap<
@@ -40,10 +41,12 @@ export type ISerializableEnvironmentVariableCollection = [
 	string,
 	IEnvironmentVariableMutator,
 ][];
+
 export type ISerializableEnvironmentDescriptionMap = [
 	string,
 	IEnvironmentVariableCollectionDescription,
 ][];
+
 export interface IExtensionOwnedEnvironmentDescriptionMutator
 	extends IEnvironmentVariableCollectionDescription {
 	readonly extensionIdentifier: string;
@@ -54,6 +57,7 @@ export type ISerializableEnvironmentVariableCollections = [
 	ISerializableEnvironmentVariableCollection,
 	ISerializableEnvironmentDescriptionMap,
 ][];
+
 export interface IExtensionOwnedEnvironmentVariableMutator
 	extends IEnvironmentVariableMutator {
 	readonly extensionIdentifier: string;

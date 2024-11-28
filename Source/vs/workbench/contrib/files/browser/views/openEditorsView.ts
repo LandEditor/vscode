@@ -143,6 +143,7 @@ import {
 } from "../fileConstants.js";
 
 const $ = dom.$;
+
 export class OpenEditorsView extends ViewPane {
 	private static readonly DEFAULT_VISIBLE_OPEN_EDITORS = 9;
 	private static readonly DEFAULT_MIN_VISIBLE_OPEN_EDITORS = 0;

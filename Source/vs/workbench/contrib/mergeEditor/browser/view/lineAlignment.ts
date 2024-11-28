@@ -24,6 +24,7 @@ export type LineAlignment = [
 	baseLineNumber: number,
 	input2LineNumber: number | undefined,
 ];
+
 export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 	const equalRanges1 = toEqualRangeMappings(
 		m.input1Diffs.flatMap((d) => d.rangeMappings),

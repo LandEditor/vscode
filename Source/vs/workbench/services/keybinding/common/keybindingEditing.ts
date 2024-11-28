@@ -31,6 +31,7 @@ import { IUserDataProfileService } from "../../userDataProfile/common/userDataPr
 
 export const IKeybindingEditingService =
 	createDecorator<IKeybindingEditingService>("keybindingEditingService");
+
 export interface IKeybindingEditingService {
 	readonly _serviceBrand: undefined;
 	addKeybinding(

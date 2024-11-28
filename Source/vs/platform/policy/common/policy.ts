@@ -9,11 +9,15 @@ import { Disposable } from "../../../base/common/lifecycle.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export type PolicyName = string;
+
 export type PolicyValue = string | number;
+
 export type PolicyDefinition = {
 	type: "string" | "number";
 };
+
 export const IPolicyService = createDecorator<IPolicyService>("policy");
+
 export interface IPolicyService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChange: Event<readonly PolicyName[]>;

@@ -166,6 +166,7 @@ registerOpenTerminalCommand(
 	OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID,
 	"integrated",
 );
+
 export class ExternalTerminalContribution
 	extends Disposable
 	implements IWorkbenchContribution

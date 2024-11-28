@@ -58,16 +58,23 @@ import { Memento, MementoObject } from "../../../common/memento.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 
 export const WORKSPACE_TRUST_ENABLED = "security.workspace.trust.enabled";
+
 export const WORKSPACE_TRUST_STARTUP_PROMPT =
 	"security.workspace.trust.startupPrompt";
+
 export const WORKSPACE_TRUST_BANNER = "security.workspace.trust.banner";
+
 export const WORKSPACE_TRUST_UNTRUSTED_FILES =
 	"security.workspace.trust.untrustedFiles";
+
 export const WORKSPACE_TRUST_EMPTY_WINDOW =
 	"security.workspace.trust.emptyWindow";
+
 export const WORKSPACE_TRUST_EXTENSION_SUPPORT =
 	"extensions.supportUntrustedWorkspaces";
+
 export const WORKSPACE_TRUST_STORAGE_KEY = "content.trust.model.key";
+
 export class CanonicalWorkspace implements IWorkspace {
 	constructor(
 		private readonly originalWorkspace: IWorkspace,

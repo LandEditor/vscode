@@ -75,6 +75,7 @@ export const ITestExplorerFilterState =
 const tagRe = /!?@([^ ,:]+)/g;
 
 const trimExtraWhitespace = (str: string) => str.replace(/\s\s+/g, " ").trim();
+
 export class TestExplorerFilterState
 	extends Disposable
 	implements ITestExplorerFilterState

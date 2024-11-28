@@ -236,6 +236,7 @@ export class MarkerList {
 }
 export const IMarkerNavigationService =
 	createDecorator<IMarkerNavigationService>("IMarkerNavigationService");
+
 export interface IMarkerNavigationService {
 	readonly _serviceBrand: undefined;
 	registerProvider(provider: IMarkerListProvider): IDisposable;

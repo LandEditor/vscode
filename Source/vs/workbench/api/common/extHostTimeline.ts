@@ -45,6 +45,7 @@ export interface IExtHostTimeline extends ExtHostTimelineShape {
 }
 export const IExtHostTimeline =
 	createDecorator<IExtHostTimeline>("IExtHostTimeline");
+
 export class ExtHostTimeline implements IExtHostTimeline {
 	declare readonly _serviceBrand: undefined;
 	private _proxy: MainThreadTimelineShape;

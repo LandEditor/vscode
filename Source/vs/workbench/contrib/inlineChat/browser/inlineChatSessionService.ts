@@ -21,6 +21,7 @@ export interface ISessionKeyComputer {
 }
 export const IInlineChatSessionService =
 	createDecorator<IInlineChatSessionService>("IInlineChatSessionService");
+
 export interface IInlineChatSessionEvent {
 	readonly editor: ICodeEditor;
 	readonly session: Session;

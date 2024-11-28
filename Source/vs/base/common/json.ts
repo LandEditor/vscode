@@ -98,6 +98,7 @@ export type NodeType =
 	| "number"
 	| "boolean"
 	| "null";
+
 export interface Node {
 	readonly type: NodeType;
 	readonly value?: any;
@@ -108,7 +109,9 @@ export interface Node {
 	readonly children?: Node[];
 }
 export type Segment = string | number;
+
 export type JSONPath = Segment[];
+
 export interface Location {
 	/**
 	 * The previous property key or literal value (string, number, boolean or null) or undefined.

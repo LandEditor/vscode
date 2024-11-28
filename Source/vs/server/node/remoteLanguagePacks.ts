@@ -14,6 +14,7 @@ const nlsMetadataPath = join(FileAccess.asFileUri("").fsPath);
 const defaultMessagesFile = join(nlsMetadataPath, "nls.messages.json");
 
 const nlsConfigurationCache = new Map<string, Promise<INLSConfiguration>>();
+
 export async function getNLSConfiguration(
 	language: string,
 	userDataPath: string,

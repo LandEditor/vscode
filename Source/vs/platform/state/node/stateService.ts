@@ -19,6 +19,7 @@ import { IStateReadService, IStateService } from "./state.js";
 type StorageDatabase = {
 	[key: string]: unknown;
 };
+
 export const enum SaveStrategy {
 	IMMEDIATE,
 	DELAYED,

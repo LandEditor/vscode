@@ -61,6 +61,7 @@ import {
 } from "./settingsLayout.js";
 
 export const ONLINE_SERVICES_SETTING_TAG = "usesOnlineServices";
+
 export interface ISettingsEditorViewState {
 	settingsTarget: SettingsTarget;
 	query?: string; // used to keep track of loading from setInput vs loading from cache
@@ -94,6 +95,7 @@ export type SettingsTreeGroupChild =
 	| SettingsTreeGroupElement
 	| SettingsTreeSettingElement
 	| SettingsTreeNewExtensionsElement;
+
 export class SettingsTreeGroupElement extends SettingsTreeElement {
 	count?: number;
 	label: string;
@@ -1289,6 +1291,7 @@ const featureRegex = /(^|\s)@feature:("([^"]*)"|[^"]\S*)?/g;
 const idRegex = /(^|\s)@id:("([^"]*)"|[^"]\S*)?/g;
 
 const languageRegex = /(^|\s)@lang:("([^"]*)"|[^"]\S*)?/g;
+
 export function parseQuery(query: string): IParsedQuery {
 	/**
 	 * A helper function to parse the query on one type of regex.

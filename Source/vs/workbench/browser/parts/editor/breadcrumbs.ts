@@ -27,6 +27,7 @@ import { GroupIdentifier, IEditorPartOptions } from "../../../common/editor.js";
 export const IBreadcrumbsService = createDecorator<IBreadcrumbsService>(
 	"IEditorBreadcrumbsService",
 );
+
 export interface IBreadcrumbsService {
 	readonly _serviceBrand: undefined;
 	register(group: GroupIdentifier, widget: BreadcrumbsWidget): IDisposable;

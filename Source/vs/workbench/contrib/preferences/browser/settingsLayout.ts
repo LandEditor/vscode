@@ -28,6 +28,7 @@ const defaultCommonlyUsedSettings: string[] = [
 	"files.associations",
 	"workbench.editor.enablePreview",
 ];
+
 export function getCommonlyUsedData(
 	toggleData: ExtensionToggleData | undefined,
 ): ITOCEntry<string> {
@@ -314,6 +315,7 @@ export const tocData: ITOCEntry<string> = {
 		},
 	],
 };
+
 export const knownAcronyms = new Set<string>();
 [
 	"css",
@@ -328,6 +330,7 @@ export const knownAcronyms = new Set<string>();
 	"php",
 	"scm",
 ].forEach((str) => knownAcronyms.add(str));
+
 export const knownTermMappings = new Map<string, string>();
 knownTermMappings.set("power shell", "PowerShell");
 knownTermMappings.set("powershell", "PowerShell");

@@ -25,6 +25,7 @@ const fallback: IReducedTokenizationSupport = {
 	tokenizeEncoded: (buffer: string, hasEOL: boolean, state: IState) =>
 		nullTokenizeEncoded(LanguageId.Null, state),
 };
+
 export function tokenizeToStringSync(
 	languageService: ILanguageService,
 	text: string,

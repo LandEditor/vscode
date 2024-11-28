@@ -49,6 +49,7 @@ const KEY_SIZE = 32;
 const IV_SIZE = 16;
 
 const STEP_SIZE = KEY_SIZE + IV_SIZE;
+
 export class SignService extends AbstractSignService implements ISignService {
 	constructor(
 		@IProductService

@@ -20,6 +20,7 @@ export interface ViewWelcome {
 	readonly [ViewsWelcomeExtensionPointFields.enablement]: string;
 }
 export type ViewsWelcomeExtensionPoint = ViewWelcome[];
+
 export const ViewIdentifierMap: {
 	[key: string]: string;
 } = {
@@ -97,6 +98,7 @@ const viewsWelcomeExtensionPointSchema =
 			},
 		},
 	});
+
 export const viewsWelcomeExtensionPointDescriptor = {
 	extensionPoint: "viewsWelcome",
 	jsonSchema: viewsWelcomeExtensionPointSchema,

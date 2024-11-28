@@ -7,6 +7,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 export const INotebookLoggingService = createDecorator<INotebookLoggingService>(
 	"INotebookLoggingService",
 );
+
 export interface INotebookLoggingService {
 	readonly _serviceBrand: undefined;
 	info(category: string, output: string): void;

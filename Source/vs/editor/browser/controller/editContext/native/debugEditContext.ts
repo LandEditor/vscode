@@ -9,6 +9,7 @@ const COLOR_FOR_CONTROL_BOUNDS = "blue";
 const COLOR_FOR_SELECTION_BOUNDS = "red";
 
 const COLOR_FOR_CHARACTER_BOUNDS = "green";
+
 export class DebugEditContext {
 	private _isDebugging = true;
 	private _controlBounds: DOMRect | null = null;

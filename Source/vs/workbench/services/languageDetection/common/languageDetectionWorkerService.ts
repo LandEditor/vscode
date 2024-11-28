@@ -7,7 +7,9 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const ILanguageDetectionService =
 	createDecorator<ILanguageDetectionService>("ILanguageDetectionService");
+
 export const LanguageDetectionLanguageEventSource = "languageDetection";
+
 export interface ILanguageDetectionService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -32,6 +34,7 @@ export type LanguageDetectionHintConfig = {
 //#region Telemetry events
 export const AutomaticLanguageDetectionLikelyWrongId =
 	"automaticlanguagedetection.likelywrong";
+
 export interface IAutomaticLanguageDetectionLikelyWrongData {
 	currentLanguageId: string;
 	nextLanguageId: string;
@@ -62,7 +65,9 @@ export type AutomaticLanguageDetectionLikelyWrongClassification = {
 		comment: "What the user's model preference is.";
 	};
 };
+
 export const LanguageDetectionStatsId = "automaticlanguagedetection.stats";
+
 export interface ILanguageDetectionStats {
 	languages: string;
 	confidences: string;

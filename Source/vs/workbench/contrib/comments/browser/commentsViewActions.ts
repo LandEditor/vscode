@@ -48,6 +48,7 @@ const CONTEXT_KEY_SORT_BY = new RawContextKey<CommentsSortOrder>(
 	"commentsView.sortBy",
 	CommentsSortOrder.ResourceAscending,
 );
+
 export interface CommentsFiltersChangeEvent {
 	showResolved?: boolean;
 	showUnresolved?: boolean;

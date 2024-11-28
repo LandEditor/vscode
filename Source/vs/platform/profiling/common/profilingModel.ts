@@ -264,6 +264,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 		duration,
 	};
 };
+
 export class BottomUpNode {
 	public static root() {
 		return new BottomUpNode({

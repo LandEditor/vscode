@@ -32,6 +32,7 @@ export class NotebookCellLayoutChangedEvent {
 export type NotebookDiffViewEvent =
 	| NotebookDiffLayoutChangedEvent
 	| NotebookCellLayoutChangedEvent;
+
 export class NotebookDiffEditorEventDispatcher extends Disposable {
 	protected readonly _onDidChangeLayout = this._register(
 		new Emitter<NotebookDiffLayoutChangedEvent>(),

@@ -45,6 +45,7 @@ export type LanguageClientConstructor = (
 	description: string,
 	clientOptions: LanguageClientOptions,
 ) => BaseLanguageClient;
+
 export interface Runtime {
 	TextDecoder: {
 		new (encoding?: string): {
@@ -75,6 +76,7 @@ const cssFormatSettingKeys: (keyof CSSFormatSettings)[] = [
 	"preserveNewLines",
 	"maxPreserveNewLines",
 ];
+
 export async function startClient(
 	context: ExtensionContext,
 	newLanguageClient: LanguageClientConstructor,

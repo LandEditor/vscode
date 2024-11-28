@@ -83,6 +83,7 @@ const openEditorsViewIcon = registerIcon(
 	Codicon.book,
 	localize("openEditorsIcon", "View icon of the open editors view."),
 );
+
 export class ExplorerViewletViewsContribution
 	extends Disposable
 	implements IWorkbenchContribution

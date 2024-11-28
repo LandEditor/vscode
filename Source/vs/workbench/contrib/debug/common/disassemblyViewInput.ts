@@ -16,6 +16,7 @@ const DisassemblyEditorIcon = registerIcon(
 		"Icon of the disassembly editor label.",
 	),
 );
+
 export class DisassemblyViewInput extends EditorInput {
 	static readonly ID = "debug.disassemblyView.input";
 	override get typeId(): string {

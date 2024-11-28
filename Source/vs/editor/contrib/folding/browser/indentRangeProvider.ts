@@ -13,6 +13,7 @@ import { FoldingRegions, MAX_LINE_NUMBER } from "./foldingRanges.js";
 const MAX_FOLDING_REGIONS_FOR_INDENT_DEFAULT = 5000;
 
 const ID_INDENT_PROVIDER = "indent";
+
 export class IndentRangeProvider implements RangeProvider {
 	readonly id = ID_INDENT_PROVIDER;
 
@@ -148,6 +149,7 @@ const foldingRangesLimitDefault: FoldingLimitReporter = {
 	limit: MAX_FOLDING_REGIONS_FOR_INDENT_DEFAULT,
 	update: () => {},
 };
+
 export function computeRanges(
 	model: ITextModel,
 	offSide: boolean,

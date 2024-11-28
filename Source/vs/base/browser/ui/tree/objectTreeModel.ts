@@ -26,6 +26,7 @@ import {
 export type ITreeNodeCallback<T, TFilterData> = (
 	node: ITreeNode<T, TFilterData>,
 ) => void;
+
 export interface IObjectTreeModel<
 	T extends NonNullable<any>,
 	TFilterData extends NonNullable<any> = void,

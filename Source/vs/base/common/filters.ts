@@ -42,6 +42,7 @@ export const matchesStrictPrefix: IFilter = _matchesPrefix.bind(
 	undefined,
 	false,
 );
+
 export const matchesPrefix: IFilter = _matchesPrefix.bind(undefined, true);
 function _matchesPrefix(
 	ignoreCase: boolean,
@@ -768,6 +769,7 @@ export type FuzzyScore = [
 	wordStart: number,
 	...matches: number[],
 ];
+
 export namespace FuzzyScore {
 	/**
 	 * No matches and value `-100`

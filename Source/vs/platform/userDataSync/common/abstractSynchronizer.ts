@@ -83,6 +83,7 @@ type IncompatibleSyncSourceClassification = {
 		comment: "settings sync resource. eg., settings, keybindings...";
 	};
 };
+
 export function isRemoteUserData(thing: any): thing is IRemoteUserData {
 	if (
 		thing &&

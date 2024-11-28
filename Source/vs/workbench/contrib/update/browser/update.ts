@@ -78,17 +78,21 @@ export const CONTEXT_UPDATE_STATE = new RawContextKey<string>(
 	"updateState",
 	StateType.Uninitialized,
 );
+
 export const MAJOR_MINOR_UPDATE_AVAILABLE = new RawContextKey<boolean>(
 	"majorMinorUpdateAvailable",
 	false,
 );
+
 export const RELEASE_NOTES_URL = new RawContextKey<string>(
 	"releaseNotesUrl",
 	"",
 );
+
 export const DOWNLOAD_URL = new RawContextKey<string>("downloadUrl", "");
 
 let releaseNotesManager: ReleaseNotesManager | undefined = undefined;
+
 export function showReleaseNotesInEditor(
 	instantiationService: IInstantiationService,
 	version: string,

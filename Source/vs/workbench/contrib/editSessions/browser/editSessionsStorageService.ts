@@ -73,6 +73,7 @@ type ExistingSession = IQuickPickItem & {
 type AuthenticationProviderOption = IQuickPickItem & {
 	provider: IAuthenticationProvider;
 };
+
 export class EditSessionsWorkbenchService
 	extends Disposable
 	implements IEditSessionsStorageService

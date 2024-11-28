@@ -8,6 +8,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IDownloadService =
 	createDecorator<IDownloadService>("downloadService");
+
 export interface IDownloadService {
 	readonly _serviceBrand: undefined;
 

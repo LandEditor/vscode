@@ -143,6 +143,7 @@ registerSingleton(ITimerService, TimerService, InstantiationType.Delayed);
 const lastRunningCommitStorageKey = "perf/lastRunningCommit";
 
 let _didUseCachedData: boolean | undefined = undefined;
+
 export function didUseCachedData(
 	productService: IProductService,
 	storageService: IStorageService,

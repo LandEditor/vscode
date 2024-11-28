@@ -123,6 +123,7 @@ function toLifecyclePhase(instantiation: WorkbenchPhase): LifecyclePhase {
 type IWorkbenchContributionSignature<Service extends BrandedService[]> = new (
 	...services: Service
 ) => IWorkbenchContribution;
+
 export interface IWorkbenchContributionsRegistry {
 	/**
 	 * @deprecated use `registerWorkbenchContribution2` instead.

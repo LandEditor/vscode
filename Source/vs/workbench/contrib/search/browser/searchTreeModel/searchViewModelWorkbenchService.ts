@@ -9,6 +9,7 @@ export const ISearchViewModelWorkbenchService =
 	createDecorator<ISearchViewModelWorkbenchService>(
 		"searchViewModelWorkbenchService",
 	);
+
 export interface ISearchViewModelWorkbenchService {
 	readonly _serviceBrand: undefined;
 	searchModel: ISearchModel;

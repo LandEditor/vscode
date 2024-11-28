@@ -1040,6 +1040,7 @@ export class EventProfiling {
 	}
 }
 let _globalLeakWarningThreshold = -1;
+
 export function setGlobalLeakWarningThreshold(n: number): IDisposable {
 	const oldValue = _globalLeakWarningThreshold;
 	_globalLeakWarningThreshold = n;
@@ -1552,6 +1553,7 @@ export interface IWaitUntil {
 	waitUntil(thenable: Promise<unknown>): void;
 }
 export type IWaitUntilData<T> = Omit<Omit<T, "waitUntil">, "token">;
+
 export class AsyncEmitter<T extends IWaitUntil> extends Emitter<T> {
 	private _asyncDeliveryQueue?: LinkedList<
 		[(ev: T) => void, IWaitUntilData<T>]

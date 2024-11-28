@@ -21,6 +21,7 @@ import {
 
 export const ILanguageModelStatsService =
 	createDecorator<ILanguageModelStatsService>("ILanguageModelStatsService");
+
 export interface ILanguageModelStatsService {
 	readonly _serviceBrand: undefined;
 	update(

@@ -44,6 +44,7 @@ import {
 } from "../../../../platform/theme/common/colorRegistry.js";
 
 const viewFilterMenu = new MenuId("menu.view.filter");
+
 export const viewFilterSubmenu = new MenuId("submenu.view.filter");
 MenuRegistry.appendMenuItem(viewFilterMenu, {
 	submenu: viewFilterSubmenu,

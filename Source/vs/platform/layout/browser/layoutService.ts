@@ -8,6 +8,7 @@ import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const ILayoutService = createDecorator<ILayoutService>("layoutService");
+
 export interface ILayoutOffsetInfo {
 	/**
 	 * Generic top offset

@@ -44,6 +44,7 @@ export function setConstant(key: string, value: boolean) {
 }
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 export const enum ContextKeyExprType {
 	False = 0,
 	True = 1,
@@ -148,6 +149,7 @@ export type ParserConfig = {
 const defaultConfig: ParserConfig = {
 	regexParsingWithErrorRecovery: true,
 };
+
 export type ParsingError = {
 	message: string;
 	offset: number;
@@ -2136,6 +2138,7 @@ export type ContextKeyValue =
 	| string
 	| Array<null | undefined | boolean | number | string>
 	| Record<string, null | undefined | boolean | number | string>;
+
 export interface IContext {
 	getValue<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
@@ -2158,6 +2161,7 @@ export interface IContextKeyServiceTarget {
 }
 export const IContextKeyService =
 	createDecorator<IContextKeyService>("contextKeyService");
+
 export interface IReadableSet<T> {
 	has(value: T): boolean;
 }
@@ -2166,6 +2170,7 @@ export interface IContextKeyChangeEvent {
 	allKeysContainedIn(keys: IReadableSet<string>): boolean;
 }
 export type IScopedContextKeyService = IContextKeyService & IDisposable;
+
 export interface IContextKeyService {
 	readonly _serviceBrand: undefined;
 	onDidChangeContext: Event<IContextKeyChangeEvent>;

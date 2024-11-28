@@ -184,6 +184,7 @@ type IComputeEditsResult = {
 	readonly edits?: Array<IWorkspaceTextEdit | IWorkspaceFileEdit>;
 	readonly codeMapper?: string;
 };
+
 export class ApplyCodeBlockOperation {
 	private inlineChatPreview: InlineChatPreview | undefined;
 

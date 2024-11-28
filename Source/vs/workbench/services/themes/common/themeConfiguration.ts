@@ -48,6 +48,7 @@ const colorThemeSettingEnum: string[] = [];
 const colorThemeSettingEnumItemLabels: string[] = [];
 
 const colorThemeSettingEnumDescriptions: string[] = [];
+
 export function formatSettingAsLink(str: string) {
 	return `\`#${str}#\``;
 }
@@ -406,6 +407,7 @@ const tokenColorCustomizationConfiguration: IConfigurationNode = {
 configurationRegistry.registerConfiguration(
 	tokenColorCustomizationConfiguration,
 );
+
 export function updateColorThemeConfigurationSchemas(
 	themes: IWorkbenchColorTheme[],
 ) {
@@ -520,6 +522,7 @@ const colorSchemeToPreferred = {
 	[ColorScheme.HIGH_CONTRAST_DARK]: ThemeSettings.PREFERRED_HC_DARK_THEME,
 	[ColorScheme.HIGH_CONTRAST_LIGHT]: ThemeSettings.PREFERRED_HC_LIGHT_THEME,
 };
+
 export class ThemeConfiguration {
 	constructor(
 		private configurationService: IConfigurationService,

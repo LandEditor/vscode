@@ -9,7 +9,9 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 import { IWorkspace } from "../../workspace/common/workspace.js";
 
 export const ID = "diagnosticsService";
+
 export const IDiagnosticsService = createDecorator<IDiagnosticsService>(ID);
+
 export interface IDiagnosticsService {
 	readonly _serviceBrand: undefined;
 

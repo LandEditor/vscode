@@ -15,6 +15,7 @@ import { EndOfLinePreference, FindMatch, SearchData } from "../model.js";
 import { TextModel } from "./textModel.js";
 
 const LIMIT_FIND_COUNT = 999;
+
 export class SearchParams {
 	public readonly searchString: string;
 	public readonly isRegex: boolean;

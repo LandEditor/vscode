@@ -100,6 +100,7 @@ export const ServerNullTelemetryService = new (class
 		return;
 	} // No-op, telemetry is already disabled
 })();
+
 export const IServerTelemetryService = refineServiceDecorator<
 	ITelemetryService,
 	IServerTelemetryService

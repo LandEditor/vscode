@@ -20,6 +20,7 @@ import { contextMenuArg } from "./notebookVariablesView.js";
 
 export const COPY_NOTEBOOK_VARIABLE_VALUE_ID =
 	"workbench.debug.viewlet.action.copyWorkspaceVariableValue";
+
 export const COPY_NOTEBOOK_VARIABLE_VALUE_LABEL = localize(
 	"copyWorkspaceVariableValue",
 	"Copy Value",

@@ -62,6 +62,7 @@ import { IWorkbenchExtensionEnablementService } from "../common/extensionManagem
 export const IExtensionBisectService = createDecorator<IExtensionBisectService>(
 	"IExtensionBisectService",
 );
+
 export interface IExtensionBisectService {
 	readonly _serviceBrand: undefined;
 	isDisabledByBisect(extension: IExtension): boolean;

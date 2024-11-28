@@ -36,6 +36,7 @@ import { DiffEditorViewModel } from "../diffEditorViewModel.js";
 import { DiffEditorWidget } from "../diffEditorWidget.js";
 
 const emptyArr: never[] = [];
+
 export class RevertButtonsFeature extends Disposable {
 	constructor(
 		private readonly _editors: DiffEditorEditors,

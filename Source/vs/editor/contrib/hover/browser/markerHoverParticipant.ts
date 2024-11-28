@@ -60,6 +60,7 @@ import {
 } from "./hoverTypes.js";
 
 const $ = dom.$;
+
 export class MarkerHover implements IHoverPart {
 	constructor(
 		public readonly owner: IEditorHoverParticipant<MarkerHover>,
@@ -80,6 +81,7 @@ const markerCodeActionTrigger: CodeActionTrigger = {
 	filter: { include: CodeActionKind.QuickFix },
 	triggerAction: CodeActionTriggerSource.QuickFixHover,
 };
+
 export class MarkerHoverParticipant
 	implements IEditorHoverParticipant<MarkerHover>
 {

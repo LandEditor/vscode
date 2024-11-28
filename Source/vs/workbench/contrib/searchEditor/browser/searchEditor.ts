@@ -111,6 +111,7 @@ const FILE_LINE_REGEX = /^(\S.*):$/;
 type SearchEditorViewState = ICodeEditorViewState & {
 	focused: "input" | "editor";
 };
+
 export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> {
 	static readonly ID: string = SearchEditorID;
 	static readonly SEARCH_EDITOR_VIEW_STATE_PREFERENCE_KEY =

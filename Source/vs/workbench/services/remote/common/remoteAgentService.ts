@@ -25,6 +25,7 @@ import {
 
 export const IRemoteAgentService =
 	createDecorator<IRemoteAgentService>("remoteAgentService");
+
 export interface IRemoteAgentService {
 	readonly _serviceBrand: undefined;
 

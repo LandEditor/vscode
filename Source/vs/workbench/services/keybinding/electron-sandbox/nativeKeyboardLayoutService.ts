@@ -22,6 +22,7 @@ export const INativeKeyboardLayoutService =
 	createDecorator<INativeKeyboardLayoutService>(
 		"nativeKeyboardLayoutService",
 	);
+
 export interface INativeKeyboardLayoutService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeKeyboardLayout: Event<void>;

@@ -13,6 +13,7 @@ import { ICodeEditor, IDiffEditor } from "../editorBrowser.js";
 
 export const ICodeEditorService =
 	createDecorator<ICodeEditorService>("codeEditorService");
+
 export interface ICodeEditorService {
 	readonly _serviceBrand: undefined;
 	readonly onWillCreateCodeEditor: Event<void>;

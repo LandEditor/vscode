@@ -111,4 +111,5 @@ export class ExtHostWindow implements ExtHostWindowShape {
 	}
 }
 export const IExtHostWindow = createDecorator<IExtHostWindow>("IExtHostWindow");
+
 export interface IExtHostWindow extends ExtHostWindow, ExtHostWindowShape {}

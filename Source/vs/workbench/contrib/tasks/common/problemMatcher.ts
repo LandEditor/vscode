@@ -97,6 +97,7 @@ export interface INamedProblemPattern extends IProblemPattern {
 	name: string;
 }
 export type MultiLineProblemPattern = IProblemPattern[];
+
 export interface IWatchingPattern {
 	regexp: RegExp;
 	file?: number;
@@ -1701,6 +1702,7 @@ const problemPatternExtPoint =
 			},
 		},
 	});
+
 export interface IProblemPatternRegistry {
 	onReady(): Promise<void>;
 
@@ -1914,6 +1916,7 @@ class ProblemPatternRegistryImpl implements IProblemPatternRegistry {
 }
 export const ProblemPatternRegistry: IProblemPatternRegistry =
 	new ProblemPatternRegistryImpl();
+
 export class ProblemMatcherParser extends Parser {
 	constructor(logger: IProblemReporter) {
 		super(logger);
@@ -2317,6 +2320,7 @@ const problemMatchersExtPoint = ExtensionsRegistry.registerExtensionPoint<
 		items: Schemas.NamedProblemMatcher,
 	},
 });
+
 export interface IProblemMatcherRegistry {
 	onReady(): Promise<void>;
 

@@ -414,6 +414,7 @@ class TaskDetector {
 	}
 }
 let detector: TaskDetector;
+
 export function activate(_context: vscode.ExtensionContext): void {
 	detector = new TaskDetector();
 	detector.start();

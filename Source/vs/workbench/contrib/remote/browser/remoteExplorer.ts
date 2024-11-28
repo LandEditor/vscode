@@ -104,6 +104,7 @@ import {
 import { UrlFinder } from "./urlFinder.js";
 
 export const VIEWLET_ID = "workbench.view.remote";
+
 export class ForwardedPortsView
 	extends Disposable
 	implements IWorkbenchContribution

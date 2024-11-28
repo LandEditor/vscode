@@ -30,6 +30,7 @@ import {
 
 export const ITestProfileService =
 	createDecorator<ITestProfileService>("testProfileService");
+
 export interface ITestProfileService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -147,6 +148,7 @@ type DefaultsMap = {
 		[profileId: number]: boolean;
 	};
 };
+
 export class TestProfileService
 	extends Disposable
 	implements ITestProfileService

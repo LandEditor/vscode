@@ -25,6 +25,7 @@ export namespace _util {
 export type BrandedService = {
 	_serviceBrand: undefined;
 };
+
 export interface IConstructorSignature<T, Args extends any[] = []> {
 	new <Services extends BrandedService[]>(...args: [...Args, ...Services]): T;
 }
@@ -43,6 +44,7 @@ export type GetLeadingNonServiceArgs<TArgs extends any[]> = TArgs extends []
 	: TArgs extends [...infer TFirst, BrandedService]
 		? GetLeadingNonServiceArgs<TFirst>
 		: TArgs;
+
 export interface IInstantiationService {
 	readonly _serviceBrand: undefined;
 	/**

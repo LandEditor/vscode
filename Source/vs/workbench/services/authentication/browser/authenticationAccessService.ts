@@ -21,6 +21,7 @@ export const IAuthenticationAccessService =
 	createDecorator<IAuthenticationAccessService>(
 		"IAuthenticationAccessService",
 	);
+
 export interface IAuthenticationAccessService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeExtensionSessionAccess: Event<{

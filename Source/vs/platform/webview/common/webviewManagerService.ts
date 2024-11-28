@@ -8,6 +8,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 export const IWebviewManagerService = createDecorator<IWebviewManagerService>(
 	"webviewManagerService",
 );
+
 export interface WebviewWebContentsId {
 	readonly webContentsId: number;
 }

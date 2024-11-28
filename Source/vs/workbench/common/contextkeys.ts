@@ -38,6 +38,7 @@ export const WorkbenchStateContext = new RawContextKey<string>(
 		),
 	},
 );
+
 export const WorkspaceFolderCountContext = new RawContextKey<number>(
 	"workspaceFolderCount",
 	0,
@@ -46,21 +47,25 @@ export const WorkspaceFolderCountContext = new RawContextKey<number>(
 		"The number of root folders in the workspace",
 	),
 );
+
 export const OpenFolderWorkspaceSupportContext = new RawContextKey<boolean>(
 	"openFolderWorkspaceSupport",
 	true,
 	true,
 );
+
 export const EnterMultiRootWorkspaceSupportContext = new RawContextKey<boolean>(
 	"enterMultiRootWorkspaceSupport",
 	true,
 	true,
 );
+
 export const EmptyWorkspaceSupportContext = new RawContextKey<boolean>(
 	"emptyWorkspaceSupport",
 	true,
 	true,
 );
+
 export const DirtyWorkingCopiesContext = new RawContextKey<boolean>(
 	"dirtyWorkingCopies",
 	false,
@@ -69,6 +74,7 @@ export const DirtyWorkingCopiesContext = new RawContextKey<boolean>(
 		"Whether there are any working copies with unsaved changes",
 	),
 );
+
 export const RemoteNameContext = new RawContextKey<string>(
 	"remoteName",
 	"",
@@ -77,6 +83,7 @@ export const RemoteNameContext = new RawContextKey<string>(
 		"The name of the remote the window is connected to or an empty string if not connected to any remote",
 	),
 );
+
 export const VirtualWorkspaceContext = new RawContextKey<string>(
 	"virtualWorkspace",
 	"",
@@ -85,6 +92,7 @@ export const VirtualWorkspaceContext = new RawContextKey<string>(
 		"The scheme of the current workspace is from a virtual file system or an empty string.",
 	),
 );
+
 export const TemporaryWorkspaceContext = new RawContextKey<boolean>(
 	"temporaryWorkspace",
 	false,
@@ -93,11 +101,13 @@ export const TemporaryWorkspaceContext = new RawContextKey<boolean>(
 		"The scheme of the current workspace is from a temporary file system.",
 	),
 );
+
 export const IsMainWindowFullscreenContext = new RawContextKey<boolean>(
 	"isFullscreen",
 	false,
 	localize("isFullscreen", "Whether the main window is in fullscreen mode"),
 );
+
 export const IsAuxiliaryWindowFocusedContext = new RawContextKey<boolean>(
 	"isAuxiliaryWindowFocusedContext",
 	false,
@@ -106,6 +116,7 @@ export const IsAuxiliaryWindowFocusedContext = new RawContextKey<boolean>(
 		"Whether an auxiliary window is focused",
 	),
 );
+
 export const HasWebFileSystemAccess = new RawContextKey<boolean>(
 	"hasWebFileSystemAccess",
 	false,
@@ -130,6 +141,7 @@ export const ActiveEditorDirtyContext = new RawContextKey<boolean>(
 		"Whether the active editor has unsaved changes",
 	),
 );
+
 export const ActiveEditorPinnedContext = new RawContextKey<boolean>(
 	"activeEditorIsNotPreview",
 	false,
@@ -138,6 +150,7 @@ export const ActiveEditorPinnedContext = new RawContextKey<boolean>(
 		"Whether the active editor is not in preview mode",
 	),
 );
+
 export const ActiveEditorFirstInGroupContext = new RawContextKey<boolean>(
 	"activeEditorIsFirstInGroup",
 	false,
@@ -146,6 +159,7 @@ export const ActiveEditorFirstInGroupContext = new RawContextKey<boolean>(
 		"Whether the active editor is the first one in its group",
 	),
 );
+
 export const ActiveEditorLastInGroupContext = new RawContextKey<boolean>(
 	"activeEditorIsLastInGroup",
 	false,
@@ -154,11 +168,13 @@ export const ActiveEditorLastInGroupContext = new RawContextKey<boolean>(
 		"Whether the active editor is the last one in its group",
 	),
 );
+
 export const ActiveEditorStickyContext = new RawContextKey<boolean>(
 	"activeEditorIsPinned",
 	false,
 	localize("activeEditorIsPinned", "Whether the active editor is pinned"),
 );
+
 export const ActiveEditorReadonlyContext = new RawContextKey<boolean>(
 	"activeEditorIsReadonly",
 	false,
@@ -167,6 +183,7 @@ export const ActiveEditorReadonlyContext = new RawContextKey<boolean>(
 		"Whether the active editor is read-only",
 	),
 );
+
 export const ActiveCompareEditorCanSwapContext = new RawContextKey<boolean>(
 	"activeCompareEditorCanSwap",
 	false,
@@ -175,6 +192,7 @@ export const ActiveCompareEditorCanSwapContext = new RawContextKey<boolean>(
 		"Whether the active compare editor can swap sides",
 	),
 );
+
 export const ActiveEditorCanToggleReadonlyContext = new RawContextKey<boolean>(
 	"activeEditorCanToggleReadonly",
 	true,
@@ -183,11 +201,13 @@ export const ActiveEditorCanToggleReadonlyContext = new RawContextKey<boolean>(
 		"Whether the active editor can toggle between being read-only or writeable",
 	),
 );
+
 export const ActiveEditorCanRevertContext = new RawContextKey<boolean>(
 	"activeEditorCanRevert",
 	false,
 	localize("activeEditorCanRevert", "Whether the active editor can revert"),
 );
+
 export const ActiveEditorCanSplitInGroupContext = new RawContextKey<boolean>(
 	"activeEditorCanSplitInGroup",
 	true,
@@ -204,6 +224,7 @@ export const ActiveEditorContext = new RawContextKey<string | null>(
 		),
 	},
 );
+
 export const ActiveEditorAvailableEditorIdsContext = new RawContextKey<string>(
 	"activeEditorAvailableEditorIds",
 	"",
@@ -212,6 +233,7 @@ export const ActiveEditorAvailableEditorIdsContext = new RawContextKey<string>(
 		"The available editor identifiers that are usable for the active editor",
 	),
 );
+
 export const TextCompareEditorVisibleContext = new RawContextKey<boolean>(
 	"textCompareEditorVisible",
 	false,
@@ -220,6 +242,7 @@ export const TextCompareEditorVisibleContext = new RawContextKey<boolean>(
 		"Whether a text compare editor is visible",
 	),
 );
+
 export const TextCompareEditorActiveContext = new RawContextKey<boolean>(
 	"textCompareEditorActive",
 	false,
@@ -228,6 +251,7 @@ export const TextCompareEditorActiveContext = new RawContextKey<boolean>(
 		"Whether a text compare editor is active",
 	),
 );
+
 export const SideBySideEditorActiveContext = new RawContextKey<boolean>(
 	"sideBySideEditorActive",
 	false,
@@ -242,6 +266,7 @@ export const EditorGroupEditorsCountContext = new RawContextKey<number>(
 	0,
 	localize("groupEditorsCount", "The number of opened editor groups"),
 );
+
 export const ActiveEditorGroupEmptyContext = new RawContextKey<boolean>(
 	"activeEditorGroupEmpty",
 	false,
@@ -250,11 +275,13 @@ export const ActiveEditorGroupEmptyContext = new RawContextKey<boolean>(
 		"Whether the active editor group is empty",
 	),
 );
+
 export const ActiveEditorGroupIndexContext = new RawContextKey<number>(
 	"activeEditorGroupIndex",
 	0,
 	localize("activeEditorGroupIndex", "The index of the active editor group"),
 );
+
 export const ActiveEditorGroupLastContext = new RawContextKey<boolean>(
 	"activeEditorGroupLast",
 	false,
@@ -263,6 +290,7 @@ export const ActiveEditorGroupLastContext = new RawContextKey<boolean>(
 		"Whether the active editor group is the last group",
 	),
 );
+
 export const ActiveEditorGroupLockedContext = new RawContextKey<boolean>(
 	"activeEditorGroupLocked",
 	false,
@@ -271,6 +299,7 @@ export const ActiveEditorGroupLockedContext = new RawContextKey<boolean>(
 		"Whether the active editor group is locked",
 	),
 );
+
 export const MultipleEditorGroupsContext = new RawContextKey<boolean>(
 	"multipleEditorGroups",
 	false,
@@ -279,8 +308,10 @@ export const MultipleEditorGroupsContext = new RawContextKey<boolean>(
 		"Whether there are multiple editor groups opened",
 	),
 );
+
 export const SingleEditorGroupsContext =
 	MultipleEditorGroupsContext.toNegated();
+
 export const MultipleEditorsSelectedInGroupContext = new RawContextKey<boolean>(
 	"multipleEditorsSelectedInGroup",
 	false,
@@ -289,6 +320,7 @@ export const MultipleEditorsSelectedInGroupContext = new RawContextKey<boolean>(
 		"Whether multiple editors have been selected in an editor group",
 	),
 );
+
 export const TwoEditorsSelectedInGroupContext = new RawContextKey<boolean>(
 	"twoEditorsSelectedInGroup",
 	false,
@@ -297,6 +329,7 @@ export const TwoEditorsSelectedInGroupContext = new RawContextKey<boolean>(
 		"Whether exactly two editors have been selected in an editor group",
 	),
 );
+
 export const SelectedEditorsInGroupFileOrUntitledResourceContextKey =
 	new RawContextKey<boolean>(
 		"SelectedEditorsInGroupFileOrUntitledResourceContextKey",
@@ -315,8 +348,10 @@ export const EditorPartMultipleEditorGroupsContext = new RawContextKey<boolean>(
 		"Whether there are multiple editor groups opened in an editor part",
 	),
 );
+
 export const EditorPartSingleEditorGroupsContext =
 	EditorPartMultipleEditorGroupsContext.toNegated();
+
 export const EditorPartMaximizedEditorGroupContext = new RawContextKey<boolean>(
 	"editorPartMaximizedEditorGroup",
 	false,
@@ -325,6 +360,7 @@ export const EditorPartMaximizedEditorGroupContext = new RawContextKey<boolean>(
 		"Editor Part has a maximized group",
 	),
 );
+
 export const IsAuxiliaryEditorPartContext = new RawContextKey<boolean>(
 	"isAuxiliaryEditorPart",
 	false,
@@ -336,11 +372,13 @@ export const EditorsVisibleContext = new RawContextKey<boolean>(
 	false,
 	localize("editorIsOpen", "Whether an editor is open"),
 );
+
 export const InEditorZenModeContext = new RawContextKey<boolean>(
 	"inZenMode",
 	false,
 	localize("inZenMode", "Whether Zen mode is enabled"),
 );
+
 export const IsMainEditorCenteredLayoutContext = new RawContextKey<boolean>(
 	"isCenteredLayout",
 	false,
@@ -349,11 +387,13 @@ export const IsMainEditorCenteredLayoutContext = new RawContextKey<boolean>(
 		"Whether centered layout is enabled for the main editor",
 	),
 );
+
 export const SplitEditorsVertically = new RawContextKey<boolean>(
 	"splitEditorsVertically",
 	false,
 	localize("splitEditorsVertically", "Whether editors split vertically"),
 );
+
 export const MainEditorAreaVisibleContext = new RawContextKey<boolean>(
 	"mainEditorAreaVisible",
 	true,
@@ -362,6 +402,7 @@ export const MainEditorAreaVisibleContext = new RawContextKey<boolean>(
 		"Whether the editor area in the main window is visible",
 	),
 );
+
 export const EditorTabsVisibleContext = new RawContextKey<boolean>(
 	"editorTabsVisible",
 	true,
@@ -374,11 +415,13 @@ export const SideBarVisibleContext = new RawContextKey<boolean>(
 	false,
 	localize("sideBarVisible", "Whether the sidebar is visible"),
 );
+
 export const SidebarFocusContext = new RawContextKey<boolean>(
 	"sideBarFocus",
 	false,
 	localize("sideBarFocus", "Whether the sidebar has keyboard focus"),
 );
+
 export const ActiveViewletContext = new RawContextKey<string>(
 	"activeViewlet",
 	"",
@@ -399,6 +442,7 @@ export const TitleBarStyleContext = new RawContextKey<string>(
 	isLinux && product.quality === "stable" ? "native" : "custom",
 	localize("titleBarStyle", "Style of the window title bar"),
 );
+
 export const TitleBarVisibleContext = new RawContextKey<boolean>(
 	"titleBarVisible",
 	false,
@@ -418,6 +462,7 @@ export const NotificationFocusedContext = new RawContextKey<boolean>(
 	true,
 	localize("notificationFocus", "Whether a notification has keyboard focus"),
 );
+
 export const NotificationsCenterVisibleContext = new RawContextKey<boolean>(
 	"notificationCenterVisible",
 	false,
@@ -426,6 +471,7 @@ export const NotificationsCenterVisibleContext = new RawContextKey<boolean>(
 		"Whether the notifications center is visible",
 	),
 );
+
 export const NotificationsToastsVisibleContext = new RawContextKey<boolean>(
 	"notificationToastsVisible",
 	false,
@@ -441,6 +487,7 @@ export const ActiveAuxiliaryContext = new RawContextKey<string>(
 	"",
 	localize("activeAuxiliary", "The identifier of the active auxiliary panel"),
 );
+
 export const AuxiliaryBarFocusContext = new RawContextKey<boolean>(
 	"auxiliaryBarFocus",
 	false,
@@ -449,6 +496,7 @@ export const AuxiliaryBarFocusContext = new RawContextKey<boolean>(
 		"Whether the auxiliary bar has keyboard focus",
 	),
 );
+
 export const AuxiliaryBarVisibleContext = new RawContextKey<boolean>(
 	"auxiliaryBarVisible",
 	false,
@@ -461,16 +509,19 @@ export const ActivePanelContext = new RawContextKey<string>(
 	"",
 	localize("activePanel", "The identifier of the active panel"),
 );
+
 export const PanelFocusContext = new RawContextKey<boolean>(
 	"panelFocus",
 	false,
 	localize("panelFocus", "Whether the panel has keyboard focus"),
 );
+
 export const PanelPositionContext = new RawContextKey<string>(
 	"panelPosition",
 	"bottom",
 	localize("panelPosition", "The position of the panel, always 'bottom'"),
 );
+
 export const PanelAlignmentContext = new RawContextKey<string>(
 	"panelAlignment",
 	"center",
@@ -479,11 +530,13 @@ export const PanelAlignmentContext = new RawContextKey<string>(
 		"The alignment of the panel, either 'center', 'left', 'right' or 'justify'",
 	),
 );
+
 export const PanelVisibleContext = new RawContextKey<boolean>(
 	"panelVisible",
 	false,
 	localize("panelVisible", "Whether the panel is visible"),
 );
+
 export const PanelMaximizedContext = new RawContextKey<boolean>(
 	"panelMaximized",
 	false,
@@ -499,6 +552,7 @@ export const FocusedViewContext = new RawContextKey<string>(
 		"The identifier of the view that has keyboard focus",
 	),
 );
+
 export function getVisbileViewContextKey(viewId: string): string {
 	return `view.${viewId}.visible`;
 }

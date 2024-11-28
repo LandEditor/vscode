@@ -235,6 +235,7 @@ const resumeProgressOptions = {
 const queryParamName = "editSessionId";
 
 const useEditSessionsWithContinueOn = "workbench.editSessions.continueOn";
+
 export class EditSessionsContribution
 	extends Disposable
 	implements IWorkbenchContribution

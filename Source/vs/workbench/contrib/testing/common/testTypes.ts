@@ -271,6 +271,7 @@ export interface ITestOutputMessage {
  */
 export const getMarkId = (marker: number, start: boolean) =>
 	`${start ? "s" : "e"}${marker}`;
+
 export namespace ITestOutputMessage {
 	export interface Serialized {
 		message: string;
@@ -303,6 +304,7 @@ export namespace ITestOutputMessage {
 	});
 }
 export type ITestMessage = ITestErrorMessage | ITestOutputMessage;
+
 export namespace ITestMessage {
 	export type Serialized =
 		| ITestErrorMessage.Serialized
@@ -378,8 +380,10 @@ export interface ITestTag {
 }
 
 const testTagDelimiter = "\0";
+
 export const namespaceTestTag = (ctrlId: string, tagId: string) =>
 	ctrlId + testTagDelimiter + tagId;
+
 export const denamespaceTestTag = (namespaced: string) => {
 	const index = namespaced.indexOf(testTagDelimiter);
 
@@ -388,6 +392,7 @@ export const denamespaceTestTag = (namespaced: string) => {
 		tagId: namespaced.slice(index + 1),
 	};
 };
+
 export interface ITestTagDisplayInfo {
 	id: string;
 }
@@ -770,12 +775,14 @@ function deserializeThingWithLocation<
 }
 /** Number of recent runs in which coverage reports should be retained. */
 export const KEEP_N_LAST_COVERAGE_REPORTS = 3;
+
 export const enum DetailType {
 	Declaration,
 	Statement,
 	Branch,
 }
 export type CoverageDetails = IDeclarationCoverage | IStatementCoverage;
+
 export namespace CoverageDetails {
 	export type Serialized =
 		| IDeclarationCoverage.Serialized
@@ -909,6 +916,7 @@ export type TestsDiffOp =
 
 			docv?: number;
 	  };
+
 export namespace TestsDiffOp {
 	export type Serialized =
 		| {

@@ -45,6 +45,7 @@ import {
 import { configureTerminalProfileIcon } from "./terminalIcons.js";
 
 type DefaultProfileName = string;
+
 export class TerminalProfileQuickpick {
 	constructor(
 		@ITerminalProfileService

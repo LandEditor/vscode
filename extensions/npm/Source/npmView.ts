@@ -176,6 +176,7 @@ class NoScripts extends TreeItem {
 	}
 }
 type TaskTree = Folder[] | PackageJSON[] | NoScripts[];
+
 export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 	private taskTree: TaskTree | null = null;
 	private extensionContext: ExtensionContext;

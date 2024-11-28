@@ -45,11 +45,14 @@ import { IPathService } from "../../services/path/common/pathService.js";
 import { IWorkspaceEditingService } from "../../services/workspaces/common/workspaceEditing.js";
 
 export const ADD_ROOT_FOLDER_COMMAND_ID = "addRootFolder";
+
 export const ADD_ROOT_FOLDER_LABEL: ILocalizedString = localize2(
 	"addFolderToWorkspace",
 	"Add Folder to Workspace...",
 );
+
 export const SET_ROOT_FOLDER_COMMAND_ID = "setRootFolder";
+
 export const PICK_WORKSPACE_FOLDER_COMMAND_ID =
 	"_workbench.pickWorkspaceFolder";
 // Command registration

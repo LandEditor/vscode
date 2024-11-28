@@ -30,6 +30,7 @@ export interface DidChangeUserDataProfileEvent {
 export const IUserDataProfileService = createDecorator<IUserDataProfileService>(
 	"IUserDataProfileService",
 );
+
 export interface IUserDataProfileService {
 	readonly _serviceBrand: undefined;
 	readonly currentProfile: IUserDataProfile;
@@ -44,6 +45,7 @@ export const IUserDataProfileManagementService =
 	createDecorator<IUserDataProfileManagementService>(
 		"IUserDataProfileManagementService",
 	);
+
 export interface IUserDataProfileManagementService {
 	readonly _serviceBrand: undefined;
 	createProfile(
@@ -94,6 +96,7 @@ export function isUserDataProfileTemplate(
 	);
 }
 export const PROFILE_URL_AUTHORITY = "profile";
+
 export function toUserDataProfileUri(
 	path: string,
 	productService: IProductService,
@@ -105,6 +108,7 @@ export function toUserDataProfileUri(
 	});
 }
 export const PROFILE_URL_AUTHORITY_PREFIX = "profile-";
+
 export function isProfileURL(uri: URI): boolean {
 	return (
 		uri.authority === PROFILE_URL_AUTHORITY ||
@@ -124,6 +128,7 @@ export const IUserDataProfileImportExportService =
 	createDecorator<IUserDataProfileImportExportService>(
 		"IUserDataProfileImportExportService",
 	);
+
 export interface IUserDataProfileImportExportService {
 	readonly _serviceBrand: undefined;
 	registerProfileContentHandler(
@@ -191,20 +196,27 @@ export const defaultUserDataProfileIcon = registerIcon(
 	Codicon.settings,
 	localize("defaultProfileIcon", "Icon for Default Profile."),
 );
+
 export const PROFILES_TITLE = localize2("profiles", "Profiles");
+
 export const PROFILES_CATEGORY = { ...PROFILES_TITLE };
+
 export const PROFILE_EXTENSION = "code-profile";
+
 export const PROFILE_FILTER = [
 	{ name: localize("profile", "Profile"), extensions: [PROFILE_EXTENSION] },
 ];
+
 export const CURRENT_PROFILE_CONTEXT = new RawContextKey<string>(
 	"currentProfile",
 	"",
 );
+
 export const IS_CURRENT_PROFILE_TRANSIENT_CONTEXT = new RawContextKey<boolean>(
 	"isCurrentProfileTransient",
 	false,
 );
+
 export const HAS_PROFILES_CONTEXT = new RawContextKey<boolean>(
 	"hasProfiles",
 	false,

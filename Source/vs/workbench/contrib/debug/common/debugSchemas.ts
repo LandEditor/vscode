@@ -293,6 +293,7 @@ export const presentationSchema: IJSONSchema = {
 };
 
 const defaultCompound: ICompound = { name: "Compound", configurations: [] };
+
 export const launchSchema: IJSONSchema = {
 	id: launchSchemaId,
 	type: "object",

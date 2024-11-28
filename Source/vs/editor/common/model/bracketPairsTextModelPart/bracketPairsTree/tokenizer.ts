@@ -36,6 +36,7 @@ export const enum TokenKind {
 	ClosingBracket = 2,
 }
 export type OpeningBracketId = number;
+
 export class Token {
 	constructor(
 		readonly length: Length,

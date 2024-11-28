@@ -353,6 +353,7 @@ export interface IWorkbenchConstructionOptions {
  * - empty (via `undefined`)
  */
 export type IWorkspace = IWorkspaceToOpen | IFolderToOpen | undefined;
+
 export interface IWorkspaceProvider {
 	/**
 	 * The initial workspace to open.
@@ -393,6 +394,7 @@ export interface IResourceUriProvider {
  * The identifier of an extension in the format: `PUBLISHER.NAME`. For example: `vscode.csharp`
  */
 export type ExtensionId = string;
+
 export type MarketplaceExtension =
 	| ExtensionId
 	| {
@@ -400,6 +402,7 @@ export type MarketplaceExtension =
 			preRelease?: boolean;
 			migrateStorageFrom?: ExtensionId;
 	  };
+
 export interface ICommonTelemetryPropertiesResolver {
 	(): {
 		[key: string]: any;

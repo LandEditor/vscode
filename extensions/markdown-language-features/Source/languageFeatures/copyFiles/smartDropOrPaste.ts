@@ -16,6 +16,7 @@ const smartPasteLineRegexes = [
 	{ regex: /<[^<>\s]*>/g }, // Autolink
 	{ regex: /^[ ]{0,3}\[\w+\]:\s.*$/g, isWholeLine: true }, // Block link definition (needed as tokens are not generated for these)
 ];
+
 export async function shouldInsertMarkdownLinkByDefault(
 	parser: IMdParser,
 	document: ITextDocument,
@@ -162,6 +163,7 @@ const externalUriSchemes: ReadonlySet<string> = new Set([
 	Schemes.mailto,
 	Schemes.file,
 ]);
+
 export function findValidUriInText(text: string): string | undefined {
 	const trimmedUrlList = text.trim();
 

@@ -56,6 +56,7 @@ const promptedRecommendationsStorageKey =
 const recommendationsStorageKey = "extensionsAssistant/recommendations";
 
 const milliSecondsInADay = 1000 * 60 * 60 * 24;
+
 export class FileBasedRecommendations extends ExtensionRecommendations {
 	private readonly fileOpenRecommendations: IStringDictionary<
 		IFileOpenCondition[]

@@ -21,6 +21,7 @@ const RuntimeExtensionsEditorIcon = registerIcon(
 		"Icon of the runtime extensions editor label.",
 	),
 );
+
 export class RuntimeExtensionsInput extends EditorInput {
 	static readonly ID = "workbench.runtimeExtensions.input";
 	override get typeId(): string {

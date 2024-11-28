@@ -239,6 +239,7 @@ export interface ICommentService {
 }
 
 const CONTINUE_ON_COMMENTS = "comments.continueOnComments";
+
 export class CommentService extends Disposable implements ICommentService {
 	declare readonly _serviceBrand: undefined;
 	private readonly _onDidSetDataProvider: Emitter<void> = this._register(

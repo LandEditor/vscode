@@ -104,11 +104,14 @@ export interface IPickerQuickAccessProviderOptions<
 	readonly shouldSkipTrimPickFilter?: boolean;
 }
 export type Pick<T> = T | IQuickPickSeparator;
+
 export type PicksWithActive<T> = {
 	items: readonly Pick<T>[];
 	active?: T;
 };
+
 export type Picks<T> = readonly Pick<T>[] | PicksWithActive<T>;
+
 export type FastAndSlowPicks<T> = {
 	/**
 	 * Picks that will show instantly or after a short delay

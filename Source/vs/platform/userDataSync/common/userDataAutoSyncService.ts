@@ -83,6 +83,7 @@ const sessionIdKey = "sync.sessionId";
 const storeUrlKey = "sync.storeUrl";
 
 const productQualityKey = "sync.productQuality";
+
 export class UserDataAutoSyncService
 	extends Disposable
 	implements IUserDataAutoSyncService

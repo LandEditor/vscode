@@ -545,10 +545,12 @@ export function isEngineValid(
 }
 
 export function areApiProposalsCompatible(apiProposals: string[]): boolean;
+
 export function areApiProposalsCompatible(
 	apiProposals: string[],
 	notices: string[],
 ): boolean;
+
 export function areApiProposalsCompatible(
 	apiProposals: string[],
 	productApiProposals: Readonly<{
@@ -558,6 +560,7 @@ export function areApiProposalsCompatible(
 		}>;
 	}>,
 ): boolean;
+
 export function areApiProposalsCompatible(
 	apiProposals: string[],
 	arg1?: any,

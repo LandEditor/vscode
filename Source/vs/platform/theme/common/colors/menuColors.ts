@@ -23,16 +23,19 @@ export const menuBorder = registerColor(
 	},
 	nls.localize("menuBorder", "Border color of menus."),
 );
+
 export const menuForeground = registerColor(
 	"menu.foreground",
 	selectForeground,
 	nls.localize("menuForeground", "Foreground color of menu items."),
 );
+
 export const menuBackground = registerColor(
 	"menu.background",
 	selectBackground,
 	nls.localize("menuBackground", "Background color of menu items."),
 );
+
 export const menuSelectionForeground = registerColor(
 	"menu.selectionForeground",
 	listActiveSelectionForeground,
@@ -41,6 +44,7 @@ export const menuSelectionForeground = registerColor(
 		"Foreground color of the selected menu item in menus.",
 	),
 );
+
 export const menuSelectionBackground = registerColor(
 	"menu.selectionBackground",
 	listActiveSelectionBackground,
@@ -49,6 +53,7 @@ export const menuSelectionBackground = registerColor(
 		"Background color of the selected menu item in menus.",
 	),
 );
+
 export const menuSelectionBorder = registerColor(
 	"menu.selectionBorder",
 	{
@@ -62,6 +67,7 @@ export const menuSelectionBorder = registerColor(
 		"Border color of the selected menu item in menus.",
 	),
 );
+
 export const menuSeparatorBackground = registerColor(
 	"menu.separatorBackground",
 	{

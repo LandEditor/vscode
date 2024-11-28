@@ -22,6 +22,7 @@ export enum ApplyZoomTarget {
 	ALL_WINDOWS,
 }
 export const MAX_ZOOM_LEVEL = 8;
+
 export const MIN_ZOOM_LEVEL = -8;
 /**
  * Apply a zoom level to the window. Also sets it in our in-memory

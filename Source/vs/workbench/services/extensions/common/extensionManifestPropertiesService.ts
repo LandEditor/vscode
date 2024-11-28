@@ -33,6 +33,7 @@ export const IExtensionManifestPropertiesService =
 	createDecorator<IExtensionManifestPropertiesService>(
 		"extensionManifestPropertiesService",
 	);
+
 export interface IExtensionManifestPropertiesService {
 	readonly _serviceBrand: undefined;
 	prefersExecuteOnUI(manifest: IExtensionManifest): boolean;

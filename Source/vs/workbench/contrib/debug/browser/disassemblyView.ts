@@ -103,6 +103,7 @@ const disassemblyNotAvailable: IDisassembledInstructionEntry = {
 		),
 	},
 };
+
 export class DisassemblyView extends EditorPane {
 	private static readonly NUM_INSTRUCTIONS_TO_LOAD = 50;
 	// Used in instruction renderer

@@ -9,7 +9,9 @@ export const IRemoteExtensionsScannerService =
 	createDecorator<IRemoteExtensionsScannerService>(
 		"IRemoteExtensionsScannerService",
 	);
+
 export const RemoteExtensionsScannerChannelName = "remoteExtensionsScanner";
+
 export interface IRemoteExtensionsScannerService {
 	readonly _serviceBrand: undefined;
 	whenExtensionsReady(): Promise<void>;

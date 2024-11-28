@@ -62,6 +62,7 @@ const MAP_CANDIDATE_GUESS_ENCODING_TO_JSCHARDET: {
 	euckr: "EUC-KR",
 	gb2312: "GB2312",
 };
+
 export function detectEncoding(
 	buffer: Buffer,
 	candidateGuessEncodings: string[],

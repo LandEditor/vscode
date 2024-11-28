@@ -112,6 +112,7 @@ const TOGGLE_INLINE_COMMAND_TEXT = localize(
 const TOGGLE_INLINE_COMMAND_ID = "testing.toggleInlineCoverage";
 
 const BRANCH_MISS_INDICATOR_CHARS = 4;
+
 export class CodeCoverageDecorations
 	extends Disposable
 	implements IEditorContribution
@@ -521,6 +522,7 @@ type DetailRange = {
 		description: IMarkdownString | undefined;
 	};
 };
+
 export class CoverageDetailsModel {
 	public readonly ranges: DetailRange[] = [];
 

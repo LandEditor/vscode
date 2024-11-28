@@ -30,6 +30,7 @@ const foldingRangeLimit: FoldingLimitReporter = {
 	limit: 5000,
 	update: () => {},
 };
+
 export class FoldingModel implements IDisposable {
 	private _viewModel: INotebookViewModel | null = null;
 	private readonly _viewModelStore = new DisposableStore();

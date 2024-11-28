@@ -21,6 +21,7 @@ function getUTF16BE_TextDecoder(): TextDecoder {
 	return _utf16BE_TextDecoder;
 }
 let _platformTextDecoder: TextDecoder | null;
+
 export function getPlatformTextDecoder(): TextDecoder {
 	if (!_platformTextDecoder) {
 		_platformTextDecoder = platform.isLittleEndian()

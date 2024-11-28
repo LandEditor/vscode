@@ -17,6 +17,7 @@ import { Promises } from "../../base/node/pfs.js";
 import { ServerParsedArgs } from "./serverEnvironmentService.js";
 
 const connectionTokenRegex = /^[0-9A-Za-z_-]+$/;
+
 export const enum ServerConnectionTokenType {
 	None,
 	Optional, // TODO: Remove this soon
@@ -39,6 +40,7 @@ export class MandatoryServerConnectionToken {
 export type ServerConnectionToken =
 	| NoneServerConnectionToken
 	| MandatoryServerConnectionToken;
+
 export class ServerConnectionTokenParseError {
 	constructor(public readonly message: string) {}
 }

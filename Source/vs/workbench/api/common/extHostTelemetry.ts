@@ -456,6 +456,7 @@ export function isNewAppInstall(firstSessionDate: string): boolean {
 }
 export const IExtHostTelemetry =
 	createDecorator<IExtHostTelemetry>("IExtHostTelemetry");
+
 export interface IExtHostTelemetry
 	extends ExtHostTelemetry,
 		ExtHostTelemetryShape {}

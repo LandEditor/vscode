@@ -17,6 +17,7 @@ import * as VinylFile from "vinyl";
 import _debounce = require("debounce");
 
 const root = path.dirname(path.dirname(__dirname));
+
 export interface ICancellationToken {
 	isCancellationRequested(): boolean;
 }
@@ -24,6 +25,7 @@ export interface ICancellationToken {
 const NoCancellationToken: ICancellationToken = {
 	isCancellationRequested: () => false,
 };
+
 export interface IStreamProvider {
 	(cancellationToken?: ICancellationToken): NodeJS.ReadWriteStream;
 }

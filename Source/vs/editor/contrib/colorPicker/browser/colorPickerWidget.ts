@@ -16,6 +16,7 @@ import { ColorPickerBody } from "./colorPickerParts/colorPickerBody.js";
 import { ColorPickerHeader } from "./colorPickerParts/colorPickerHeader.js";
 
 const $ = dom.$;
+
 export class ColorPickerWidget
 	extends Widget
 	implements IEditorHoverColorPickerWidget

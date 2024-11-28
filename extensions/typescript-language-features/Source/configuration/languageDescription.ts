@@ -15,6 +15,7 @@ export const allDiagnosticLanguages = [
 	DiagnosticLanguage.JavaScript,
 	DiagnosticLanguage.TypeScript,
 ];
+
 export interface LanguageDescription {
 	readonly id: string;
 	readonly diagnosticOwner: string;
@@ -45,6 +46,7 @@ export const standardLanguageDescriptions: LanguageDescription[] = [
 		standardFileExtensions: ["js", "jsx", "cjs", "mjs", "es6", "pac"],
 	},
 ];
+
 export function isTsConfigFileName(fileName: string): boolean {
 	return /^tsconfig\.(.+\.)?json$/i.test(basename(fileName));
 }

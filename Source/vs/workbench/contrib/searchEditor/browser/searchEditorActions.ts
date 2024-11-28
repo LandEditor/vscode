@@ -52,6 +52,7 @@ export const toggleSearchEditorCaseSensitiveCommand = (
 		(editorService.activeEditorPane as SearchEditor).toggleCaseSensitive();
 	}
 };
+
 export const toggleSearchEditorWholeWordCommand = (
 	accessor: ServicesAccessor,
 ) => {
@@ -63,6 +64,7 @@ export const toggleSearchEditorWholeWordCommand = (
 		(editorService.activeEditorPane as SearchEditor).toggleWholeWords();
 	}
 };
+
 export const toggleSearchEditorRegexCommand = (accessor: ServicesAccessor) => {
 	const editorService = accessor.get(IEditorService);
 
@@ -72,6 +74,7 @@ export const toggleSearchEditorRegexCommand = (accessor: ServicesAccessor) => {
 		(editorService.activeEditorPane as SearchEditor).toggleRegex();
 	}
 };
+
 export const toggleSearchEditorContextLinesCommand = (
 	accessor: ServicesAccessor,
 ) => {
@@ -83,6 +86,7 @@ export const toggleSearchEditorContextLinesCommand = (
 		(editorService.activeEditorPane as SearchEditor).toggleContextLines();
 	}
 };
+
 export const modifySearchEditorContextLinesCommand = (
 	accessor: ServicesAccessor,
 	increase: boolean,
@@ -97,6 +101,7 @@ export const modifySearchEditorContextLinesCommand = (
 		);
 	}
 };
+
 export const selectAllSearchEditorMatchesCommand = (
 	accessor: ServicesAccessor,
 ) => {
@@ -108,6 +113,7 @@ export const selectAllSearchEditorMatchesCommand = (
 		(editorService.activeEditorPane as SearchEditor).focusAllResults();
 	}
 };
+
 export async function openSearchEditor(
 	accessor: ServicesAccessor,
 ): Promise<void> {
@@ -294,6 +300,7 @@ export const openNewSearchEditor = async (
 		editor.focusSearchInput();
 	}
 };
+
 export const createEditorFromSearchResult = async (
 	accessor: ServicesAccessor,
 	searchResult: ISearchResult,

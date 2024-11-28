@@ -50,6 +50,7 @@ export type ResultChangeEvent =
 	| {
 			removed: ITestResult[];
 	  };
+
 export interface ITestResultService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -92,8 +93,10 @@ export interface ITestResultService {
 
 const isRunningTests = (service: ITestResultService) =>
 	service.results.length > 0 && service.results[0].completedAt === undefined;
+
 export const ITestResultService =
 	createDecorator<ITestResultService>("testResultService");
+
 export class TestResultService
 	extends Disposable
 	implements ITestResultService

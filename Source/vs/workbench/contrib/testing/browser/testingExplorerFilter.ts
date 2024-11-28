@@ -66,6 +66,7 @@ const testFilterDescriptions: {
 		"Show Hidden Tests",
 	),
 };
+
 export class TestingExplorerFilter extends BaseActionViewItem {
 	private input!: SuggestEnabledInputWithHistory;
 	private wrapper!: HTMLDivElement;

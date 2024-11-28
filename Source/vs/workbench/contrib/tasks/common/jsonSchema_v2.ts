@@ -636,6 +636,7 @@ const taskDefinitions: IJSONSchema[] = [];
 TaskDefinitionRegistry.onReady().then(() => {
 	updateTaskDefinitions();
 });
+
 export function updateTaskDefinitions() {
 	for (const taskType of TaskDefinitionRegistry.all()) {
 		// Check that we haven't already added this task type
@@ -871,6 +872,7 @@ Object.getOwnPropertyNames(definitions).forEach((key) => {
 	deprecatedVariableMessage(definitions, newKey);
 });
 fixReferences(schema);
+
 export function updateProblemMatchers() {
 	try {
 		const matcherIds = ProblemMatcherRegistry.keys().map(
@@ -887,4 +889,5 @@ export function updateProblemMatchers() {
 ProblemMatcherRegistry.onReady().then(() => {
 	updateProblemMatchers();
 });
+
 export default schema;

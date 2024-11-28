@@ -50,6 +50,7 @@ export type IChatSlashCallback = {
 		followUp: IChatFollowup[];
 	} | void>;
 };
+
 export const IChatSlashCommandService =
 	createDecorator<IChatSlashCommandService>("chatSlashCommandService");
 /**
@@ -80,6 +81,7 @@ type Tuple = {
 	data: IChatSlashData;
 	command?: IChatSlashCallback;
 };
+
 export class ChatSlashCommandService
 	extends Disposable
 	implements IChatSlashCommandService

@@ -86,6 +86,7 @@ const _completionItemColor = new (class ColorExtractor {
 		return false;
 	}
 })();
+
 export interface ISuggestionTemplateData {
 	readonly root: HTMLElement;
 	/**

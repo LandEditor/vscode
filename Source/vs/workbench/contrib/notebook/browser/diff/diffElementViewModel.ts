@@ -44,7 +44,9 @@ import {
 const PropertyHeaderHeight = 25;
 // From `.monaco-editor .diff-hidden-lines .center` in src/vs/editor/browser/widget/diffEditor/style.css
 export const HeightOfHiddenLinesRegionInDiffEditor = 24;
+
 export const DefaultLineHeight = 17;
+
 export enum PropertyFoldingState {
 	Expanded,
 	Collapsed,
@@ -61,6 +63,7 @@ export type IDiffElementViewModelBase =
 	| DiffElementCellViewModelBase
 	| DiffElementPlaceholderViewModel
 	| NotebookDocumentMetadataViewModel;
+
 export abstract class DiffElementViewModelBase extends Disposable {
 	protected _layoutInfoEmitter = this._register(
 		new Emitter<CellDiffViewModelLayoutChangeEvent>(),

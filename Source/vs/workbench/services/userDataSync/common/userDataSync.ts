@@ -33,6 +33,7 @@ export const IUserDataSyncWorkbenchService =
 	createDecorator<IUserDataSyncWorkbenchService>(
 		"IUserDataSyncWorkbenchService",
 	);
+
 export interface IUserDataSyncWorkbenchService {
 	_serviceBrand: any;
 	readonly enabled: boolean;
@@ -99,6 +100,7 @@ export const SYNC_TITLE: ILocalizedString = localize2(
 	"sync category",
 	"Settings Sync",
 );
+
 export const SYNC_VIEW_ICON = registerIcon(
 	"settings-sync-view-icon",
 	Codicon.sync,
@@ -109,22 +111,27 @@ export const CONTEXT_SYNC_STATE = new RawContextKey<string>(
 	"syncStatus",
 	SyncStatus.Uninitialized,
 );
+
 export const CONTEXT_SYNC_ENABLEMENT = new RawContextKey<boolean>(
 	"syncEnabled",
 	false,
 );
+
 export const CONTEXT_ACCOUNT_STATE = new RawContextKey<string>(
 	"userDataSyncAccountStatus",
 	AccountStatus.Uninitialized,
 );
+
 export const CONTEXT_ENABLE_ACTIVITY_VIEWS = new RawContextKey<boolean>(
 	`enableSyncActivityViews`,
 	false,
 );
+
 export const CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW = new RawContextKey<boolean>(
 	`enableSyncConflictsView`,
 	false,
 );
+
 export const CONTEXT_HAS_CONFLICTS = new RawContextKey<boolean>(
 	"hasConflicts",
 	false,
@@ -132,11 +139,14 @@ export const CONTEXT_HAS_CONFLICTS = new RawContextKey<boolean>(
 // Commands
 export const CONFIGURE_SYNC_COMMAND_ID =
 	"workbench.userDataSync.actions.configure";
+
 export const SHOW_SYNC_LOG_COMMAND_ID =
 	"workbench.userDataSync.actions.showLog";
 // VIEWS
 export const SYNC_VIEW_CONTAINER_ID = "workbench.view.sync";
+
 export const SYNC_CONFLICTS_VIEW_ID = "workbench.views.sync.conflicts";
+
 export const DOWNLOAD_ACTIVITY_ACTION_DESCRIPTOR: Readonly<IAction2Options> = {
 	id: "workbench.userDataSync.actions.downloadSyncActivity",
 	title: localize2(

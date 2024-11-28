@@ -20,6 +20,7 @@ const TYPESCRIPT_LIB_SOURCE = join(
 );
 
 const JQUERY_PATH = join(serverFolder, "lib/jquery.d.ts");
+
 export function loadLibrary(name: string) {
 	let content = contents[name];
 

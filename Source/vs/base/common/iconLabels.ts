@@ -13,6 +13,7 @@ const iconsRegex = new RegExp(
 	"g",
 ); // no capturing groups
 const escapeIconsRegex = new RegExp(`(\\\\)?${iconsRegex.source}`, "g");
+
 export function escapeIcons(text: string): string {
 	return text.replace(escapeIconsRegex, (match, escaped) =>
 		escaped ? match : `\\${match}`,
@@ -20,6 +21,7 @@ export function escapeIcons(text: string): string {
 }
 
 const markdownEscapedIconsRegex = new RegExp(`\\\\${iconsRegex.source}`, "g");
+
 export function markdownEscapeEscapedIcons(text: string): string {
 	// Need to add an extra \ for escaping in markdown
 	return text.replace(markdownEscapedIconsRegex, (match) => `\\${match}`);

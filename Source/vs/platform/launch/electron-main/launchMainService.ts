@@ -27,7 +27,9 @@ import {
 } from "../../windows/electron-main/windows.js";
 
 export const ID = "launchMainService";
+
 export const ILaunchMainService = createDecorator<ILaunchMainService>(ID);
+
 export interface IStartArguments {
 	readonly args: NativeParsedArgs;
 	readonly userEnv: IProcessEnvironment;

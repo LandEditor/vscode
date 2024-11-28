@@ -117,6 +117,7 @@ registerTerminalContribution(
 	TextAreaSyncContribution.ID,
 	TextAreaSyncContribution,
 );
+
 export class TerminalAccessibleViewContribution
 	extends Disposable
 	implements ITerminalContribution
@@ -431,6 +432,7 @@ registerTerminalContribution(
 	TerminalAccessibleViewContribution.ID,
 	TerminalAccessibleViewContribution,
 );
+
 export class TerminalAccessibilityHelpContribution extends Disposable {
 	static ID: "terminalAccessibilityHelpContribution";
 

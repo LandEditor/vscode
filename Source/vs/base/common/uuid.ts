@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 const _UUIDPattern =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function isUUID(value: string): boolean {
 	return _UUIDPattern.test(value);
 }
@@ -15,6 +16,7 @@ declare const crypto:
 			//https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID#browser_compatibility
 			randomUUID?(): string;
 	  };
+
 export const generateUuid = (function (): () => string {
 	// use `randomUUID` if possible
 	if (typeof crypto === "object" && typeof crypto.randomUUID === "function") {

@@ -20,7 +20,9 @@ import { showChatView } from '../../../../chat/browser/chat.js';
 import { IViewsService } from '../../../../../services/views/common/viewsService.js';
 
 export const OPEN_CELL_FAILURE_ACTIONS_COMMAND_ID = 'notebook.cell.openFailureActions';
+
 export const FIX_CELL_ERROR_COMMAND_ID = 'notebook.cell.chat.fixError';
+
 export const EXPLAIN_CELL_ERROR_COMMAND_ID = 'notebook.cell.chat.explainError';
 
 registerAction2(class extends NotebookCellAction {

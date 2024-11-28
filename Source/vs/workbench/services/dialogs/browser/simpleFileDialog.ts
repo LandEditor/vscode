@@ -162,6 +162,7 @@ export const RemoteFileDialogContext = new RawContextKey<boolean>(
 	"remoteFileDialogVisible",
 	false,
 );
+
 export interface ISimpleFileDialog extends IDisposable {
 	showOpenDialog(options: IOpenDialogOptions): Promise<URI | undefined>;
 	showSaveDialog(options: ISaveDialogOptions): Promise<URI | undefined>;

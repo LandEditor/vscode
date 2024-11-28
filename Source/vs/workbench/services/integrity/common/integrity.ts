@@ -7,6 +7,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const IIntegrityService =
 	createDecorator<IIntegrityService>("integrityService");
+
 export interface ChecksumPair {
 	uri: URI;
 	actual: string;

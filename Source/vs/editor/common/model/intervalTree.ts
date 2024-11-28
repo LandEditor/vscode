@@ -252,6 +252,7 @@ SENTINEL.parent = SENTINEL;
 SENTINEL.left = SENTINEL;
 SENTINEL.right = SENTINEL;
 setNodeColor(SENTINEL, NodeColor.Black);
+
 export class IntervalTree {
 	public root: IntervalNode;
 	public requestNormalizeDelta: boolean;

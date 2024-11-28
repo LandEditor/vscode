@@ -23,6 +23,7 @@ export enum EditPresentationTypes {
 export const Extensions = {
 	Configuration: "base.contributions.configuration",
 };
+
 export interface IConfigurationDelta {
 	removedDefaults?: IConfigurationDefaults[];
 	removedConfigurations?: IConfigurationNode[];
@@ -229,6 +230,7 @@ export interface IConfigurationNode {
 export type ConfigurationDefaultValueSource =
 	| IExtensionInfo
 	| Map<string, IExtensionInfo>;
+
 export interface IConfigurationDefaults {
 	overrides: IStringDictionary<any>;
 	source?: IExtensionInfo;
@@ -239,6 +241,7 @@ export type IRegisteredConfigurationPropertySchema =
 		source?: IExtensionInfo; // Source of the Property
 		defaultValueSource?: ConfigurationDefaultValueSource; // Source of the Default Value
 	};
+
 export interface IConfigurationDefaultOverride {
 	readonly value: any;
 	readonly source?: IExtensionInfo; // Source of the default override
@@ -251,28 +254,35 @@ export const allSettings: {
 	properties: IStringDictionary<IConfigurationPropertySchema>;
 	patternProperties: IStringDictionary<IConfigurationPropertySchema>;
 } = { properties: {}, patternProperties: {} };
+
 export const applicationSettings: {
 	properties: IStringDictionary<IConfigurationPropertySchema>;
 	patternProperties: IStringDictionary<IConfigurationPropertySchema>;
 } = { properties: {}, patternProperties: {} };
+
 export const machineSettings: {
 	properties: IStringDictionary<IConfigurationPropertySchema>;
 	patternProperties: IStringDictionary<IConfigurationPropertySchema>;
 } = { properties: {}, patternProperties: {} };
+
 export const machineOverridableSettings: {
 	properties: IStringDictionary<IConfigurationPropertySchema>;
 	patternProperties: IStringDictionary<IConfigurationPropertySchema>;
 } = { properties: {}, patternProperties: {} };
+
 export const windowSettings: {
 	properties: IStringDictionary<IConfigurationPropertySchema>;
 	patternProperties: IStringDictionary<IConfigurationPropertySchema>;
 } = { properties: {}, patternProperties: {} };
+
 export const resourceSettings: {
 	properties: IStringDictionary<IConfigurationPropertySchema>;
 	patternProperties: IStringDictionary<IConfigurationPropertySchema>;
 } = { properties: {}, patternProperties: {} };
+
 export const resourceLanguageSettingsSchemaId =
 	"vscode://schemas/settings/resourceLanguage";
+
 export const configurationDefaultsSchemaId =
 	"vscode://schemas/settings/configurationDefaults";
 
@@ -1121,8 +1131,11 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 const OVERRIDE_IDENTIFIER_PATTERN = `\\[([^\\]]+)\\]`;
 
 const OVERRIDE_IDENTIFIER_REGEX = new RegExp(OVERRIDE_IDENTIFIER_PATTERN, "g");
+
 export const OVERRIDE_PROPERTY_PATTERN = `^(${OVERRIDE_IDENTIFIER_PATTERN})+$`;
+
 export const OVERRIDE_PROPERTY_REGEX = new RegExp(OVERRIDE_PROPERTY_PATTERN);
+
 export function overrideIdentifiersFromKey(key: string): string[] {
 	const identifiers: string[] = [];
 
@@ -1175,6 +1188,7 @@ export function getDefaultValue(type: string | string[] | undefined) {
 
 const configurationRegistry = new ConfigurationRegistry();
 Registry.add(Extensions.Configuration, configurationRegistry);
+
 export function validateProperty(
 	property: string,
 	schema: IRegisteredConfigurationPropertySchema,

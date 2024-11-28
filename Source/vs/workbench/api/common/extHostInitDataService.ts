@@ -8,6 +8,7 @@ import { IExtensionHostInitData } from "../../services/extensions/common/extensi
 export const IExtHostInitDataService = createDecorator<IExtHostInitDataService>(
 	"IExtHostInitDataService",
 );
+
 export interface IExtHostInitDataService
 	extends Readonly<IExtensionHostInitData> {
 	readonly _serviceBrand: undefined;

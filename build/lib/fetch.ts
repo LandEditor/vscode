@@ -152,6 +152,7 @@ const ghDownloadHeaders = {
 	...ghApiHeaders,
 	Accept: "application/octet-stream",
 };
+
 export interface IGitHubAssetOptions {
 	version: string;
 	name: string | ((name: string) => boolean);

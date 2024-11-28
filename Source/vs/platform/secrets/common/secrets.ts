@@ -19,6 +19,7 @@ import {
 export const ISecretStorageService = createDecorator<ISecretStorageService>(
 	"secretStorageService",
 );
+
 export interface ISecretStorageProvider {
 	type: "in-memory" | "persisted" | "unknown";
 

@@ -245,6 +245,7 @@ export const getTotalCoveragePercent = (
 	}
 	return denominator === 0 ? 1 : numerator / denominator;
 };
+
 export abstract class AbstractFileCoverage {
 	public id: string;
 	public readonly uri: URI;

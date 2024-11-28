@@ -59,6 +59,7 @@ overrideCommandForWebview(SelectAllCommand, (webview) => webview.selectAll());
 overrideCommandForWebview(CopyAction, (webview) => webview.copy());
 overrideCommandForWebview(PasteAction, (webview) => webview.paste());
 overrideCommandForWebview(CutAction, (webview) => webview.cut());
+
 export const PreventDefaultContextMenuItemsContextKeyName =
 	"preventDefaultContextMenuItems";
 if (CutAction) {

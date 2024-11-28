@@ -44,6 +44,7 @@ export const SELECTED_REMOTE_IN_EXPLORER = new RawContextKey<string>(
 	"selectedRemoteInExplorer",
 	"",
 );
+
 export class SwitchRemoteViewItem extends Disposable {
 	private switchRemoteMenu: MenuId;
 	private completedRemotes: DisposableMap<string, IRemoteSelectItem> =

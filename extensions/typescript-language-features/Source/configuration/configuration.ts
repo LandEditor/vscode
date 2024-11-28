@@ -170,6 +170,7 @@ export interface ServiceConfigurationProvider {
 
 const vscodeWatcherName = "vscode";
 type vscodeWatcherName = typeof vscodeWatcherName;
+
 export abstract class BaseServiceConfigurationProvider
 	implements ServiceConfigurationProvider
 {

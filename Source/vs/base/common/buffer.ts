@@ -14,6 +14,7 @@ const indexOfTable = new Lazy(() => new Uint8Array(256));
 let textEncoder: TextEncoder | null;
 
 let textDecoder: TextDecoder | null;
+
 export class VSBuffer {
 	/**
 	 * When running in a nodejs context, the backing store for the returned `VSBuffer` instance

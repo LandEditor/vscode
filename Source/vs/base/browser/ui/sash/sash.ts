@@ -163,6 +163,7 @@ export const enum SashState {
 let globalSize = 4;
 
 const onDidChangeGlobalSize = new Emitter<number>();
+
 export function setGlobalSashSize(size: number): void {
 	globalSize = size;
 	onDidChangeGlobalSize.fire(size);
@@ -171,6 +172,7 @@ export function setGlobalSashSize(size: number): void {
 let globalHoverDelay = 300;
 
 const onDidChangeHoverDelay = new Emitter<number>();
+
 export function setGlobalHoverDelay(size: number): void {
 	globalHoverDelay = size;
 	onDidChangeHoverDelay.fire(size);

@@ -408,23 +408,39 @@ export const extUriBiasedIgnorePathCase = new ExtUri((uri) => {
  * casing matters.
  */
 export const extUriIgnorePathCase = new ExtUri((_) => true);
+
 export const isEqual = extUri.isEqual.bind(extUri);
+
 export const isEqualOrParent = extUri.isEqualOrParent.bind(extUri);
+
 export const getComparisonKey = extUri.getComparisonKey.bind(extUri);
+
 export const basenameOrAuthority = extUri.basenameOrAuthority.bind(extUri);
+
 export const basename = extUri.basename.bind(extUri);
+
 export const extname = extUri.extname.bind(extUri);
+
 export const dirname = extUri.dirname.bind(extUri);
+
 export const joinPath = extUri.joinPath.bind(extUri);
+
 export const normalizePath = extUri.normalizePath.bind(extUri);
+
 export const relativePath = extUri.relativePath.bind(extUri);
+
 export const resolvePath = extUri.resolvePath.bind(extUri);
+
 export const isAbsolutePath = extUri.isAbsolutePath.bind(extUri);
+
 export const isEqualAuthority = extUri.isEqualAuthority.bind(extUri);
+
 export const hasTrailingPathSeparator =
 	extUri.hasTrailingPathSeparator.bind(extUri);
+
 export const removeTrailingPathSeparator =
 	extUri.removeTrailingPathSeparator.bind(extUri);
+
 export const addTrailingPathSeparator =
 	extUri.addTrailingPathSeparator.bind(extUri);
 //#endregion

@@ -99,6 +99,7 @@ const accessibleDiffViewerCloseIcon = registerIcon(
 		"Icon for 'Close' in accessible diff viewer.",
 	),
 );
+
 export interface IAccessibleDiffViewerModel {
 	getOriginalModel(): ITextModel;
 

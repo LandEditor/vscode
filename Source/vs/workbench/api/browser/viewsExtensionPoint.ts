@@ -104,6 +104,7 @@ const viewsContainerSchema: IJSONSchema = {
 	},
 	required: ["id", "title", "icon"],
 };
+
 export const viewsContainersContribution: IJSONSchema = {
 	description: localize(
 		"vscode.extension.contributes.viewsContainers",

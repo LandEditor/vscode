@@ -27,6 +27,7 @@ const Fields = Object.freeze({
 	selector: "selector",
 	priority: "priority",
 });
+
 export interface ICustomEditorsExtensionPoint {
 	readonly [Fields.viewType]: string;
 	readonly [Fields.displayName]: string;
@@ -124,6 +125,7 @@ const CustomEditorsContribution: IJSONSchema = {
 		},
 	},
 };
+
 export const customEditorsExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<ICustomEditorsExtensionPoint[]>({
 		extensionPoint: "customEditors",

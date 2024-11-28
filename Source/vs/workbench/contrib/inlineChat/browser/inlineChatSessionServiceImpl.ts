@@ -69,6 +69,7 @@ type SessionData = {
 	session: Session;
 	store: IDisposable;
 };
+
 export class InlineChatError extends Error {
 	static readonly code = "InlineChatError";
 

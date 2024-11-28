@@ -7,6 +7,7 @@ import { SearchRange } from "../common/search.js";
 import * as searchExtTypes from "../common/searchExtTypes.js";
 
 export type Maybe<T> = T | null | undefined;
+
 export function anchorGlob(glob: string): string {
 	return glob.startsWith("**") || glob.startsWith("/") ? glob : `/${glob}`;
 }

@@ -60,6 +60,7 @@ import {
 
 // Center
 export const SHOW_NOTIFICATIONS_CENTER = "notifications.showList";
+
 export const HIDE_NOTIFICATIONS_CENTER = "notifications.hideList";
 
 const TOGGLE_NOTIFICATIONS_CENTER = "notifications.toggleList";
@@ -77,17 +78,24 @@ const FOCUS_FIRST_NOTIFICATION_TOAST = "notifications.focusFirstToast";
 const FOCUS_LAST_NOTIFICATION_TOAST = "notifications.focusLastToast";
 // Notification
 export const COLLAPSE_NOTIFICATION = "notification.collapse";
+
 export const EXPAND_NOTIFICATION = "notification.expand";
+
 export const ACCEPT_PRIMARY_ACTION_NOTIFICATION =
 	"notification.acceptPrimaryAction";
 
 const TOGGLE_NOTIFICATION = "notification.toggle";
+
 export const CLEAR_NOTIFICATION = "notification.clear";
+
 export const CLEAR_ALL_NOTIFICATIONS = "notifications.clearAll";
+
 export const TOGGLE_DO_NOT_DISTURB_MODE =
 	"notifications.toggleDoNotDisturbMode";
+
 export const TOGGLE_DO_NOT_DISTURB_MODE_BY_SOURCE =
 	"notifications.toggleDoNotDisturbModeBySource";
+
 export interface INotificationsCenterController {
 	readonly isVisible: boolean;
 	show(): void;
@@ -542,6 +550,7 @@ type NotificationActionMetricsClassification = {
 	owner: "bpasero";
 	comment: "Tracks when actions are fired from notifcations and how they were fired.";
 };
+
 export class NotificationActionRunner extends ActionRunner {
 	constructor(
 		@ITelemetryService

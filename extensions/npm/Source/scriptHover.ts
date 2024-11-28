@@ -25,6 +25,7 @@ import { createTask, getPackageManager, startDebugging } from "./tasks";
 let cachedDocument: Uri | undefined = undefined;
 
 let cachedScripts: INpmScriptInfo | undefined = undefined;
+
 export function invalidateHoverScriptsCache(document?: TextDocument) {
 	if (!document) {
 		cachedDocument = undefined;

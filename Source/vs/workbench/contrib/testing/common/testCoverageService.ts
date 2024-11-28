@@ -33,6 +33,7 @@ import { ITestResultService } from "./testResultService.js";
 export const ITestCoverageService = createDecorator<ITestCoverageService>(
 	"testCoverageService",
 );
+
 export interface ITestCoverageService {
 	readonly _serviceBrand: undefined;
 	/**

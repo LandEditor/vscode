@@ -28,6 +28,7 @@ export interface IContextMenuEvent {
 type ContextMenuLocation = OmitOptional<IAnchor> & {
 	getModifierState?: never;
 };
+
 export interface IContextMenuDelegate {
 	/**
 	 * The anchor where to position the context view.

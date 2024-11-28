@@ -35,6 +35,7 @@ const linkPattern =
 	// Title
 	/**/ r`\s*(?:"[^"]*"|'[^']*'|\([^\(\)]*\))?\s*` +
 	r`\)`;
+
 export function getNWords(
 	str: string,
 	numWordsToCount: number,

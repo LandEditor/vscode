@@ -25,6 +25,7 @@ export const IUserDataProfilesMainService = refineServiceDecorator<
 	IUserDataProfilesService,
 	IUserDataProfilesMainService
 >(IUserDataProfilesService);
+
 export interface IUserDataProfilesMainService extends IUserDataProfilesService {
 	getProfileForWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,

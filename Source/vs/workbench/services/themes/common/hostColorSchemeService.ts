@@ -8,6 +8,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 export const IHostColorSchemeService = createDecorator<IHostColorSchemeService>(
 	"hostColorSchemeService",
 );
+
 export interface IHostColorSchemeService {
 	readonly _serviceBrand: undefined;
 	readonly dark: boolean;

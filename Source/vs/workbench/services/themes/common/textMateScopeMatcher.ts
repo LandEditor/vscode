@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 "use strict";
+
 export interface MatcherWithPriority<T> {
 	matcher: Matcher<T>;
 	priority: -1 | 0 | 1;

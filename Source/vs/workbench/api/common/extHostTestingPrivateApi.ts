@@ -16,6 +16,7 @@ export interface IExtHostTestItemApi {
 }
 
 const eventPrivateApis = new WeakMap<vscode.TestItem, IExtHostTestItemApi>();
+
 export const createPrivateApiFor = (
 	impl: vscode.TestItem,
 	controllerId: string,

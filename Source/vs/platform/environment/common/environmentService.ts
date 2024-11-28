@@ -23,6 +23,7 @@ import {
 } from "./environment.js";
 
 export const EXTENSION_IDENTIFIER_WITH_LOG_REGEX = /^([^.]+\..+)[:=](.+)$/;
+
 export interface INativeEnvironmentPaths {
 	/**
 	 * The user data directory to use for anything that should be

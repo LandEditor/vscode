@@ -68,10 +68,15 @@ import {
 
 //#region Shared commands
 export const EXPAND_CELL_INPUT_COMMAND_ID = "notebook.cell.expandCellInput";
+
 export const EXECUTE_CELL_COMMAND_ID = "notebook.cell.execute";
+
 export const DETECT_CELL_LANGUAGE = "notebook.cell.detectLanguage";
+
 export const CHANGE_CELL_LANGUAGE = "notebook.cell.changeLanguage";
+
 export const QUIT_EDIT_CELL_COMMAND_ID = "notebook.cell.quitEdit";
+
 export const EXPAND_CELL_OUTPUT_COMMAND_ID = "notebook.cell.expandCellOutput";
 
 //#endregion
@@ -81,6 +86,7 @@ export const EXPAND_CELL_OUTPUT_COMMAND_ID = "notebook.cell.expandCellOutput";
 // Hardcoding viewType/extension ID for now. TODO these should be replaced once we can
 // look them up in the marketplace dynamically.
 export const IPYNB_VIEW_TYPE = "jupyter-notebook";
+
 export const JUPYTER_EXTENSION_ID = "ms-toolsai.jupyter";
 /** @deprecated use the notebookKernel<Type> "keyword" instead */
 export const KERNEL_EXTENSIONS = new Map<string, string>([

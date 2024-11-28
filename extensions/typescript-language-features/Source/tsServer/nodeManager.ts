@@ -13,6 +13,7 @@ const useWorkspaceNodeStorageKey = "typescript.useWorkspaceNode";
 const lastKnownWorkspaceNodeStorageKey = "typescript.lastKnownWorkspaceNode";
 type UseWorkspaceNodeState = undefined | boolean;
 type LastKnownWorkspaceNodeState = undefined | string;
+
 export class NodeVersionManager extends Disposable {
 	private _currentVersion: string | undefined;
 	public constructor(

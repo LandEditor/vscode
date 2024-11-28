@@ -252,6 +252,7 @@ const runtimeStatusFeature = {
 	},
 	renderer: new SyncDescriptor(RuntimeStatusMarkdownRenderer),
 };
+
 export class ExtensionFeaturesTab extends Themable {
 	readonly domNode: HTMLElement;
 	private readonly featureView = this._register(

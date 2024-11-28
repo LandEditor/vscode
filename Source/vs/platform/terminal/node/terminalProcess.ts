@@ -104,6 +104,7 @@ const generalShellTypeMap = new Map<string, GeneralShellType>([
 	["julia", GeneralShellType.Julia],
 	["nu", GeneralShellType.NuShell],
 ]);
+
 export class TerminalProcess
 	extends Disposable
 	implements ITerminalChildProcess

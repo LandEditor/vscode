@@ -47,6 +47,7 @@ import { EditorInput } from "../../../common/editor/editorInput.js";
 export const IEditorGroupsService = createDecorator<IEditorGroupsService>(
 	"editorGroupsService",
 );
+
 export const enum GroupDirection {
 	UP,
 	DOWN,
@@ -124,6 +125,7 @@ export type ICloseEditorsFilter = {
 	readonly savedOnly?: boolean;
 	readonly excludeSticky?: boolean;
 };
+
 export interface ICloseAllEditorsOptions {
 	readonly excludeSticky?: boolean;
 	readonly excludeConfirming?: boolean;

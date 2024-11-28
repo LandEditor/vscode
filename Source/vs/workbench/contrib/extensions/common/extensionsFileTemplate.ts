@@ -7,6 +7,7 @@ import { localize } from "../../../../nls.js";
 import { EXTENSION_IDENTIFIER_PATTERN } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 
 export const ExtensionsConfigurationSchemaId = "vscode://schemas/extensions";
+
 export const ExtensionsConfigurationSchema: IJSONSchema = {
 	id: ExtensionsConfigurationSchemaId,
 	allowComments: true,
@@ -47,6 +48,7 @@ export const ExtensionsConfigurationSchema: IJSONSchema = {
 		},
 	},
 };
+
 export const ExtensionsConfigurationInitialContent: string = [
 	"{",
 	"\t// See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.",

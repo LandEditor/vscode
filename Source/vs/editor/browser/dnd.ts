@@ -60,6 +60,7 @@ const INTERNAL_DND_MIME_TYPES = Object.freeze([
 	DataTransfers.RESOURCES,
 	DataTransfers.INTERNAL_URI_LIST,
 ]);
+
 export function toExternalVSDataTransfer(
 	sourceDataTransfer: DataTransfer,
 	overwriteUriList = false,

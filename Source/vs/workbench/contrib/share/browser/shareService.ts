@@ -43,6 +43,7 @@ type ShareClassification = {
 		comment: "The id of the selected share provider.";
 	};
 };
+
 export class ShareService implements IShareService {
 	readonly _serviceBrand: undefined;
 	readonly providerCount: IContextKey<number>;

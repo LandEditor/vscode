@@ -51,6 +51,7 @@ const rgDiskPath = rgPath.replace(
 	/\bnode_modules\.asar\b/,
 	"node_modules.asar.unpacked",
 );
+
 export class RipgrepTextSearchEngine {
 	constructor(
 		private outputChannel: IOutputChannel,
@@ -698,6 +699,7 @@ export type IRgBytesOrText =
 
 const isLookBehind = (node: ReAST.Node) =>
 	node.type === "Assertion" && node.kind === "lookbehind";
+
 export function fixRegexNewline(pattern: string): string {
 	// we parse the pattern anew each tiem
 	let re: ReAST.Pattern;

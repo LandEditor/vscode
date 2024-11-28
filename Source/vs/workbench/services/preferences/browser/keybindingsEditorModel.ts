@@ -81,6 +81,7 @@ const SOURCE_REGEX = /@source:\s*(user|default|system|extension)/i;
 const EXTENSION_REGEX = /@ext:\s*((".+")|([^\s]+))/i;
 
 const KEYBINDING_REGEX = /@keybinding:\s*((\".+\")|(\S+))/i;
+
 export class KeybindingsEditorModel extends EditorModel {
 	private _keybindingItems: IKeybindingItem[];
 	private _keybindingItemsSortedByPrecedence: IKeybindingItem[];

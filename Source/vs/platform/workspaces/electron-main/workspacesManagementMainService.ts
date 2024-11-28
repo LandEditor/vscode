@@ -51,6 +51,7 @@ export const IWorkspacesManagementMainService =
 	createDecorator<IWorkspacesManagementMainService>(
 		"workspacesManagementMainService",
 	);
+
 export interface IWorkspaceEnteredEvent {
 	readonly window: ICodeWindow;
 	readonly workspace: IWorkspaceIdentifier;

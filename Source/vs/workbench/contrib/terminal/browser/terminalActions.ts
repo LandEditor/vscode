@@ -109,6 +109,7 @@ import { ITerminalQuickPickItem } from "./terminalProfileQuickpick.js";
 
 export const switchTerminalActionViewItemSeparator =
 	"\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
+
 export const switchTerminalShowTabsTitle = localize(
 	"showTerminalTabs",
 	"Show Tabs",
@@ -143,6 +144,7 @@ const sharedWhenClause = (() => {
 		),
 	};
 })();
+
 export interface WorkspaceFolderCwdPair {
 	folder: IWorkspaceFolder;
 	cwd: URI;
@@ -231,6 +233,7 @@ export const terminalSendSequenceCommand = async (
 		instance.sendText(resolvedText, false);
 	}
 };
+
 export class TerminalLaunchHelpAction extends Action {
 	constructor(
 		@IOpenerService
@@ -2101,6 +2104,7 @@ function convertOptionsOrProfileToOptions(
 	return optionsOrProfile;
 }
 let newWithProfileAction: IDisposable;
+
 export function refreshTerminalActions(
 	detectedProfiles: ITerminalProfile[],
 ): IDisposable {

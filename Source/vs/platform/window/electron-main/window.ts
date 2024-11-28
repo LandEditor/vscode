@@ -137,6 +137,7 @@ export const defaultWindowState = function (
 		mode,
 	};
 };
+
 export const defaultAuxWindowState = function (): IWindowState {
 	// Auxiliary windows are being created from a `window.open` call
 	// that sets `windowFeatures` that encode the desired size and
@@ -162,6 +163,7 @@ export const defaultAuxWindowState = function (): IWindowState {
 		mode: WindowMode.Normal,
 	};
 };
+
 export const enum WindowMode {
 	Maximized,
 	Normal,

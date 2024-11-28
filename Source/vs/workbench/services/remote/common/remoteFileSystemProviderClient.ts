@@ -20,6 +20,7 @@ import {
 } from "./remoteAgentService.js";
 
 export const REMOTE_FILE_SYSTEM_CHANNEL_NAME = "remoteFilesystem";
+
 export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient {
 	static register(
 		remoteAgentService: IRemoteAgentService,

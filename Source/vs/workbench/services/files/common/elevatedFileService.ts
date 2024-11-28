@@ -17,6 +17,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 export const IElevatedFileService = createDecorator<IElevatedFileService>(
 	"elevatedFileService",
 );
+
 export interface IElevatedFileService {
 	readonly _serviceBrand: undefined;
 	/**

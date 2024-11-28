@@ -24,11 +24,15 @@ import { ansiColorMap } from "../common/terminalColorRegistry.js";
 import { ITerminalInstance } from "./terminal.js";
 
 export function getColorClass(colorKey: string): string;
+
 export function getColorClass(profile: ITerminalProfile): string;
+
 export function getColorClass(terminal: ITerminalInstance): string | undefined;
+
 export function getColorClass(
 	extensionTerminalProfile: IExtensionTerminalProfile,
 ): string | undefined;
+
 export function getColorClass(
 	terminalOrColorKey:
 		| ITerminalInstance

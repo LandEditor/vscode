@@ -155,6 +155,7 @@ const tokenStyleDefaultsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 		},
 	},
 });
+
 export class TokenClassificationExtensionPoints {
 	constructor() {
 		function validateTypeOrModifier(

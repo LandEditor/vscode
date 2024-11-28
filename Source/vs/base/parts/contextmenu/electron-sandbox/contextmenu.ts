@@ -13,6 +13,7 @@ import {
 } from "../common/contextmenu.js";
 
 let contextMenuIdPool = 0;
+
 export function popup(
 	items: IContextMenuItem[],
 	options?: IPopupOptions,

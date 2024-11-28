@@ -10,6 +10,7 @@ import {
 import { IEditorGroupsContainer } from "../../editor/common/editorGroupsService.js";
 
 export const ITitleService = createDecorator<ITitleService>("titleService");
+
 export interface ITitleService extends ITitlebarPart {
 	readonly _serviceBrand: undefined;
 	/**

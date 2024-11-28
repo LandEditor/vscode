@@ -9,6 +9,7 @@ const DEFAULT_TENANT = "organizations";
 const OIDC_SCOPES = ["openid", "email", "profile", "offline_access"];
 
 const GRAPH_TACK_ON_SCOPE = "User.Read";
+
 export class ScopeData {
 	/**
 	 * The full list of scopes including:

@@ -45,7 +45,9 @@ import {
 } from "./simpleCommentEditor.js";
 
 let INMEM_MODEL_ID = 0;
+
 export const COMMENTEDITOR_DECORATION_KEY = "commenteditordecoration";
+
 export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	commentEditor: ICodeEditor;
 

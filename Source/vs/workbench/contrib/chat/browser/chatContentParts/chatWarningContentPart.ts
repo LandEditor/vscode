@@ -12,6 +12,7 @@ import { IChatProgressRenderableResponseContent } from "../../common/chatModel.j
 import { IChatContentPart } from "./chatContentParts.js";
 
 const $ = dom.$;
+
 export class ChatWarningContentPart
 	extends Disposable
 	implements IChatContentPart

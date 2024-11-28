@@ -399,4 +399,5 @@ const schema: IJSONSchema = {
 		},
 	},
 };
+
 export default schema;

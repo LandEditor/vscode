@@ -7,7 +7,9 @@ import { IAddress } from "./remoteAgentConnection.js";
 
 export const ISharedProcessTunnelService =
 	createDecorator<ISharedProcessTunnelService>("sharedProcessTunnelService");
+
 export const ipcSharedProcessTunnelChannelName = "sharedProcessTunnel";
+
 export interface ISharedProcessTunnel {
 	tunnelLocalPort: number | undefined;
 	localAddress: string;

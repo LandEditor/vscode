@@ -29,6 +29,7 @@ export interface IShareProvider {
 	): Thenable<URI | string | undefined>;
 }
 export const IShareService = createDecorator<IShareService>("shareService");
+
 export interface IShareService {
 	_serviceBrand: undefined;
 	registerShareProvider(provider: IShareProvider): IDisposable;

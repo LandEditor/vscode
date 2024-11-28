@@ -265,6 +265,7 @@ type HunkDisplayData = {
 	move: (next: boolean) => void;
 	hunk: HunkInformation;
 };
+
 export class LiveStrategy extends EditModeStrategy {
 	private readonly _decoInsertedText = ModelDecorationOptions.register({
 		description: "inline-modified-line",

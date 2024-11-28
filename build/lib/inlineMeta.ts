@@ -20,6 +20,7 @@ const packageJsonMarkerId = "BUILD_INSERT_PACKAGE_CONFIGURATION";
 // - a `darwinUniversalAssetId` is added in`create-universal-app.ts`
 // - a `target` is added in `gulpfile.vscode.win32.js`
 // const productJsonMarkerId = 'BUILD_INSERT_PRODUCT_CONFIGURATION';
+
 export function inlineMeta(
 	result: NodeJS.ReadWriteStream,
 	ctx: IInlineMetaContext,

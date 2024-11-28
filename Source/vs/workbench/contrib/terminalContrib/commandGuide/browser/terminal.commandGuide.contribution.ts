@@ -168,6 +168,7 @@ registerTerminalContribution(
 	TerminalCommandGuideContribution,
 	false,
 );
+
 export const TERMINAL_COMMAND_GUIDE_COLOR = registerColor(
 	"terminalCommandGuide.foreground",
 	{

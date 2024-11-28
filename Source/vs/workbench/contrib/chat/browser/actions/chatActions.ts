@@ -47,6 +47,7 @@ import { convertBufferToScreenshotVariable } from '../contrib/screenshot.js';
 import { clearChatEditor } from './chatClear.js';
 
 export const CHAT_CATEGORY = localize2('chat.category', 'Chat');
+
 export const CHAT_OPEN_ACTION_ID = 'workbench.action.chat.open';
 
 export interface IChatViewOpenOptions {

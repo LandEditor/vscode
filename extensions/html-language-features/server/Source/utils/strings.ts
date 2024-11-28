@@ -79,6 +79,7 @@ export function isEOL(content: string, offset: number) {
 const CR = "\r".charCodeAt(0);
 
 const NL = "\n".charCodeAt(0);
+
 export function isNewlineCharacter(charCode: number) {
 	return charCode === CR || charCode === NL;
 }

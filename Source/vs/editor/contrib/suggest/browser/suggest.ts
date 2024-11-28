@@ -109,7 +109,9 @@ export const Context = {
 		),
 	),
 };
+
 export const suggestWidgetStatusbarMenu = new MenuId("suggestWidgetStatusBar");
+
 export class CompletionItem {
 	_brand!: "ISuggestionItem";
 	//
@@ -263,6 +265,7 @@ export class CompletionOptions {
 	) {}
 }
 let _snippetSuggestSupport: languages.CompletionItemProvider | undefined;
+
 export function getSnippetSuggestSupport():
 	| languages.CompletionItemProvider
 	| undefined {
@@ -539,6 +542,7 @@ const _snippetComparators = new Map<
 _snippetComparators.set(SnippetSortOrder.Top, snippetUpComparator);
 _snippetComparators.set(SnippetSortOrder.Bottom, snippetDownComparator);
 _snippetComparators.set(SnippetSortOrder.Inline, defaultComparator);
+
 export function getSuggestionComparator(
 	snippetConfig: SnippetSortOrder,
 ): (a: CompletionItem, b: CompletionItem) => number {

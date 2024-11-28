@@ -7,6 +7,7 @@ import type { IExperimentationFilterProvider } from "tas-client-umd";
 import * as platform from "../../../base/common/platform.js";
 
 export const ASSIGNMENT_STORAGE_KEY = "VSCode.ABExp.FeatureData";
+
 export const ASSIGNMENT_REFETCH_INTERVAL = 0; // no polling
 export interface IAssignmentService {
 	readonly _serviceBrand: undefined;

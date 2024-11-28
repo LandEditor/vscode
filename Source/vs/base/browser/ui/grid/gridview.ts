@@ -31,12 +31,15 @@ import {
 import "./gridview.css";
 
 export { Orientation } from "../sash/sash.js";
+
 export { LayoutPriority, Sizing } from "../splitview/splitview.js";
+
 export interface IGridViewStyles extends ISplitViewStyles {}
 
 const defaultStyles: IGridViewStyles = {
 	separatorBorder: Color.transparent,
 };
+
 export interface IViewSize {
 	readonly width: number;
 	readonly height: number;
@@ -154,6 +157,7 @@ export interface ISerializedBranchNode {
 	visible?: boolean;
 }
 export type ISerializedNode = ISerializedLeafNode | ISerializedBranchNode;
+
 export interface ISerializedGridView {
 	root: ISerializedNode;
 	orientation: Orientation;
@@ -182,6 +186,7 @@ export interface GridBranchNode {
 	readonly box: Box;
 }
 export type GridNode = GridLeafNode | GridBranchNode;
+
 export function isGridBranchNode(node: GridNode): node is GridBranchNode {
 	return !!(node as any).children;
 }
@@ -1070,6 +1075,7 @@ class LeafNode implements ISplitView<ILayoutContext>, IDisposable {
 	}
 }
 type Node = BranchNode | LeafNode;
+
 export interface INodeDescriptor {
 	node: Node;
 	visible?: boolean;

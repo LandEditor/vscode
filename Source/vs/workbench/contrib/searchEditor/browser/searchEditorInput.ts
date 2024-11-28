@@ -90,6 +90,7 @@ const SearchEditorIcon = registerIcon(
 	Codicon.search,
 	localize("searchEditorLabelIcon", "Icon of the search editor label."),
 );
+
 export class SearchEditorInput extends EditorInput {
 	static readonly ID: string = SearchEditorInputTypeId;
 	override get typeId(): string {

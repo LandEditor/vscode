@@ -1088,6 +1088,7 @@ export interface MainThreadTerminalShellIntegrationShape extends IDisposable {
 export type TransferQuickPickItemOrSeparator =
 	| TransferQuickPickItem
 	| quickInput.IQuickPickSeparator;
+
 export interface TransferQuickPickItem {
 	handle: number;
 
@@ -3494,9 +3495,11 @@ export type IInlayHintDto = CachedSessionItem<Dto<languages.InlayHint>>;
 export type IInlayHintsDto = CachedSession<{ hints: IInlayHintDto[] }>;
 
 export type ILocationDto = Dto<languages.Location>;
+
 export type ILocationLinkDto = Dto<languages.LocationLink>;
 
 export type IWorkspaceSymbolDto = CachedSessionItem<Dto<IWorkspaceSymbol>>;
+
 export type IWorkspaceSymbolsDto = CachedSession<{
 	symbols: IWorkspaceSymbolDto[];
 }>;
@@ -3572,15 +3575,18 @@ export interface ICodeActionProviderMetadataDto {
 }
 
 export type CacheId = number;
+
 export type ChainedCacheId = [CacheId, CacheId];
 
 type CachedSessionItem<T> = T & { cacheId?: ChainedCacheId };
 type CachedSession<T> = T & { cacheId?: CacheId };
 
 export type ILinksListDto = CachedSession<{ links: ILinkDto[] }>;
+
 export type ILinkDto = CachedSessionItem<Dto<languages.ILink>>;
 
 export type ICodeLensListDto = CachedSession<{ lenses: ICodeLensDto[] }>;
+
 export type ICodeLensDto = CachedSessionItem<Dto<languages.CodeLens>>;
 
 export type ICallHierarchyItemDto = Dto<CallHierarchyItem>;
@@ -4434,6 +4440,7 @@ export interface DecorationRequest {
 }
 
 export type DecorationData = [boolean, string, string | ThemeIcon, ThemeColor];
+
 export type DecorationReply = { [id: number]: DecorationData };
 
 export interface ExtHostDecorationsShape {

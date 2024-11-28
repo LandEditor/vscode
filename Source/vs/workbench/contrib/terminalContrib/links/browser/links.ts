@@ -19,6 +19,7 @@ export const ITerminalLinkProviderService =
 	createDecorator<ITerminalLinkProviderService>(
 		"terminalLinkProviderService",
 	);
+
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
 	readonly linkProviders: ReadonlySet<ITerminalExternalLinkProvider>;
@@ -115,6 +116,7 @@ export interface ITerminalSimpleLink {
 export type TerminalLinkType =
 	| TerminalBuiltinLinkType
 	| ITerminalExternalLinkType;
+
 export const enum TerminalBuiltinLinkType {
 	/**
 	 * The link is validated to be a file on the file system and will open an editor.
@@ -147,6 +149,7 @@ export interface ITerminalLinkOpener {
 	open(link: ITerminalSimpleLink): Promise<void>;
 }
 export type ResolvedLink = IResolvedValidLink | null;
+
 export interface IResolvedValidLink {
 	uri: URI;
 	link: string;

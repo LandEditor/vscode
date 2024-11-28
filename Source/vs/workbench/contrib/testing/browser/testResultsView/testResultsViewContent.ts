@@ -253,6 +253,7 @@ registerAction2(
 		}
 	},
 );
+
 export class TestResultsViewContent extends Disposable {
 	private static lastSplitWidth?: number;
 	private readonly didReveal = this._register(

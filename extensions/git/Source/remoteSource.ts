@@ -13,11 +13,13 @@ export async function pickRemoteSource(
 		branch?: false | undefined;
 	},
 ): Promise<string | undefined>;
+
 export async function pickRemoteSource(
 	options: PickRemoteSourceOptions & {
 		branch: true;
 	},
 ): Promise<PickRemoteSourceResult | undefined>;
+
 export async function pickRemoteSource(
 	options: PickRemoteSourceOptions = {},
 ): Promise<string | PickRemoteSourceResult | undefined> {

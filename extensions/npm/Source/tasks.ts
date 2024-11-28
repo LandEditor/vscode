@@ -36,6 +36,7 @@ import { findPreferredPM } from "./preferred-pm";
 import { readScripts } from "./readScripts";
 
 const excludeRegex = new RegExp("^(node_modules|.vscode-test)$", "i");
+
 export interface INpmTaskDefinition extends TaskDefinition {
 	script: string;
 	path?: string;
@@ -47,7 +48,9 @@ export interface IFolderTaskItem extends QuickPickItem {
 type AutoDetect = "on" | "off";
 
 let cachedTasks: ITaskWithLocation[] | undefined = undefined;
+
 export const INSTALL_SCRIPT = "install";
+
 export interface ITaskLocation {
 	document: Uri;
 	line: Position;
@@ -647,6 +650,7 @@ export async function startDebugging(
 export type StringMap = {
 	[s: string]: string;
 };
+
 export function findScriptAtPosition(
 	document: TextDocument,
 	buffer: string,

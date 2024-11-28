@@ -53,7 +53,9 @@ import {
 import { TaskQuickPickEntryType } from "./abstractTaskService.js";
 
 export const QUICKOPEN_DETAIL_CONFIG = "task.quickOpen.detail";
+
 export const QUICKOPEN_SKIP_CONFIG = "task.quickOpen.skip";
+
 export function isWorkspaceFolder(
 	folder: IWorkspace | IWorkspaceFolder,
 ): folder is IWorkspaceFolder {
@@ -72,6 +74,7 @@ const SHOW_ALL: string = nls.localize(
 	"taskQuickPick.showAll",
 	"Show All Tasks...",
 );
+
 export const configureTaskIcon = registerIcon(
 	"tasks-list-configure",
 	Codicon.gear,
@@ -91,6 +94,7 @@ const removeTaskIcon = registerIcon(
 );
 
 const runTaskStorageKey = "runTaskStorageKey";
+
 export class TaskQuickPick extends Disposable {
 	private _sorter: TaskSorter;
 	private _topLevelEntries:

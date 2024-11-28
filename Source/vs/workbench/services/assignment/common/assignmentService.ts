@@ -36,6 +36,7 @@ import { Memento, MementoObject } from "../../../common/memento.js";
 
 export const IWorkbenchAssignmentService =
 	createDecorator<IWorkbenchAssignmentService>("WorkbenchAssignmentService");
+
 export interface IWorkbenchAssignmentService extends IAssignmentService {
 	getCurrentExperiments(): Promise<string[] | undefined>;
 }

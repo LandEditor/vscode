@@ -55,6 +55,7 @@ type IgnoreRecommendationClassification = {
 		comment: "Id of the extension recommendation that is being ignored";
 	};
 };
+
 export class ExtensionRecommendationsService
 	extends Disposable
 	implements IExtensionRecommendationsService

@@ -21,6 +21,7 @@ import {
 import { DetailedLineRangeMapping, RangeMapping } from "./rangeMapping.js";
 
 const MINIMUM_MATCHING_CHARACTER_LENGTH = 3;
+
 export class LegacyLinesDiffComputer implements ILinesDiffComputer {
 	computeDiff(
 		originalLines: string[],

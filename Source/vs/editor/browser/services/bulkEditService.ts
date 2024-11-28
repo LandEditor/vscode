@@ -25,6 +25,7 @@ import { ICodeEditor } from "../editorBrowser.js";
 export const IBulkEditService = createDecorator<IBulkEditService>(
 	"IWorkspaceEditService",
 );
+
 export class ResourceEdit {
 	protected constructor(readonly metadata?: WorkspaceEditMetadata) {}
 	static convert(edit: WorkspaceEdit): ResourceEdit[] {
@@ -133,6 +134,7 @@ export type IBulkEditPreviewHandler = (
 	edits: ResourceEdit[],
 	options?: IBulkEditOptions,
 ) => Promise<ResourceEdit[]>;
+
 export interface IBulkEditService {
 	readonly _serviceBrand: undefined;
 	hasPreviewHandler(): boolean;

@@ -31,6 +31,7 @@ export interface IChatInputState {
 }
 export const IChatWidgetHistoryService =
 	createDecorator<IChatWidgetHistoryService>("IChatWidgetHistoryService");
+
 export interface IChatWidgetHistoryService {
 	_serviceBrand: undefined;
 	readonly onDidClearHistory: Event<void>;

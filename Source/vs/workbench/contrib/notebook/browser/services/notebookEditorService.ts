@@ -20,6 +20,7 @@ import { NotebookEditorWidget } from "../notebookEditorWidget.js";
 export const INotebookEditorService = createDecorator<INotebookEditorService>(
 	"INotebookEditorWidgetService",
 );
+
 export interface IBorrowValue<T> {
 	readonly value: T | undefined;
 }

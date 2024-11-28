@@ -22,6 +22,7 @@ export type RawChatParticipantLocation =
 	| "terminal"
 	| "notebook"
 	| "editing-session";
+
 export interface IRawChatParticipantContribution {
 	id: string;
 	name: string;

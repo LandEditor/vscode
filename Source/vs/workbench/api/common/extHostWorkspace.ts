@@ -1446,6 +1446,7 @@ export class ExtHostWorkspace
 }
 export const IExtHostWorkspace =
 	createDecorator<IExtHostWorkspace>("IExtHostWorkspace");
+
 export interface IExtHostWorkspace
 	extends ExtHostWorkspace,
 		ExtHostWorkspaceShape,

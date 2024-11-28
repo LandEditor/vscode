@@ -32,6 +32,7 @@ class GettingStartedContentProviderRegistry {
 }
 export const gettingStartedContentRegistry =
 	new GettingStartedContentProviderRegistry();
+
 export async function moduleToContent(resource: URI): Promise<string> {
 	if (!resource.query) {
 		throw new Error("Getting Started: invalid resource");
@@ -81,6 +82,7 @@ const beginnerIcon = registerIcon(
 		"Icon used for the beginner category of welcome page",
 	),
 );
+
 export type BuiltinGettingStartedStep = {
 	id: string;
 	title: string;
@@ -110,6 +112,7 @@ export type BuiltinGettingStartedStep = {
 				path: string;
 		  };
 };
+
 export type BuiltinGettingStartedCategory = {
 	id: string;
 	title: string;
@@ -124,6 +127,7 @@ export type BuiltinGettingStartedCategory = {
 	};
 	walkthroughPageTitle: string;
 };
+
 export type BuiltinGettingStartedStartEntry = {
 	id: string;
 	title: string;
@@ -137,6 +141,7 @@ export type BuiltinGettingStartedStartEntry = {
 };
 type GettingStartedWalkthroughContent = BuiltinGettingStartedCategory[];
 type GettingStartedStartEntryContent = BuiltinGettingStartedStartEntry[];
+
 export const startEntries: GettingStartedStartEntryContent = [
 	{
 		id: "welcome.showNewFileEntries",
@@ -295,6 +300,7 @@ export const startEntries: GettingStartedStartEntryContent = [
 ];
 
 const Button = (title: string, href: string) => `[${title}](${href})`;
+
 export const walkthroughs: GettingStartedWalkthroughContent = [
 	{
 		id: "Setup",

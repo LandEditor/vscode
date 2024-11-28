@@ -70,6 +70,7 @@ export class ClickLinkKeyboardEvent {
 	}
 }
 export type TriggerModifier = "ctrlKey" | "shiftKey" | "altKey" | "metaKey";
+
 export class ClickLinkOptions {
 	public readonly triggerKey: KeyCode;
 	public readonly triggerModifier: TriggerModifier;

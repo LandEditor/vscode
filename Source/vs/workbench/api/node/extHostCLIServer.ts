@@ -53,6 +53,7 @@ export type PipeCommand =
 	| StatusPipeArgs
 	| OpenExternalCommandPipeArgs
 	| ExtensionManagementPipeArgs;
+
 export interface ICommandsExecuter {
 	executeCommand<T>(id: string, ...args: any[]): Promise<T>;
 }

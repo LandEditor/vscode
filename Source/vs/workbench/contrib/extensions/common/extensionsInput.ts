@@ -26,6 +26,7 @@ const ExtensionEditorIcon = registerIcon(
 		"Icon of the extensions editor label.",
 	),
 );
+
 export interface IExtensionEditorOptions extends IEditorOptions {
 	showPreReleaseVersion?: boolean;
 	tab?: ExtensionEditorTab;

@@ -13,7 +13,9 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { workbenchConfigurationNodeBase } from "../../../common/configuration.js";
 
 export const defaultExternalUriOpenerId = "default";
+
 export const externalUriOpenersSettingId = "workbench.externalUriOpeners";
+
 export interface ExternalUriOpenersConfiguration {
 	readonly [uriGlob: string]: string;
 }
@@ -34,6 +36,7 @@ const exampleUriPatterns = `
 - \`http://192.168.0.1\`: Matches this specific IP using http
 - \`http://192.168.0.*\`: Matches all IP's with this prefix using http
 - \`*\`: Match all domains using either http or https`;
+
 export const externalUriOpenersConfigurationNode: IConfigurationNode = {
 	...workbenchConfigurationNodeBase,
 	properties: {
@@ -81,6 +84,7 @@ export const externalUriOpenersConfigurationNode: IConfigurationNode = {
 		},
 	},
 };
+
 export function updateContributedOpeners(
 	enumValues: string[],
 	enumDescriptions: string[],

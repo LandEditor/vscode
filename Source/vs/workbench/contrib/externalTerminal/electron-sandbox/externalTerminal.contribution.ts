@@ -118,6 +118,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		),
 	},
 });
+
 export class ExternalTerminalContribution implements IWorkbenchContribution {
 	public _serviceBrand: undefined;
 

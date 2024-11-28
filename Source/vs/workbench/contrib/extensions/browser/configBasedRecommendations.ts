@@ -21,6 +21,7 @@ import {
 type ConfigBasedExtensionRecommendation = ExtensionRecommendation & {
 	whenNotInstalled: string[] | undefined;
 };
+
 export class ConfigBasedRecommendations extends ExtensionRecommendations {
 	private importantTips: IConfigBasedExtensionTip[] = [];
 	private otherTips: IConfigBasedExtensionTip[] = [];

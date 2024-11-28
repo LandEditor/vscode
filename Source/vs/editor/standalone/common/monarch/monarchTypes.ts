@@ -60,11 +60,13 @@ export type IShortMonarchLanguageRule1 = [
 	string | RegExp,
 	IMonarchLanguageAction,
 ];
+
 export type IShortMonarchLanguageRule2 = [
 	string | RegExp,
 	IMonarchLanguageAction,
 	string,
 ];
+
 export interface IExpandedMonarchLanguageRule {
 	/**
 	 * match tokens
@@ -89,6 +91,7 @@ export type IMonarchLanguageRule =
  * ... or a basic action with a token value.
  */
 export type IShortMonarchLanguageAction = string;
+
 export interface IExpandedMonarchLanguageAction {
 	/**
 	 * array of actions for each parenthesized match group

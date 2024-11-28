@@ -37,6 +37,7 @@ import { IDisposableReference, ResourcePool } from "./chatCollections.js";
 import { IChatContentPart } from "./chatContentParts.js";
 
 const $ = dom.$;
+
 export class ChatTreeContentPart
 	extends Disposable
 	implements IChatContentPart

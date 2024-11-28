@@ -25,7 +25,9 @@ import { UnicodeHighlighterOptions } from "./unicodeTextModelHighlighter.js";
 export const IEditorWorkerService = createDecorator<IEditorWorkerService>(
 	"editorWorkerService",
 );
+
 export type DiffAlgorithmName = "legacy" | "advanced";
+
 export interface IEditorWorkerService {
 	readonly _serviceBrand: undefined;
 	canComputeUnicodeHighlights(uri: URI): boolean;
@@ -88,6 +90,7 @@ export type ILineChange = [
 	modifiedEndLine: number,
 	charChanges: ICharChange[] | undefined,
 ];
+
 export type ICharChange = [
 	originalStartLine: number,
 	originalStartColumn: number,
@@ -98,6 +101,7 @@ export type ICharChange = [
 	modifiedEndLine: number,
 	modifiedEndColumn: number,
 ];
+
 export type ITextMove = [
 	originalStartLine: number,
 	originalEndLine: number,
@@ -105,6 +109,7 @@ export type ITextMove = [
 	modifiedEndLine: number,
 	changes: ILineChange[],
 ];
+
 export interface IUnicodeHighlightsResult {
 	ranges: IRange[];
 	hasMore: boolean;

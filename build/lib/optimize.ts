@@ -18,6 +18,7 @@ import * as bundle from "./bundle";
 import { gulpPostcss } from "./postcss";
 
 const REPO_ROOT_PATH = path.join(__dirname, "../..");
+
 export interface IBundleESMTaskOpts {
 	/**
 	 * The folder to read files from.

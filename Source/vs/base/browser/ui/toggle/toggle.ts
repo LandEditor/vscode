@@ -50,6 +50,7 @@ export const unthemedToggleStyles = {
 	inputActiveOptionForeground: "#FFFFFF",
 	inputActiveOptionBackground: "#0E639C50",
 };
+
 export class ToggleActionViewItem extends BaseActionViewItem {
 	protected readonly toggle: Toggle;
 

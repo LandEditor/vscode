@@ -14,6 +14,7 @@ export const additionalDeps = [
 	"libcurl.so.4()(64bit)",
 	"xdg-utils", // OS integration
 ];
+
 export const referenceGeneratedDepsByArch = {
 	"x86_64": [
 		"ca-certificates",

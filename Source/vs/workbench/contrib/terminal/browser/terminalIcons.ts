@@ -11,6 +11,7 @@ export const terminalViewIcon = registerIcon(
 	Codicon.terminal,
 	localize("terminalViewIcon", "View icon of the terminal view."),
 );
+
 export const renameTerminalIcon = registerIcon(
 	"terminal-rename",
 	Codicon.edit,
@@ -19,16 +20,19 @@ export const renameTerminalIcon = registerIcon(
 		"Icon for rename in the terminal quick menu.",
 	),
 );
+
 export const killTerminalIcon = registerIcon(
 	"terminal-kill",
 	Codicon.trash,
 	localize("killTerminalIcon", "Icon for killing a terminal instance."),
 );
+
 export const newTerminalIcon = registerIcon(
 	"terminal-new",
 	Codicon.add,
 	localize("newTerminalIcon", "Icon for creating a new terminal instance."),
 );
+
 export const configureTerminalProfileIcon = registerIcon(
 	"terminal-configure-profile",
 	Codicon.gear,
@@ -37,11 +41,13 @@ export const configureTerminalProfileIcon = registerIcon(
 		"Icon for creating a new terminal profile.",
 	),
 );
+
 export const terminalDecorationMark = registerIcon(
 	"terminal-decoration-mark",
 	Codicon.circleSmallFilled,
 	localize("terminalDecorationMark", "Icon for a terminal decoration mark."),
 );
+
 export const terminalDecorationIncomplete = registerIcon(
 	"terminal-decoration-incomplete",
 	Codicon.circle,
@@ -50,6 +56,7 @@ export const terminalDecorationIncomplete = registerIcon(
 		"Icon for a terminal decoration of a command that was incomplete.",
 	),
 );
+
 export const terminalDecorationError = registerIcon(
 	"terminal-decoration-error",
 	Codicon.errorSmall,
@@ -58,6 +65,7 @@ export const terminalDecorationError = registerIcon(
 		"Icon for a terminal decoration of a command that errored.",
 	),
 );
+
 export const terminalDecorationSuccess = registerIcon(
 	"terminal-decoration-success",
 	Codicon.circleFilled,
@@ -66,6 +74,7 @@ export const terminalDecorationSuccess = registerIcon(
 		"Icon for a terminal decoration of a command that was successful.",
 	),
 );
+
 export const commandHistoryRemoveIcon = registerIcon(
 	"terminal-command-history-remove",
 	Codicon.close,
@@ -74,6 +83,7 @@ export const commandHistoryRemoveIcon = registerIcon(
 		"Icon for removing a terminal command from command history.",
 	),
 );
+
 export const commandHistoryOutputIcon = registerIcon(
 	"terminal-command-history-output",
 	Codicon.output,
@@ -82,6 +92,7 @@ export const commandHistoryOutputIcon = registerIcon(
 		"Icon for viewing output of a terminal command.",
 	),
 );
+
 export const commandHistoryFuzzySearchIcon = registerIcon(
 	"terminal-command-history-fuzzy-search",
 	Codicon.searchFuzzy,
@@ -90,6 +101,7 @@ export const commandHistoryFuzzySearchIcon = registerIcon(
 		"Icon for toggling fuzzy search of command history.",
 	),
 );
+
 export const commandHistoryOpenFileIcon = registerIcon(
 	"terminal-command-history-open-file",
 	Codicon.symbolReference,

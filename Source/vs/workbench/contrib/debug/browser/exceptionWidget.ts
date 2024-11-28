@@ -53,6 +53,7 @@ const debugExceptionWidgetBackground = registerColor(
 		"Exception widget background color.",
 	),
 );
+
 export class ExceptionWidget extends ZoneWidget {
 	private backgroundColor: Color | undefined;
 

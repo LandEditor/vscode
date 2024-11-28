@@ -13,6 +13,7 @@ import { IQuickPickItem } from "../../quickinput/common/quickInput.js";
 export const IAccessibleViewService = createDecorator<IAccessibleViewService>(
 	"accessibleViewService",
 );
+
 export const enum AccessibleViewProviderId {
 	Terminal = "terminal",
 	TerminalChat = "terminal-chat",
@@ -140,6 +141,7 @@ export interface ICodeBlockActionContext {
 export type AccesibleViewContentProvider =
 	| AccessibleContentProvider
 	| ExtensionContentProvider;
+
 export class AccessibleContentProvider
 	extends Disposable
 	implements IAccessibleViewContentProvider

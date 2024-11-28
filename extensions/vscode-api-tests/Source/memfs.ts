@@ -39,6 +39,7 @@ class Directory implements vscode.FileStat {
 	}
 }
 export type Entry = File | Directory;
+
 export class TestFS implements vscode.FileSystemProvider {
 	constructor(
 		readonly scheme: string,

@@ -65,6 +65,7 @@ import { SAVE_FILE_AS_LABEL } from "../fileConstants.js";
 import { FileEditorInput } from "./fileEditorInput.js";
 
 export const CONFLICT_RESOLUTION_CONTEXT = "saveConflictResolutionContext";
+
 export const CONFLICT_RESOLUTION_SCHEME = "conflictResolution";
 
 const LEARN_MORE_DIRTY_WRITE_IGNORE_KEY = "learnMoreDirtyWriteError";
@@ -636,6 +637,7 @@ export const acceptLocalChangesCommand = (
 ) => {
 	return acceptOrRevertLocalChangesCommand(accessor, resource, true);
 };
+
 export const revertLocalChangesCommand = (
 	accessor: ServicesAccessor,
 	resource: URI,

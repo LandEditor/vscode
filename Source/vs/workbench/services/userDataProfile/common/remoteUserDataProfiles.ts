@@ -27,10 +27,12 @@ import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
 import { IUserDataProfileService } from "./userDataProfile.js";
 
 const associatedRemoteProfilesKey = "associatedRemoteProfiles";
+
 export const IRemoteUserDataProfilesService =
 	createDecorator<IRemoteUserDataProfilesService>(
 		"IRemoteUserDataProfilesService",
 	);
+
 export interface IRemoteUserDataProfilesService {
 	readonly _serviceBrand: undefined;
 

@@ -23,10 +23,13 @@ export const WorkbenchIconSelectBoxFocusContextKey = new RawContextKey<boolean>(
 	"iconSelectBoxFocus",
 	true,
 );
+
 export const WorkbenchIconSelectBoxInputFocusContextKey =
 	new RawContextKey<boolean>("iconSelectBoxInputFocus", true);
+
 export const WorkbenchIconSelectBoxInputEmptyContextKey =
 	new RawContextKey<boolean>("iconSelectBoxInputEmpty", true);
+
 export class WorkbenchIconSelectBox extends IconSelectBox {
 	private static focusedWidget: WorkbenchIconSelectBox | undefined;
 	static getFocusedWidget(): WorkbenchIconSelectBox | undefined {

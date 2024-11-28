@@ -32,11 +32,13 @@ export const debugToolBarBackground = registerColor(
 	},
 	localize("debugToolBarBackground", "Debug toolbar background color."),
 );
+
 export const debugToolBarBorder = registerColor(
 	"debugToolBar.border",
 	null,
 	localize("debugToolBarBorder", "Debug toolbar border color."),
 );
+
 export const debugIconStartForeground = registerColor(
 	"debugIcon.startForeground",
 	{
@@ -50,6 +52,7 @@ export const debugIconStartForeground = registerColor(
 		"Debug toolbar icon for start debugging.",
 	),
 );
+
 export function registerColors() {
 	const debugTokenExpressionName = registerColor(
 		"debugTokenExpression.name",

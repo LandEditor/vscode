@@ -18,6 +18,7 @@ type ChatEditingTextModelContentQueryData =
 
 			documentId: string;
 	  };
+
 export class ChatEditingTextModelContentProvider
 	implements ITextModelContentProvider
 {
@@ -64,6 +65,7 @@ export class ChatEditingTextModelContentProvider
 type ChatEditingSnapshotTextModelContentQueryData = {
 	requestId: string | undefined;
 };
+
 export class ChatEditingSnapshotTextModelContentProvider
 	implements ITextModelContentProvider
 {

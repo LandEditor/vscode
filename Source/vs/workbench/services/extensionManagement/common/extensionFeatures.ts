@@ -41,6 +41,7 @@ export type IRowData =
 	| ResolvedKeybinding
 	| Color
 	| ReadonlyArray<ResolvedKeybinding | IMarkdownString | Color>;
+
 export interface ITableData {
 	headers: string[];
 	rows: IRowData[][];
@@ -92,6 +93,7 @@ export const IExtensionFeaturesManagementService =
 	createDecorator<IExtensionFeaturesManagementService>(
 		"IExtensionFeaturesManagementService",
 	);
+
 export interface IExtensionFeaturesManagementService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeEnablement: Event<{

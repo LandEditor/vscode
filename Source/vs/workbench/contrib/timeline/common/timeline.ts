@@ -20,6 +20,7 @@ export function toKey(extension: ExtensionIdentifier | string, source: string) {
 	return `${typeof extension === "string" ? extension : ExtensionIdentifier.toKey(extension)}|${source}`;
 }
 export const TimelinePaneId = "timeline";
+
 export interface TimelineItem {
 	/**
 	 * The handle of the item must be unique across all the
@@ -141,5 +142,6 @@ export interface ITimelineService {
 }
 
 const TIMELINE_SERVICE_ID = "timeline";
+
 export const ITimelineService =
 	createDecorator<ITimelineService>(TIMELINE_SERVICE_ID);

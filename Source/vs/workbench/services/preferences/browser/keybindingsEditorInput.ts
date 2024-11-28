@@ -26,6 +26,7 @@ const KeybindingsEditorIcon = registerIcon(
 		"Icon of the keybindings editor label.",
 	),
 );
+
 export class KeybindingsEditorInput extends EditorInput {
 	static readonly ID: string = "workbench.input.keybindings";
 	readonly keybindingsModel: KeybindingsEditorModel;

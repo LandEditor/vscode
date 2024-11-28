@@ -40,6 +40,7 @@ const reviewGuidanceLabel = localize(
 	},
 	'Before you report an issue here please <a href="https://github.com/microsoft/vscode/wiki/Submitting-Bugs-and-Suggestions" target="_blank">review the guidance we provide</a>.',
 );
+
 export default (): string => `
 <div class="issue-reporter" id="issue-reporter">
 	<div id="english" class="input-group hidden">${escape(localize("completeInEnglish", "Please complete the form in English."))}</div>

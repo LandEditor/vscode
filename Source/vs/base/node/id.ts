@@ -84,6 +84,7 @@ export const virtualMachineHint: { value(): number } = new (class {
 })();
 
 let machineId: Promise<string>;
+
 export async function getMachineId(
 	errorLogger: (error: any) => void,
 ): Promise<string> {
@@ -118,6 +119,7 @@ async function getMacMachineId(
 }
 
 const SQM_KEY: string = "Software\\Microsoft\\SQMClient";
+
 export async function getSqmMachineId(
 	errorLogger: (error: any) => void,
 ): Promise<string> {

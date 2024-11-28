@@ -7,7 +7,9 @@ import * as vscode from "vscode";
 import { PreviewStatusBarEntry as OwnedStatusBarEntry } from "../ownedStatusBarEntry";
 
 const selectZoomLevelCommandId = "_imagePreview.selectZoomLevel";
+
 export type Scale = number | "fit";
+
 export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 	private readonly _onDidChangeScale = this._register(
 		new vscode.EventEmitter<{

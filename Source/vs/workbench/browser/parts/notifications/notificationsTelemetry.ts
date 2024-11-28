@@ -36,6 +36,7 @@ export type NotificationMetricsClassification = {
 	owner: "bpasero";
 	comment: "Helps us gain insights to what notifications are being shown, how many, and if they are silent or not.";
 };
+
 export function notificationToMetrics(
 	message: NotificationMessage,
 	source: string | undefined,

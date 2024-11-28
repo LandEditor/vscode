@@ -13,22 +13,31 @@ import {
 } from "./quickFix.js";
 
 export const GitCommandLineRegex = /git/;
+
 export const GitFastForwardPullOutputRegex = /and can be fast-forwarded/;
+
 export const GitPushCommandLineRegex = /git\s+push/;
+
 export const GitTwoDashesRegex =
 	/error: did you mean `--(.+)` \(with two dashes\)\?/;
+
 export const GitSimilarOutputRegex = /(?:(most similar commands? (is|are)))/;
+
 export const FreePortOutputRegex =
 	/(?:address already in use (?:0\.0\.0\.0|127\.0\.0\.1|localhost|::):|Unable to bind [^ ]*:|can't listen on port |listen EADDRINUSE [^ ]*:)(?<portNumber>\d{4,5})/;
+
 export const GitPushOutputRegex =
 	/git push --set-upstream origin (?<branchName>[^\s]+)/;
 // The previous line starts with "Create a pull request for \'([^\s]+)\' on GitHub by visiting:\s*"
 // it's safe to assume it's a github pull request if the URL includes `/pull/`
 export const GitCreatePrOutputRegex =
 	/remote:\s*(?<link>https:\/\/github\.com\/.+\/.+\/pull\/new\/.+)/;
+
 export const PwshGeneralErrorOutputRegex = /Suggestion \[General\]:/;
+
 export const PwshUnixCommandNotFoundErrorOutputRegex =
 	/Suggestion \[cmd-not-found\]:/;
+
 export const enum QuickFixSource {
 	Builtin = "builtin",
 }

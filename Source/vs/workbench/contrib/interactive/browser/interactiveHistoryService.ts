@@ -10,6 +10,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const IInteractiveHistoryService =
 	createDecorator<IInteractiveHistoryService>("IInteractiveHistoryService");
+
 export interface IInteractiveHistoryService {
 	readonly _serviceBrand: undefined;
 	matchesCurrent(uri: URI, value: string): boolean;

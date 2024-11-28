@@ -147,6 +147,7 @@ import {
 } from "./preferencesIcons.js";
 
 const $ = DOM.$;
+
 export class KeybindingsEditor
 	extends EditorPane
 	implements IKeybindingsEditorPane

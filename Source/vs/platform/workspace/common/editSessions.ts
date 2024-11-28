@@ -23,6 +23,7 @@ export interface IEditSessionIdentityProvider {
 }
 export const IEditSessionIdentityService =
 	createDecorator<IEditSessionIdentityService>("editSessionIdentityService");
+
 export interface IEditSessionIdentityService {
 	readonly _serviceBrand: undefined;
 	registerEditSessionIdentityProvider(

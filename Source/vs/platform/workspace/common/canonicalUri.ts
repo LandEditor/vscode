@@ -18,6 +18,7 @@ export interface ICanonicalUriProvider {
 export const ICanonicalUriService = createDecorator<ICanonicalUriService>(
 	"canonicalUriIdentityService",
 );
+
 export interface ICanonicalUriService {
 	readonly _serviceBrand: undefined;
 	registerCanonicalUriProvider(provider: ICanonicalUriProvider): IDisposable;

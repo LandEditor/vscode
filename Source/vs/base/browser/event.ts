@@ -7,6 +7,7 @@ import { IDisposable } from "../common/lifecycle.js";
 import { GestureEvent } from "./touch.js";
 
 export type EventHandler = HTMLElement | HTMLDocument | Window;
+
 export interface IDomEvent {
 	<K extends keyof HTMLElementEventMap>(
 		element: EventHandler,

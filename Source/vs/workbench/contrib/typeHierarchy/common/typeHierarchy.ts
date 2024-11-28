@@ -63,6 +63,7 @@ export interface TypeHierarchyProvider {
 }
 export const TypeHierarchyProviderRegistry =
 	new LanguageFeatureRegistry<TypeHierarchyProvider>();
+
 export class TypeHierarchyModel {
 	static async create(
 		model: ITextModel,

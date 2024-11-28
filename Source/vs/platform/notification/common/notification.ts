@@ -9,10 +9,13 @@ import BaseSeverity from "../../../base/common/severity.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export import Severity = BaseSeverity;
+
 export const INotificationService = createDecorator<INotificationService>(
 	"notificationService",
 );
+
 export type NotificationMessage = string | Error;
+
 export enum NotificationPriority {
 	/**
 	 * Default priority: notification will be visible unless do not disturb mode is enabled.

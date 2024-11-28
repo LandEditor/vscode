@@ -21,6 +21,7 @@ export interface IQuickPickItemHighlights {
 	detail?: IMatch[];
 }
 export type QuickPickItem = IQuickPickSeparator | IQuickPickItem;
+
 export interface IQuickPickItem {
 	type?: "item";
 	id?: string;
@@ -66,6 +67,7 @@ export interface IKeyMods {
 	readonly alt: boolean;
 }
 export const NO_KEY_MODS: IKeyMods = { ctrlCmd: false, alt: false };
+
 export interface IQuickNavigateConfiguration {
 	keybindings: readonly ResolvedKeybinding[];
 }
@@ -698,6 +700,7 @@ export type QuickPickInput<T = IQuickPickItem> = T | IQuickPickSeparator;
 export type IQuickPickItemWithResource = IQuickPickItem & {
 	resource?: URI;
 };
+
 export class QuickPickItemScorerAccessor
 	implements IItemAccessor<IQuickPickItemWithResource>
 {
@@ -730,7 +733,9 @@ export const quickPickItemScorerAccessor = new QuickPickItemScorerAccessor();
 //#endregion
 export const IQuickInputService =
 	createDecorator<IQuickInputService>("quickInputService");
+
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+
 export interface IQuickInputService {
 	readonly _serviceBrand: undefined;
 	/**

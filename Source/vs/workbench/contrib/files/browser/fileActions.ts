@@ -101,20 +101,32 @@ import { BrowserFileUpload, FileDownload } from "./fileImportExport.js";
 import { IExplorerService } from "./files.js";
 
 export const NEW_FILE_COMMAND_ID = "explorer.newFile";
+
 export const NEW_FILE_LABEL = nls.localize2("newFile", "New File...");
+
 export const NEW_FOLDER_COMMAND_ID = "explorer.newFolder";
+
 export const NEW_FOLDER_LABEL = nls.localize2("newFolder", "New Folder...");
+
 export const TRIGGER_RENAME_LABEL = nls.localize("rename", "Rename...");
+
 export const MOVE_FILE_TO_TRASH_LABEL = nls.localize("delete", "Delete");
+
 export const COPY_FILE_LABEL = nls.localize("copyFile", "Copy");
+
 export const PASTE_FILE_LABEL = nls.localize("pasteFile", "Paste");
+
 export const FileCopiedContext = new RawContextKey<boolean>(
 	"fileCopied",
 	false,
 );
+
 export const DOWNLOAD_COMMAND_ID = "explorer.download";
+
 export const DOWNLOAD_LABEL = nls.localize("download", "Download...");
+
 export const UPLOAD_COMMAND_ID = "explorer.upload";
+
 export const UPLOAD_LABEL = nls.localize("upload", "Upload...");
 
 const CONFIRM_DELETE_SETTING_KEY = "explorer.confirmDelete";
@@ -1440,6 +1452,7 @@ CommandsRegistry.registerCommand({
 		await openExplorerAndCreate(accessor, true);
 	},
 });
+
 export const renameHandler = async (accessor: ServicesAccessor) => {
 	const explorerService = accessor.get(IExplorerService);
 
@@ -1509,6 +1522,7 @@ export const renameHandler = async (accessor: ServicesAccessor) => {
 		},
 	});
 };
+
 export const moveFileToTrashHandler = async (accessor: ServicesAccessor) => {
 	const explorerService = accessor.get(IExplorerService);
 
@@ -1525,6 +1539,7 @@ export const moveFileToTrashHandler = async (accessor: ServicesAccessor) => {
 		);
 	}
 };
+
 export const deleteFileHandler = async (accessor: ServicesAccessor) => {
 	const explorerService = accessor.get(IExplorerService);
 
@@ -1543,6 +1558,7 @@ export const deleteFileHandler = async (accessor: ServicesAccessor) => {
 };
 
 let pasteShouldMove = false;
+
 export const copyFileHandler = async (accessor: ServicesAccessor) => {
 	const explorerService = accessor.get(IExplorerService);
 
@@ -1553,6 +1569,7 @@ export const copyFileHandler = async (accessor: ServicesAccessor) => {
 		pasteShouldMove = false;
 	}
 };
+
 export const cutFileHandler = async (accessor: ServicesAccessor) => {
 	const explorerService = accessor.get(IExplorerService);
 
@@ -1619,6 +1636,7 @@ CommandsRegistry.registerCommand({
 	id: UPLOAD_COMMAND_ID,
 	handler: uploadFileHandler,
 });
+
 export const pasteFileHandler = async (
 	accessor: ServicesAccessor,
 	fileList?: FileList,

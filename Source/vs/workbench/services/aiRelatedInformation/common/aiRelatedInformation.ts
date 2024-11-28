@@ -10,6 +10,7 @@ export const IAiRelatedInformationService =
 	createDecorator<IAiRelatedInformationService>(
 		"IAiRelatedInformationService",
 	);
+
 export enum RelatedInformationType {
 	SymbolInformation = 1,
 	CommandInformation = 2,
@@ -32,6 +33,7 @@ export interface SettingInformationResult extends RelatedInformationBaseResult {
 export type RelatedInformationResult =
 	| CommandInformationResult
 	| SettingInformationResult;
+
 export interface IAiRelatedInformationService {
 	readonly _serviceBrand: undefined;
 	isEnabled(): boolean;

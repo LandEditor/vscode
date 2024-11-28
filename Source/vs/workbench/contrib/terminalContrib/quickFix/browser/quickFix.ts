@@ -17,6 +17,7 @@ import {
 
 export const ITerminalQuickFixService =
 	createDecorator<ITerminalQuickFixService>("terminalQuickFixService");
+
 export interface ITerminalQuickFixService {
 	onDidRegisterProvider: Event<ITerminalQuickFixProviderSelector>;
 	onDidRegisterCommandSelector: Event<ITerminalCommandSelector>;
@@ -38,18 +39,21 @@ export type TerminalQuickFixActionInternal =
 	| IAction
 	| ITerminalQuickFixTerminalCommandAction
 	| ITerminalQuickFixOpenerAction;
+
 export type TerminalQuickFixCallback = (
 	matchResult: ITerminalCommandMatchResult,
 ) =>
 	| TerminalQuickFixActionInternal[]
 	| TerminalQuickFixActionInternal
 	| undefined;
+
 export type TerminalQuickFixCallbackExtension = (
 	terminalCommand: ITerminalCommand,
 	lines: string[] | undefined,
 	option: ITerminalQuickFixOptions,
 	token: CancellationToken,
 ) => Promise<ITerminalQuickFix[] | ITerminalQuickFix | undefined>;
+
 export interface ITerminalQuickFixProvider {
 	/**
 	 * Provides terminal quick fixes

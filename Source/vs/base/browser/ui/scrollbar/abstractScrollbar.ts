@@ -21,6 +21,7 @@ import { ScrollbarVisibilityController } from "./scrollbarVisibilityController.j
  * The orthogonal distance to the slider at which dragging "resets". This implements "snapping"
  */
 const POINTER_DRAG_RESET_DISTANCE = 140;
+
 export interface ISimplifiedPointerEvent {
 	buttons: number;
 	pageX: number;

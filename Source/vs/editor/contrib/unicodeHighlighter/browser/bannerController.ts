@@ -20,6 +20,7 @@ import { ICodeEditor } from "../../../browser/editorBrowser.js";
 import { MarkdownRenderer } from "../../../browser/widget/markdownRenderer/browser/markdownRenderer.js";
 
 const BANNER_ELEMENT_HEIGHT = 26;
+
 export class BannerController extends Disposable {
 	private readonly banner: Banner;
 

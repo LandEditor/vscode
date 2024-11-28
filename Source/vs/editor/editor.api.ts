@@ -26,19 +26,33 @@ FormattingConflicts.setFormatterSelector((formatter, document, mode) =>
 const api = createMonacoBaseAPI();
 api.editor = createMonacoEditorAPI();
 api.languages = createMonacoLanguagesAPI();
+
 export const CancellationTokenSource = api.CancellationTokenSource;
+
 export const Emitter = api.Emitter;
+
 export const KeyCode = api.KeyCode;
+
 export const KeyMod = api.KeyMod;
+
 export const Position = api.Position;
+
 export const Range = api.Range;
+
 export const Selection = api.Selection;
+
 export const SelectionDirection = api.SelectionDirection;
+
 export const MarkerSeverity = api.MarkerSeverity;
+
 export const MarkerTag = api.MarkerTag;
+
 export const Uri = api.Uri;
+
 export const Token = api.Token;
+
 export const editor = api.editor;
+
 export const languages = api.languages;
 interface IMonacoEnvironment {
 	globalAPI?: boolean;

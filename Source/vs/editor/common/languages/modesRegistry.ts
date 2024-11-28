@@ -17,6 +17,7 @@ import { ILanguageExtensionPoint } from "./language.js";
 export const Extensions = {
 	ModesRegistry: "editor.modesRegistry",
 };
+
 export class EditorModesRegistry {
 	private readonly _languages: ILanguageExtensionPoint[];
 	private readonly _onDidChangeLanguages = new Emitter<void>();
@@ -48,7 +49,9 @@ export class EditorModesRegistry {
 }
 export const ModesRegistry = new EditorModesRegistry();
 Registry.add(Extensions.ModesRegistry, ModesRegistry);
+
 export const PLAINTEXT_LANGUAGE_ID = "plaintext";
+
 export const PLAINTEXT_EXTENSION = ".txt";
 ModesRegistry.registerLanguage({
 	id: PLAINTEXT_LANGUAGE_ID,

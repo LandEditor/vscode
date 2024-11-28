@@ -17,6 +17,7 @@ type NotebookSelector =
 	| string
 	| glob.IRelativePattern
 	| INotebookExclusiveDocumentFilter;
+
 export interface NotebookEditorDescriptor {
 	readonly extension?: ExtensionIdentifier;
 	readonly id: string;

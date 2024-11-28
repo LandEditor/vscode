@@ -19,6 +19,7 @@ import { SetMap } from "./map.js";
 const TRACK_DISPOSABLES = false;
 
 let disposableTracker: IDisposableTracker | null = null;
+
 export interface IDisposableTracker {
 	/**
 	 * Is called on construction of a disposable.
@@ -336,17 +337,22 @@ export function isDisposable<E extends any>(
  * Disposes of the value(s) passed in.
  */
 export function dispose<T extends IDisposable>(disposable: T): T;
+
 export function dispose<T extends IDisposable>(
 	disposable: T | undefined,
 ): T | undefined;
+
 export function dispose<
 	T extends IDisposable,
 	A extends Iterable<T> = Iterable<T>,
 >(disposables: A): A;
+
 export function dispose<T extends IDisposable>(disposables: Array<T>): Array<T>;
+
 export function dispose<T extends IDisposable>(
 	disposables: ReadonlyArray<T>,
 ): ReadonlyArray<T>;
+
 export function dispose<T extends IDisposable>(
 	arg: T | Iterable<T> | undefined,
 ): any {

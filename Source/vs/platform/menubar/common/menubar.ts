@@ -49,6 +49,7 @@ export type MenubarMenuItem =
 	| IMenubarMenuItemSubmenu
 	| IMenubarMenuItemSeparator
 	| IMenubarMenuRecentItemAction;
+
 export function isMenubarMenuItemSubmenu(
 	menuItem: MenubarMenuItem,
 ): menuItem is IMenubarMenuItemSubmenu {

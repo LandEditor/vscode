@@ -40,6 +40,7 @@ import {
 } from "./testTypes.js";
 
 export const ITestService = createDecorator<ITestService>("testService");
+
 export interface IMainThreadTestController {
 	readonly id: string;
 	readonly label: IObservable<string>;
@@ -118,6 +119,7 @@ export interface IMainThreadTestCollection
 }
 export const testCollectionIsEmpty = (collection: IMainThreadTestCollection) =>
 	!Iterable.some(collection.rootItems, (r) => r.children.size > 0);
+
 export const getContextForTestItem = (
 	collection: IMainThreadTestCollection,
 	id: string | TestId,

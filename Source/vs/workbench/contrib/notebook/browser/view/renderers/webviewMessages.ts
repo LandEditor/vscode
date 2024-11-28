@@ -163,6 +163,7 @@ export type ICreationContent =
 				readonly mime: string;
 			}>;
 	  };
+
 export interface ICreationRequestMessage {
 	readonly type: "html";
 	readonly content: ICreationContent;
@@ -465,6 +466,7 @@ export type FromWebviewMessage =
 	| IGetOutputItemMessage
 	| ILogRendererDebugMessage
 	| IPerformanceMessage;
+
 export type ToWebviewMessage =
 	| IClearMessage
 	| IFocusOutputMessage
@@ -500,4 +502,5 @@ export type ToWebviewMessage =
 	| IReturnOutputItemMessage
 	| ISelectOutputItemMessage
 	| ISelectInputOutputItemMessage;
+
 export type AnyMessage = FromWebviewMessage | ToWebviewMessage;

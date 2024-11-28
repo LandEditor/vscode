@@ -130,6 +130,7 @@ const LINE_COLUMN_REGEX = /:([\d]+)(?::([\d]+))?$/;
 const LineQueryRegex = /line=(\d+)$/;
 
 const FRAGMENT_REGEX = /^(.*)#([^#]*)$/;
+
 export interface ICachedInset<K extends ICommonCellInfo> {
 	outputId: string;
 	versionId: number;

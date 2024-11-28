@@ -12,6 +12,7 @@ import { ITextModel, ITextSnapshot } from "../model.js";
 
 export const ITextModelService =
 	createDecorator<ITextModelService>("textModelService");
+
 export interface ITextModelService {
 	readonly _serviceBrand: undefined;
 	/**

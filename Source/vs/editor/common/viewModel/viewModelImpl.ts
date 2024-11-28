@@ -107,6 +107,7 @@ import {
 } from "./viewModelLines.js";
 
 const USE_IDENTITY_LINES_COLLECTION = true;
+
 export class ViewModel extends Disposable implements IViewModel {
 	private readonly _editorId: number;
 	private readonly _configuration: IEditorConfiguration;

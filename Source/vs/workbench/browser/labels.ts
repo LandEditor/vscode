@@ -127,6 +127,7 @@ export interface IResourceLabelsContainer {
 export const DEFAULT_LABELS_CONTAINER: IResourceLabelsContainer = {
 	onDidChangeVisibility: Event.None,
 };
+
 export class ResourceLabels extends Disposable {
 	private readonly _onDidChangeDecorations = this._register(
 		new Emitter<void>(),

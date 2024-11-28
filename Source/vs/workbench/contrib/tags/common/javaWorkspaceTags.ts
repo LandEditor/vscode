@@ -4,13 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 export const GradleDependencyLooseRegex =
 	/group\s*:\s*[\'\"](.*?)[\'\"]\s*,\s*name\s*:\s*[\'\"](.*?)[\'\"]\s*,\s*version\s*:\s*[\'\"](.*?)[\'\"]/g;
+
 export const GradleDependencyCompactRegex =
 	/[\'\"]([^\'\"\s]*?)\:([^\'\"\s]*?)\:([^\'\"\s]*?)[\'\"]/g;
+
 export const MavenDependenciesRegex =
 	/<dependencies>([\s\S]*?)<\/dependencies>/g;
+
 export const MavenDependencyRegex = /<dependency>([\s\S]*?)<\/dependency>/g;
+
 export const MavenGroupIdRegex = /<groupId>([\s\S]*?)<\/groupId>/;
+
 export const MavenArtifactIdRegex = /<artifactId>([\s\S]*?)<\/artifactId>/;
+
 export const JavaLibrariesToLookFor: {
 	predicate: (groupId: string, artifactId: string) => boolean;
 	tag: string;

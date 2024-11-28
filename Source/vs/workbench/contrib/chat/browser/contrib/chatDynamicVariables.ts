@@ -37,6 +37,7 @@ import { IChatWidget } from "../chat.js";
 import { ChatWidget, IChatWidgetContrib } from "../chatWidget.js";
 
 export const dynamicVariableDecorationType = "chat-dynamic-variable";
+
 export class ChatDynamicVariableModel
 	extends Disposable
 	implements IChatWidgetContrib
@@ -299,6 +300,7 @@ export class SelectAndInsertFileAction extends Action2 {
 	}
 }
 registerAction2(SelectAndInsertFileAction);
+
 export interface IAddDynamicVariableContext {
 	id: string;
 	widget: IChatWidget;

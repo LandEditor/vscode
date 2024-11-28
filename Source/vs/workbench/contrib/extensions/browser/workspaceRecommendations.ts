@@ -27,6 +27,7 @@ import {
 } from "./extensionRecommendations.js";
 
 const WORKSPACE_EXTENSIONS_FOLDER = ".vscode/extensions";
+
 export class WorkspaceRecommendations extends ExtensionRecommendations {
 	private _recommendations: ExtensionRecommendation[] = [];
 

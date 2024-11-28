@@ -17,6 +17,7 @@ export const ILanguageModelIgnoredFilesService =
 	createDecorator<ILanguageModelIgnoredFilesService>(
 		"languageModelIgnoredFilesService",
 	);
+
 export interface ILanguageModelIgnoredFilesService {
 	_serviceBrand: undefined;
 	fileIsIgnored(uri: URI, token: CancellationToken): Promise<boolean>;

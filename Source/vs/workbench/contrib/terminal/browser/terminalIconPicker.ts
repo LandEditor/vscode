@@ -39,6 +39,7 @@ const icons = new Lazy<IconContribution[]>(() => {
 
 	return dedupedIcons;
 });
+
 export class TerminalIconPicker extends Disposable {
 	private readonly _iconSelectBox: WorkbenchIconSelectBox;
 

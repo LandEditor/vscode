@@ -16,6 +16,7 @@ export const IMultiDiffSourceResolverService =
 	createDecorator<IMultiDiffSourceResolverService>(
 		"multiDiffSourceResolverService",
 	);
+
 export interface IMultiDiffSourceResolverService {
 	readonly _serviceBrand: undefined;
 	registerResolver(resolver: IMultiDiffSourceResolver): IDisposable;

@@ -496,6 +496,7 @@ export class SingleLineEdit {
 	}
 }
 export type SerializedLineEdit = SerializedSingleLineEdit[];
+
 export type SerializedSingleLineEdit = [
 	startLineNumber: number,
 	endLineNumber: number,

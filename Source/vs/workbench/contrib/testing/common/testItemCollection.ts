@@ -81,6 +81,7 @@ export type ExtHostTestItemEvent =
 	| ITestItemSetProp
 	| ITestItemBulkReplace
 	| ITestItemDocumentSynced;
+
 export interface ITestItemApi<T> {
 	controllerId: string;
 	parent?: T;
@@ -150,6 +151,7 @@ const diffTestItems = (a: ITestItem, b: ITestItem) => {
 	}
 	return output as Partial<ITestItem> | undefined;
 };
+
 export interface ITestChildrenLike<T> extends Iterable<[string, T]> {
 	get(id: string): T | undefined;
 	delete(id: string): void;

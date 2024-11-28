@@ -17,13 +17,18 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 import { ISCMHistoryProvider } from "./history.js";
 
 export const VIEWLET_ID = "workbench.view.scm";
+
 export const VIEW_PANE_ID = "workbench.scm";
+
 export const REPOSITORIES_VIEW_PANE_ID = "workbench.scm.repositories";
+
 export const HISTORY_VIEW_PANE_ID = "workbench.scm.history";
+
 export interface IBaselineResourceProvider {
 	getBaselineResource(resource: URI): Promise<URI>;
 }
 export const ISCMService = createDecorator<ISCMService>("scm");
+
 export interface ISCMResourceDecorations {
 	icon?: URI | ThemeIcon;
 	iconDark?: URI | ThemeIcon;
@@ -178,6 +183,7 @@ export const enum ISCMRepositorySortKey {
 	Path = "path",
 }
 export const ISCMViewService = createDecorator<ISCMViewService>("scmView");
+
 export interface ISCMViewVisibleRepositoryChangeEvent {
 	readonly added: Iterable<ISCMRepository>;
 	readonly removed: Iterable<ISCMRepository>;
@@ -201,4 +207,5 @@ export interface ISCMViewService {
 	readonly activeRepository: IObservable<ISCMRepository | undefined>;
 }
 export const SCM_CHANGES_EDITOR_ID = "workbench.editor.scmChangesEditor";
+
 export interface ISCMChangesEditor {}

@@ -242,6 +242,7 @@ export const TreeDragOverReactions = {
 		};
 	},
 };
+
 export interface ITreeDragAndDrop<T> extends IListDragAndDrop<T> {
 	onDragOver(
 		data: IDragAndDropData,

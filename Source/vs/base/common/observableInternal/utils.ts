@@ -82,10 +82,12 @@ export function observableFromEvent<T, TArgs = unknown>(
 	event: Event<TArgs>,
 	getValue: (args: TArgs | undefined) => T,
 ): IObservable<T>;
+
 export function observableFromEvent<T, TArgs = unknown>(
 	event: Event<TArgs>,
 	getValue: (args: TArgs | undefined) => T,
 ): IObservable<T>;
+
 export function observableFromEvent(
 	...args:
 		| [
@@ -296,9 +298,11 @@ class FromEventObservableSignal extends BaseObservable<void> {
 export function observableSignal<TDelta = void>(
 	debugName: string,
 ): IObservableSignal<TDelta>;
+
 export function observableSignal<TDelta = void>(
 	owner: object,
 ): IObservableSignal<TDelta>;
+
 export function observableSignal<TDelta = void>(
 	debugNameOrOwner: string | object,
 ): IObservableSignal<TDelta> {
@@ -503,6 +507,7 @@ export function recomputeInitiallyAndOnChange<T>(
 	});
 }
 _setRecomputeInitiallyAndOnChange(recomputeInitiallyAndOnChange);
+
 export class KeepAliveObserver implements IObserver {
 	private _counter = 0;
 
@@ -761,6 +766,7 @@ export function derivedConstOnceDefined<T>(
 	);
 }
 type RemoveUndefined<T> = T extends undefined ? never : T;
+
 export function runOnChange<T, TChange>(
 	observable: IObservable<T, TChange>,
 	cb: (

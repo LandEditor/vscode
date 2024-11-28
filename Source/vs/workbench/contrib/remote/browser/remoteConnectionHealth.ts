@@ -30,6 +30,7 @@ const REMOTE_UNSUPPORTED_CONNECTION_CHOICE_KEY =
 
 const BANNER_REMOTE_UNSUPPORTED_CONNECTION_DISMISSED_KEY =
 	"workbench.banner.remote.unsupportedConnection.dismissed";
+
 export class InitialRemoteConnectionHealthContribution
 	implements IWorkbenchContribution
 {

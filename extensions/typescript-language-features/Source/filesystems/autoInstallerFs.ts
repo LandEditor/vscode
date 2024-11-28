@@ -14,6 +14,7 @@ import { MemFs } from "./memFs";
 const TEXT_DECODER = new TextDecoder("utf-8");
 
 const TEXT_ENCODER = new TextEncoder();
+
 export class AutoInstallerFs
 	extends Disposable
 	implements vscode.FileSystemProvider

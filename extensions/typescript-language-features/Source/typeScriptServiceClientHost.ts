@@ -48,6 +48,7 @@ const styleCheckDiagnostics = new Set([
 	...errorCodes.fallThroughCaseInSwitch,
 	...errorCodes.notAllCodePathsReturnAValue,
 ]);
+
 export default class TypeScriptServiceClientHost extends Disposable {
 	private readonly client: TypeScriptServiceClient;
 	private readonly languages: LanguageProvider[] = [];

@@ -21,6 +21,7 @@ export const foreground = registerColor(
 		"Overall foreground color. This color is only used if not overridden by a component.",
 	),
 );
+
 export const disabledForeground = registerColor(
 	"disabledForeground",
 	{
@@ -34,6 +35,7 @@ export const disabledForeground = registerColor(
 		"Overall foreground for disabled elements. This color is only used if not overridden by a component.",
 	),
 );
+
 export const errorForeground = registerColor(
 	"errorForeground",
 	{
@@ -47,6 +49,7 @@ export const errorForeground = registerColor(
 		"Overall foreground color for error messages. This color is only used if not overridden by a component.",
 	),
 );
+
 export const descriptionForeground = registerColor(
 	"descriptionForeground",
 	{
@@ -60,6 +63,7 @@ export const descriptionForeground = registerColor(
 		"Foreground color for description text providing additional information, for example for a label.",
 	),
 );
+
 export const iconForeground = registerColor(
 	"icon.foreground",
 	{
@@ -73,6 +77,7 @@ export const iconForeground = registerColor(
 		"The default color for icons in the workbench.",
 	),
 );
+
 export const focusBorder = registerColor(
 	"focusBorder",
 	{
@@ -86,6 +91,7 @@ export const focusBorder = registerColor(
 		"Overall border color for focused elements. This color is only used if not overridden by a component.",
 	),
 );
+
 export const contrastBorder = registerColor(
 	"contrastBorder",
 	{ light: null, dark: null, hcDark: "#6FC3DF", hcLight: "#0F4A85" },
@@ -94,6 +100,7 @@ export const contrastBorder = registerColor(
 		"An extra border around elements to separate them from others for greater contrast.",
 	),
 );
+
 export const activeContrastBorder = registerColor(
 	"contrastActiveBorder",
 	{ light: null, dark: null, hcDark: focusBorder, hcLight: focusBorder },
@@ -102,6 +109,7 @@ export const activeContrastBorder = registerColor(
 		"An extra border around active elements to separate them from others for greater contrast.",
 	),
 );
+
 export const selectionBackground = registerColor(
 	"selection.background",
 	null,
@@ -121,6 +129,7 @@ export const textLinkForeground = registerColor(
 	},
 	nls.localize("textLinkForeground", "Foreground color for links in text."),
 );
+
 export const textLinkActiveForeground = registerColor(
 	"textLink.activeForeground",
 	{
@@ -134,6 +143,7 @@ export const textLinkActiveForeground = registerColor(
 		"Foreground color for links in text when clicked on and on mouse hover.",
 	),
 );
+
 export const textSeparatorForeground = registerColor(
 	"textSeparator.foreground",
 	{
@@ -158,6 +168,7 @@ export const textPreformatForeground = registerColor(
 		"Foreground color for preformatted text segments.",
 	),
 );
+
 export const textPreformatBackground = registerColor(
 	"textPreformat.background",
 	{
@@ -180,6 +191,7 @@ export const textBlockQuoteBackground = registerColor(
 		"Background color for block quotes in text.",
 	),
 );
+
 export const textBlockQuoteBorder = registerColor(
 	"textBlockQuote.border",
 	{

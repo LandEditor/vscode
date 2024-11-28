@@ -22,6 +22,7 @@ export const welcomePageBackground = registerColor(
 		"Background color for the Welcome page.",
 	),
 );
+
 export const welcomePageTileBackground = registerColor(
 	"welcomePage.tileBackground",
 	{
@@ -35,6 +36,7 @@ export const welcomePageTileBackground = registerColor(
 		"Background color for the tiles on the Welcome page.",
 	),
 );
+
 export const welcomePageTileHoverBackground = registerColor(
 	"welcomePage.tileHoverBackground",
 	{
@@ -48,6 +50,7 @@ export const welcomePageTileHoverBackground = registerColor(
 		"Hover background color for the tiles on the Welcome.",
 	),
 );
+
 export const welcomePageTileBorder = registerColor(
 	"welcomePage.tileBorder",
 	{
@@ -61,6 +64,7 @@ export const welcomePageTileBorder = registerColor(
 		"Border color for the tiles on the Welcome page.",
 	),
 );
+
 export const welcomePageProgressBackground = registerColor(
 	"welcomePage.progress.background",
 	inputBackground,
@@ -69,6 +73,7 @@ export const welcomePageProgressBackground = registerColor(
 		"Foreground color for the Welcome page progress bars.",
 	),
 );
+
 export const welcomePageProgressForeground = registerColor(
 	"welcomePage.progress.foreground",
 	textLinkForeground,
@@ -77,6 +82,7 @@ export const welcomePageProgressForeground = registerColor(
 		"Background color for the Welcome page progress bars.",
 	),
 );
+
 export const walkthroughStepTitleForeground = registerColor(
 	"walkthrough.stepTitle.foreground",
 	{ light: "#000000", dark: "#ffffff", hcDark: null, hcLight: null },

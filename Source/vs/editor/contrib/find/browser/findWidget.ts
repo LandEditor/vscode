@@ -128,6 +128,7 @@ export const findSelectionIcon = registerIcon(
 		"Icon for 'Find in Selection' in the editor find widget.",
 	),
 );
+
 export const findReplaceIcon = registerIcon(
 	"find-replace",
 	Codicon.replace,
@@ -136,6 +137,7 @@ export const findReplaceIcon = registerIcon(
 		"Icon for 'Replace' in the editor find widget.",
 	),
 );
+
 export const findReplaceAllIcon = registerIcon(
 	"find-replace-all",
 	Codicon.replaceAll,
@@ -144,6 +146,7 @@ export const findReplaceAllIcon = registerIcon(
 		"Icon for 'Replace All' in the editor find widget.",
 	),
 );
+
 export const findPreviousMatchIcon = registerIcon(
 	"find-previous-match",
 	Codicon.arrowUp,
@@ -152,6 +155,7 @@ export const findPreviousMatchIcon = registerIcon(
 		"Icon for 'Find Previous' in the editor find widget.",
 	),
 );
+
 export const findNextMatchIcon = registerIcon(
 	"find-next-match",
 	Codicon.arrowDown,
@@ -218,10 +222,12 @@ const NLS_MATCHES_COUNT_LIMIT_TITLE = nls.localize(
 	"Only the first {0} results are highlighted, but all find operations work on the entire text.",
 	MATCHES_LIMIT,
 );
+
 export const NLS_MATCHES_LOCATION = nls.localize(
 	"label.matchesLocation",
 	"{0} of {1}",
 );
+
 export const NLS_NO_RESULTS = nls.localize("label.noResults", "No results");
 
 const FIND_WIDGET_INITIAL_WIDTH = 419;
@@ -238,6 +244,7 @@ const ctrlEnterReplaceAllWarningPromptedKey =
 	"ctrlEnterReplaceAll.windows.donotask";
 
 const ctrlKeyMod = platform.isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd;
+
 export class FindWidgetViewZone implements IViewZone {
 	public readonly afterLineNumber: number;
 	public heightInPx: number;

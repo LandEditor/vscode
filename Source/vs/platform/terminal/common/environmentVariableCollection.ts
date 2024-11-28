@@ -24,6 +24,7 @@ const mutatorTypeToLabelMap: Map<EnvironmentVariableMutatorType, string> =
 		[EnvironmentVariableMutatorType.Prepend, "PREPEND"],
 		[EnvironmentVariableMutatorType.Replace, "REPLACE"],
 	]);
+
 export class MergedEnvironmentVariableCollection
 	implements IMergedEnvironmentVariableCollection
 {

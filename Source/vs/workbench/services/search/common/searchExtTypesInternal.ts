@@ -18,9 +18,11 @@ export type TextSearchProviderOptionsRipgrep = Omit<
 > & {
 	folderOptions: TextSearchProviderFolderOptions;
 };
+
 export type FileSearchProviderOptionsRipgrep = {
 	folderOptions: FileSearchProviderFolderOptions;
 } & FileSearchProviderOptions;
+
 export interface RipgrepTextSearchOptions
 	extends TextSearchProviderOptionsRipgrep,
 		RipgrepSearchOptionsCommon {}

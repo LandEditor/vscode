@@ -655,6 +655,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		}
 	},
 });
+
 export function getActiveEditor(
 	accessor: ServicesAccessor,
 ): IActiveCodeEditor | null {

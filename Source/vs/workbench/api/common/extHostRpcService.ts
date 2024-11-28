@@ -11,6 +11,7 @@ import {
 
 export const IExtHostRpcService =
 	createDecorator<IExtHostRpcService>("IExtHostRpcService");
+
 export interface IExtHostRpcService extends IRPCProtocol {
 	readonly _serviceBrand: undefined;
 }

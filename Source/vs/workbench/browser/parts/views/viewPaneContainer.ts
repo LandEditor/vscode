@@ -118,6 +118,7 @@ MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
 	title: nls.localize("views", "Views"),
 	order: 1,
 } satisfies ISubmenuItem);
+
 export interface IViewPaneContainerOptions extends IPaneViewOptions {
 	mergeViewWithContainerWhenSingleView: boolean;
 }

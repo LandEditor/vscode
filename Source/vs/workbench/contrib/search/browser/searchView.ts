@@ -211,6 +211,7 @@ import { ISearchViewModelWorkbenchService } from "./searchTreeModel/searchViewMo
 import { SearchWidget } from "./searchWidget.js";
 
 const $ = dom.$;
+
 export enum SearchViewPosition {
 	SideBar,
 	Panel,
@@ -222,6 +223,7 @@ const SEARCH_CANCELLED_MESSAGE = nls.localize(
 );
 
 const DEBOUNCE_DELAY = 75;
+
 export class SearchView extends ViewPane {
 	private static readonly ACTIONS_RIGHT_CLASS_NAME = "actions-right";
 	private isDisposed = false;

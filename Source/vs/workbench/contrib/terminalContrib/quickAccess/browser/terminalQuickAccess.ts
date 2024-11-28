@@ -35,6 +35,7 @@ import { TerminalCommandId } from "../../../terminal/common/terminal.js";
 import { terminalStrings } from "../../../terminal/common/terminalStrings.js";
 
 let terminalPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
+
 export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
 	static PREFIX = "term ";
 

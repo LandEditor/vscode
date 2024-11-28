@@ -72,6 +72,7 @@ const STICKY_IS_LINE_ATTR = "data-sticky-is-line";
 const STICKY_IS_LINE_NUMBER_ATTR = "data-sticky-is-line-number";
 
 const STICKY_IS_FOLDING_ICON_ATTR = "data-sticky-is-folding-icon";
+
 export class StickyScrollWidget extends Disposable implements IOverlayWidget {
 	private readonly _foldingIconStore = new DisposableStore();
 	private readonly _rootDomNode: HTMLElement = document.createElement("div");

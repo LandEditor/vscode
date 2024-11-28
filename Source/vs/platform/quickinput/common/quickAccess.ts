@@ -194,6 +194,7 @@ export interface IQuickAccessProviderDescriptor {
 export const Extensions = {
 	Quickaccess: "workbench.contributions.quickaccess",
 };
+
 export interface IQuickAccessRegistry {
 	/**
 	 * Registers a quick access provider to the platform.

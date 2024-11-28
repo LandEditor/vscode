@@ -21,6 +21,7 @@ export interface IFoldingRangeData extends FoldingRange {
 const foldingContext: FoldingContext = {};
 
 const ID_SYNTAX_PROVIDER = "syntax";
+
 export class SyntaxRangeProvider implements RangeProvider {
 	readonly id = ID_SYNTAX_PROVIDER;
 	readonly disposables: DisposableStore;

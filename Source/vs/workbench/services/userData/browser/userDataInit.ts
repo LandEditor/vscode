@@ -32,6 +32,7 @@ export const IUserDataInitializationService =
 	createDecorator<IUserDataInitializationService>(
 		"IUserDataInitializationService",
 	);
+
 export interface IUserDataInitializationService extends IUserDataInitializer {
 	_serviceBrand: any;
 }

@@ -27,9 +27,13 @@ export {
 	type TerminateResponse,
 	TerminateResponseCode,
 };
+
 export type ValueCallback<T> = (value: T | Promise<T>) => void;
+
 export type ErrorCallback = (error?: any) => void;
+
 export type ProgressCallback<T> = (progress: T) => void;
+
 export function getWindowsShell(
 	env = process.env as Platform.IProcessEnvironment,
 ): string {

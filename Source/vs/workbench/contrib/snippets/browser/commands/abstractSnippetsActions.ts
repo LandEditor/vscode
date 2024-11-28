@@ -12,6 +12,7 @@ import {
 const defaultOptions = {
 	category: localize2("snippets", "Snippets"),
 } as const;
+
 export abstract class SnippetsAction extends Action2 {
 	constructor(desc: Readonly<IAction2Options>) {
 		super({ ...defaultOptions, ...desc });

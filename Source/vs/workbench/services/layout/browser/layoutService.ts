@@ -172,6 +172,7 @@ export type MULTI_WINDOW_PARTS =
 	| Parts.EDITOR_PART
 	| Parts.STATUSBAR_PART
 	| Parts.TITLEBAR_PART;
+
 export type SINGLE_WINDOW_PARTS = Exclude<Parts, MULTI_WINDOW_PARTS>;
 
 export interface IWorkbenchLayoutService extends ILayoutService {

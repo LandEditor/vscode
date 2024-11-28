@@ -15,6 +15,7 @@ type MessageToSend = {
 	rendererId: string;
 	message: unknown;
 };
+
 export class NotebookRendererMessagingService
 	extends Disposable
 	implements INotebookRendererMessagingService

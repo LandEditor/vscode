@@ -188,6 +188,7 @@ export type OutgoingViewModelEvent =
 	| ModelContentChangedEvent
 	| ModelOptionsChangedEvent
 	| ModelTokensChangedEvent;
+
 export const enum OutgoingViewModelEventKind {
 	ContentSizeChanged,
 	FocusChanged,

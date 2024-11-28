@@ -318,6 +318,7 @@ Registry.as<IExtensionFeaturesRegistry>(
 	},
 	renderer: new SyncDescriptor(LanguageTableRenderer),
 });
+
 export class WorkbenchLanguageService extends LanguageService {
 	private _configurationService: IConfigurationService;
 	private _extensionService: IExtensionService;

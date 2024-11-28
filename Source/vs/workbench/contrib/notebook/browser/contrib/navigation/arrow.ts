@@ -64,6 +64,7 @@ const NOTEBOOK_FOCUS_NEXT_EDITOR = "notebook.focusNextEditor";
 const FOCUS_IN_OUTPUT_COMMAND_ID = "notebook.cell.focusInOutput";
 
 const FOCUS_OUT_OUTPUT_COMMAND_ID = "notebook.cell.focusOutOutput";
+
 export const CENTER_ACTIVE_CELL = "notebook.centerActiveCell";
 
 const NOTEBOOK_CURSOR_PAGEUP_COMMAND_ID = "notebook.cell.cursorPageUp";

@@ -26,6 +26,7 @@ export const quickInputBackground = registerColor(
 		"Quick picker background color. The quick picker widget is the container for pickers like the command palette.",
 	),
 );
+
 export const quickInputForeground = registerColor(
 	"quickInput.foreground",
 	editorWidgetForeground,
@@ -34,6 +35,7 @@ export const quickInputForeground = registerColor(
 		"Quick picker foreground color. The quick picker widget is the container for pickers like the command palette.",
 	),
 );
+
 export const quickInputTitleBackground = registerColor(
 	"quickInputTitle.background",
 	{
@@ -47,6 +49,7 @@ export const quickInputTitleBackground = registerColor(
 		"Quick picker title background color. The quick picker widget is the container for pickers like the command palette.",
 	),
 );
+
 export const pickerGroupForeground = registerColor(
 	"pickerGroup.foreground",
 	{
@@ -60,6 +63,7 @@ export const pickerGroupForeground = registerColor(
 		"Quick picker color for grouping labels.",
 	),
 );
+
 export const pickerGroupBorder = registerColor(
 	"pickerGroup.border",
 	{
@@ -73,6 +77,7 @@ export const pickerGroupBorder = registerColor(
 		"Quick picker color for grouping borders.",
 	),
 );
+
 export const _deprecatedQuickInputListFocusBackground = registerColor(
 	"quickInput.list.focusBackground",
 	null,
@@ -83,6 +88,7 @@ export const _deprecatedQuickInputListFocusBackground = registerColor(
 		"Please use quickInputList.focusBackground instead",
 	),
 );
+
 export const quickInputListFocusForeground = registerColor(
 	"quickInputList.focusForeground",
 	listActiveSelectionForeground,
@@ -91,6 +97,7 @@ export const quickInputListFocusForeground = registerColor(
 		"Quick picker foreground color for the focused item.",
 	),
 );
+
 export const quickInputListFocusIconForeground = registerColor(
 	"quickInputList.focusIconForeground",
 	listActiveSelectionIconForeground,
@@ -99,6 +106,7 @@ export const quickInputListFocusIconForeground = registerColor(
 		"Quick picker icon foreground color for the focused item.",
 	),
 );
+
 export const quickInputListFocusBackground = registerColor(
 	"quickInputList.focusBackground",
 	{

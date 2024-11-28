@@ -17,6 +17,7 @@ import {
 } from "../../controller/coreActions.js";
 
 const TOGGLE_CELL_TOOLBAR_POSITION = "notebook.toggleCellToolbarPosition";
+
 export class ToggleCellToolbarPositionAction extends Action2 {
 	constructor() {
 		super({

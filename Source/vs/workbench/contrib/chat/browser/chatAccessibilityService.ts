@@ -21,6 +21,7 @@ import { IChatResponseViewModel } from "../common/chatViewModel.js";
 import { IChatAccessibilityService } from "./chat.js";
 
 const CHAT_RESPONSE_PENDING_ALLOWANCE_MS = 4000;
+
 export class ChatAccessibilityService
 	extends Disposable
 	implements IChatAccessibilityService

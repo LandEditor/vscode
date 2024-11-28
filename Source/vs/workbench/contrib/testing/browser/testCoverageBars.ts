@@ -61,6 +61,7 @@ export type CoverageBarSource = Pick<
 	AbstractFileCoverage,
 	"statement" | "branch" | "declaration"
 >;
+
 export class ManagedTestCoverageBars extends Disposable {
 	private _coverage?: CoverageBarSource;
 	private readonly el = new Lazy(() => {

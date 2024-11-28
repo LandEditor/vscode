@@ -27,7 +27,9 @@ import {
 import { INotebookExecutionStateService } from "../common/notebookExecutionStateService.js";
 
 const SCROLLABLE_ELEMENT_PADDING_TOP = 18;
+
 export const OutputInnerContainerTopPadding = 4;
+
 export interface NotebookDisplayOptions {
 	showCellStatusBar: ShowCellStatusBarType;
 	cellToolbarLocation:
@@ -144,6 +146,7 @@ const compactConfigConstants = Object.freeze({
 	markdownCellGutter: 36,
 	focusIndicatorLeftMargin: 4,
 });
+
 export class NotebookOptions extends Disposable {
 	private _layoutConfiguration: NotebookLayoutConfiguration &
 		NotebookDisplayOptions;

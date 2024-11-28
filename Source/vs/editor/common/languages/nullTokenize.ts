@@ -24,6 +24,7 @@ export const NullState: IState = new (class implements IState {
 		return this === other;
 	}
 })();
+
 export function nullTokenize(
 	languageId: string,
 	state: IState,

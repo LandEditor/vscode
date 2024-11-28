@@ -44,6 +44,7 @@ export interface ILanguageStatusProvider {
 export const ILanguageStatusService = createDecorator<ILanguageStatusService>(
 	"ILanguageStatusService",
 );
+
 export interface ILanguageStatusService {
 	_serviceBrand: undefined;
 	onDidChange: Event<void>;

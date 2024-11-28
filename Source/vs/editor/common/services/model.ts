@@ -17,9 +17,11 @@ import {
 } from "../model.js";
 
 export const IModelService = createDecorator<IModelService>("modelService");
+
 export type DocumentTokensProvider =
 	| DocumentSemanticTokensProvider
 	| DocumentRangeSemanticTokensProvider;
+
 export interface IModelService {
 	readonly _serviceBrand: undefined;
 

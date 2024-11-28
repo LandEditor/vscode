@@ -114,7 +114,9 @@ export interface SerializedError {
 	readonly noTelemetry: boolean;
 }
 export function transformErrorForSerialization(error: Error): SerializedError;
+
 export function transformErrorForSerialization(error: any): any;
+
 export function transformErrorForSerialization(error: any): any {
 	if (error instanceof Error) {
 		const { name, message } = error;

@@ -310,6 +310,7 @@ otherMacNumpadMapping.set(ScanCode.Numpad7, KeyCode.Digit7);
 otherMacNumpadMapping.set(ScanCode.Numpad8, KeyCode.Digit8);
 otherMacNumpadMapping.set(ScanCode.Numpad9, KeyCode.Digit9);
 otherMacNumpadMapping.set(ScanCode.Numpad0, KeyCode.Digit0);
+
 export class WorkbenchKeybindingService extends AbstractKeybindingService {
 	private _keyboardMapper: IKeyboardMapper;
 	private _cachedResolver: KeybindingResolver | null;

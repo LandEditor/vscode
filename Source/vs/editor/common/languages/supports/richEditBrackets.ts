@@ -483,6 +483,7 @@ const toReversedString = (function () {
 		return lastOutput!;
 	};
 })();
+
 export class BracketsUtils {
 	private static _findPrevBracketInText(
 		reversedBracketRegex: RegExp,

@@ -58,38 +58,47 @@ export const enum DisablementReason {
 export type Uninitialized = {
 	type: StateType.Uninitialized;
 };
+
 export type Disabled = {
 	type: StateType.Disabled;
 	reason: DisablementReason;
 };
+
 export type Idle = {
 	type: StateType.Idle;
 	updateType: UpdateType;
 	error?: string;
 };
+
 export type CheckingForUpdates = {
 	type: StateType.CheckingForUpdates;
 	explicit: boolean;
 };
+
 export type AvailableForDownload = {
 	type: StateType.AvailableForDownload;
 	update: IUpdate;
 };
+
 export type Downloading = {
 	type: StateType.Downloading;
 };
+
 export type Downloaded = {
 	type: StateType.Downloaded;
 	update: IUpdate;
 };
+
 export type Updating = {
 	type: StateType.Updating;
 	update: IUpdate;
 };
+
 export type Ready = {
 	type: StateType.Ready;
 	update: IUpdate;
 };
+
 export type State =
 	| Uninitialized
 	| Disabled
@@ -100,6 +109,7 @@ export type State =
 	| Downloaded
 	| Updating
 	| Ready;
+
 export const State = {
 	Uninitialized: upcast<Uninitialized>({ type: StateType.Uninitialized }),
 	Disabled: (reason: DisablementReason): Disabled => ({
@@ -130,6 +140,7 @@ export const State = {
 	}),
 	Ready: (update: IUpdate): Ready => ({ type: StateType.Ready, update }),
 };
+
 export interface IAutoUpdater extends Event.NodeEventEmitter {
 	setFeedURL(url: string): void;
 	checkForUpdates(): void;
@@ -137,6 +148,7 @@ export interface IAutoUpdater extends Event.NodeEventEmitter {
 	quitAndInstall(): void;
 }
 export const IUpdateService = createDecorator<IUpdateService>("updateService");
+
 export interface IUpdateService {
 	readonly _serviceBrand: undefined;
 	readonly onStateChange: Event<State>;

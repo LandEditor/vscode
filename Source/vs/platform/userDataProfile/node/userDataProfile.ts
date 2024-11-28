@@ -20,6 +20,7 @@ import {
 type StoredUserDataProfileState = StoredUserDataProfile & {
 	location: URI | string;
 };
+
 export class UserDataProfilesReadonlyService
 	extends BaseUserDataProfilesService
 	implements IUserDataProfilesService

@@ -12,6 +12,7 @@ type ReleaseInfo = {
 	id_like?: string;
 	version_id?: string;
 };
+
 export async function getOSReleaseInfo(
 	errorLogger: (error: any) => void,
 ): Promise<ReleaseInfo | undefined> {

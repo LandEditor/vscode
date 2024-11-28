@@ -14,11 +14,13 @@ import {
 import { ICompleteTerminalConfiguration } from "../terminal.js";
 
 export const REMOTE_TERMINAL_CHANNEL_NAME = "remoteterminal";
+
 export type ITerminalEnvironmentVariableCollections = [
 	string,
 	ISerializableEnvironmentVariableCollection,
 	ISerializableEnvironmentDescriptionMap,
 ][];
+
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
 	name: string;

@@ -104,6 +104,7 @@ export interface ProcessExplorerWindowConfiguration
 }
 export const IIssueFormService =
 	createDecorator<IIssueFormService>("issueFormService");
+
 export interface IIssueFormService {
 	readonly _serviceBrand: undefined;
 	// Used by the issue reporter
@@ -119,12 +120,14 @@ export interface IIssueFormService {
 export const IWorkbenchIssueService = createDecorator<IWorkbenchIssueService>(
 	"workbenchIssueService",
 );
+
 export interface IWorkbenchIssueService {
 	readonly _serviceBrand: undefined;
 	openReporter(dataOverrides?: Partial<IssueReporterData>): Promise<void>;
 }
 export const IWorkbenchProcessService =
 	createDecorator<IWorkbenchProcessService>("workbenchProcessService");
+
 export interface IWorkbenchProcessService {
 	readonly _serviceBrand: undefined;
 	openProcessExplorer(): Promise<void>;

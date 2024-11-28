@@ -12,6 +12,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const IShellEnvironmentService =
 	createDecorator<IShellEnvironmentService>("shellEnvironmentService");
+
 export interface IShellEnvironmentService {
 	readonly _serviceBrand: undefined;
 

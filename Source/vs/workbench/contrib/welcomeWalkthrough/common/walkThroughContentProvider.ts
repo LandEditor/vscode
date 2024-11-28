@@ -43,6 +43,7 @@ class WalkThroughContentProviderRegistry {
 }
 export const walkThroughContentRegistry =
 	new WalkThroughContentProviderRegistry();
+
 export async function moduleToContent(
 	instantiationService: IInstantiationService,
 	resource: URI,

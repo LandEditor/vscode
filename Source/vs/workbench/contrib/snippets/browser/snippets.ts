@@ -7,6 +7,7 @@ import { Snippet, SnippetFile } from "./snippetsFile.js";
 
 export const ISnippetsService =
 	createDecorator<ISnippetsService>("snippetService");
+
 export interface ISnippetGetOptions {
 	includeDisabledSnippets?: boolean;
 	includeNoPrefixSnippets?: boolean;

@@ -30,6 +30,7 @@ const schemaRegistry =
 	Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(
 		JSONContributionRegistry.Extensions.JSONContribution,
 	);
+
 export class SettingsFileSystemProvider
 	extends Disposable
 	implements IFileSystemProviderWithFileReadWriteCapability

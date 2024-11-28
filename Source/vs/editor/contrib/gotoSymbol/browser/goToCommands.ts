@@ -85,6 +85,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorContext, {
 	group: "navigation",
 	order: 100,
 } satisfies ISubmenuItem);
+
 export interface SymbolNavigationActionConfig {
 	openToSide: boolean;
 	openInPeek: boolean;

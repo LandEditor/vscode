@@ -16,6 +16,7 @@ import {
 
 export type IRawClosedNotebookFileMatch =
 	INotebookFileMatchNoModel<UriComponents>;
+
 export interface INotebookFileMatchNoModel<U extends UriComponents = URI>
 	extends IFileMatch<U> {
 	cellResults: INotebookCellMatchNoModel<U>[];
@@ -31,6 +32,7 @@ export function isINotebookFileMatchNoModel(
 	return "cellResults" in object;
 }
 export const rawCellPrefix = "rawCell#";
+
 export function genericCellMatchesToTextSearchMatches(
 	contentMatches: FindMatch[],
 	buffer: IReadonlyTextBuffer,

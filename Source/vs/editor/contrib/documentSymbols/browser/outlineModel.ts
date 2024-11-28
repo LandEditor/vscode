@@ -477,6 +477,7 @@ export class OutlineModel extends TreeElement {
 export const IOutlineModelService = createDecorator<IOutlineModelService>(
 	"IOutlineModelService",
 );
+
 export interface IOutlineModelService {
 	_serviceBrand: undefined;
 

@@ -316,6 +316,7 @@ const baseHeaders = {
 	"User-Agent": userAgent,
 	"X-Market-User-Id": "291C1CD0-051A-4123-9B4B-30D60EF52EE2",
 };
+
 export function fromMarketplace(
 	serviceUrl: string,
 	{ name: extensionName, version, sha256, metadata }: IExtensionDefinition,
@@ -766,6 +767,7 @@ const esbuildMediaScripts = [
 	"ipynb/esbuild.js",
 	"simple-browser/esbuild-preview.js",
 ];
+
 export async function webpackExtensions(
 	taskName: string,
 	isWatch: boolean,

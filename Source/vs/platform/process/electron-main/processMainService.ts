@@ -59,6 +59,7 @@ interface IBrowserWindowOptions {
 type IStrictWindowState = Required<
 	Pick<IWindowState, "x" | "y" | "width" | "height">
 >;
+
 export class ProcessMainService implements IProcessMainService {
 	declare readonly _serviceBrand: undefined;
 	private static readonly DEFAULT_BACKGROUND_COLOR = "#1E1E1E";

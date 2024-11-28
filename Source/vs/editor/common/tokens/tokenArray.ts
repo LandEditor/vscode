@@ -61,6 +61,7 @@ export class TokenArray {
 	}
 }
 export type TokenMetadata = number;
+
 export class TokenInfo {
 	constructor(
 		public readonly length: number,

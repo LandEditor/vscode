@@ -13,6 +13,7 @@ import { EditorInput } from "../../../common/editor/editorInput.js";
 
 export const gettingStartedInputTypeId =
 	"workbench.editors.gettingStartedInput";
+
 export interface GettingStartedEditorOptions extends IEditorOptions {
 	selectedCategory?: string;
 	selectedStep?: string;

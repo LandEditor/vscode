@@ -37,6 +37,7 @@ type BrowserWatchEvent =
 			type: "dispose";
 			id: number;
 	  };
+
 export class WorkerServerProcessFactory implements TsServerProcessFactory {
 	constructor(
 		private readonly _extensionUri: vscode.Uri,

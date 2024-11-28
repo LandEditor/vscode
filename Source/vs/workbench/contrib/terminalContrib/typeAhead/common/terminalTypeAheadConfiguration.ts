@@ -12,6 +12,7 @@ export const DEFAULT_LOCAL_ECHO_EXCLUDE: ReadonlyArray<string> = [
 	"nano",
 	"tmux",
 ];
+
 export const enum TerminalTypeAheadSettingId {
 	LocalEchoLatencyThreshold = "terminal.integrated.localEchoLatencyThreshold",
 	LocalEchoEnabled = "terminal.integrated.localEchoEnabled",

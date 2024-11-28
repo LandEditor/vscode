@@ -23,6 +23,7 @@ const enum CharCode {
 let outputChannel: vscode.OutputChannel;
 
 const SLOWED_DOWN_CONNECTION_DELAY = 800;
+
 export function activate(context: vscode.ExtensionContext) {
 	let connectionPaused = false;
 

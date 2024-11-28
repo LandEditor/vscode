@@ -14,6 +14,7 @@ const isPseudo =
 		document.location &&
 		typeof document.location.hash === "string" &&
 		document.location.hash.indexOf("pseudo=true") >= 0);
+
 export interface ILocalizeInfo {
 	key: string;
 	comment: string[];

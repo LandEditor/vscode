@@ -46,6 +46,7 @@ function createWordRegExp(allowInWords: string = ""): RegExp {
 }
 // catches numbers (including floating numbers) in the first group, and alphanum in the second
 export const DEFAULT_WORD_REGEXP = createWordRegExp();
+
 export function ensureValidWordDefinition(
 	wordDefinition?: RegExp | null,
 ): RegExp {
@@ -85,6 +86,7 @@ _defaultConfig.unshift({
 	windowSize: 15,
 	timeBudget: 150,
 });
+
 export function setDefaultGetWordAtTextConfig(value: IGetWordAtTextConfig) {
 	const rm = _defaultConfig.unshift(value);
 

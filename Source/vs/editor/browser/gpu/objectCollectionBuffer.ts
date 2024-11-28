@@ -23,6 +23,7 @@ export type ObjectCollectionPropertyValues<
 > = {
 	[K in T[number]["name"]]: number;
 };
+
 export interface IObjectCollectionBuffer<
 	T extends ObjectCollectionBufferPropertySpec[],
 > extends IDisposable {

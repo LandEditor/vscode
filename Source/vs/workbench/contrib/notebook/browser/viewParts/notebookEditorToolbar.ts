@@ -72,6 +72,7 @@ export type RenderLabelWithFallback =
 	| "always"
 	| "never"
 	| "dynamic";
+
 export function convertConfiguration(
 	value: RenderLabelWithFallback,
 ): RenderLabel {

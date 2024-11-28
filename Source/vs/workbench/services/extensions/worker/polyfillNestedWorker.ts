@@ -56,6 +56,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 	};
 	globalThis.addEventListener("message", listener);
 }.toString();
+
 export class NestedWorker extends EventTarget implements Worker {
 	onmessage: ((this: Worker, ev: MessageEvent<any>) => any) | null = null;
 	onmessageerror: ((this: Worker, ev: MessageEvent<any>) => any) | null =

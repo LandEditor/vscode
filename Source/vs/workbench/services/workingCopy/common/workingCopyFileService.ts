@@ -52,6 +52,7 @@ import { IWorkingCopyService } from "./workingCopyService.js";
 export const IWorkingCopyFileService = createDecorator<IWorkingCopyFileService>(
 	"workingCopyFileService",
 );
+
 export interface SourceTargetPair {
 	/**
 	 * The source resource that is defined for move operations.

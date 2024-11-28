@@ -35,6 +35,7 @@ let _platformLocale: string = LANGUAGE_DEFAULT;
 let _translationsConfigFile: string | undefined = undefined;
 
 let _userAgent: string | undefined = undefined;
+
 export interface IProcessEnvironment {
 	[key: string]: string | undefined;
 }
@@ -145,6 +146,7 @@ export const enum Platform {
 	Windows,
 }
 export type PlatformName = "Web" | "Windows" | "Mac" | "Linux";
+
 export function PlatformToString(platform: Platform): PlatformName {
 	switch (platform) {
 		case Platform.Web:
@@ -169,23 +171,35 @@ if (_isMacintosh) {
 	_platform = Platform.Linux;
 }
 export const isWindows = _isWindows;
+
 export const isMacintosh = _isMacintosh;
+
 export const isLinux = _isLinux;
+
 export const isLinuxSnap = _isLinuxSnap;
+
 export const isNative = _isNative;
+
 export const isElectron = _isElectron;
+
 export const isWeb = _isWeb;
+
 export const isWebWorker =
 	_isWeb && typeof $globalThis.importScripts === "function";
+
 export const webWorkerOrigin = isWebWorker ? $globalThis.origin : undefined;
+
 export const isIOS = _isIOS;
+
 export const isMobile = _isMobile;
 /**
  * Whether we run inside a CI environment, such as
  * GH actions or Azure Pipelines.
  */
 export const isCI = _isCI;
+
 export const platform = _platform;
+
 export const userAgent = _userAgent;
 /**
  * The language used for the user interface. The format of
@@ -193,6 +207,7 @@ export const userAgent = _userAgent;
  * Chinese or de for German)
  */
 export const language = _language;
+
 export namespace Language {
 	export function value(): string {
 		return language;
@@ -232,6 +247,7 @@ export const platformLocale = _platformLocale;
  * The translations that are available through language packs.
  */
 export const translationsConfigFile = _translationsConfigFile;
+
 export const setTimeout0IsFaster =
 	typeof $globalThis.postMessage === "function" && !$globalThis.importScripts;
 /**
@@ -275,6 +291,7 @@ export const setTimeout0 = (() => {
 	}
 	return (callback: () => void) => setTimeout(callback);
 })();
+
 export const enum OperatingSystem {
 	Windows = 1,
 	Macintosh = 2,
@@ -290,6 +307,7 @@ export const OS =
 let _isLittleEndian = true;
 
 let _isLittleEndianComputed = false;
+
 export function isLittleEndian(): boolean {
 	if (!_isLittleEndianComputed) {
 		_isLittleEndianComputed = true;
@@ -304,14 +322,19 @@ export function isLittleEndian(): boolean {
 	return _isLittleEndian;
 }
 export const isChrome = !!(userAgent && userAgent.indexOf("Chrome") >= 0);
+
 export const isFirefox = !!(userAgent && userAgent.indexOf("Firefox") >= 0);
+
 export const isSafari = !!(
 	!isChrome &&
 	userAgent &&
 	userAgent.indexOf("Safari") >= 0
 );
+
 export const isEdge = !!(userAgent && userAgent.indexOf("Edg/") >= 0);
+
 export const isAndroid = !!(userAgent && userAgent.indexOf("Android") >= 0);
+
 export function isBigSurOrNewer(osVersion: string): boolean {
 	return parseFloat(osVersion) >= 20;
 }

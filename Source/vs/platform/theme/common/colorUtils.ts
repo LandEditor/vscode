@@ -20,6 +20,7 @@ import { IColorTheme } from "./themeService.js";
 
 //  ------ API types
 export type ColorIdentifier = string;
+
 export interface ColorContribution {
 	readonly id: ColorIdentifier;
 	readonly description: string;
@@ -94,6 +95,7 @@ export type ColorTransform =
 
 			else: ColorValue;
 	  };
+
 export interface ColorDefaults {
 	light: ColorValue | null;
 	dark: ColorValue | null;
@@ -116,7 +118,9 @@ export type ColorValue = Color | string | ColorIdentifier | ColorTransform;
 export const Extensions = {
 	ColorContribution: "base.contributions.colors",
 };
+
 export const DEFAULT_COLOR_CONFIG_VALUE = "default";
+
 export interface IColorRegistry {
 	readonly onDidChangeSchema: Event<void>;
 	/**
@@ -311,6 +315,7 @@ class ColorRegistry implements IColorRegistry {
 
 const colorRegistry = new ColorRegistry();
 platform.Registry.add(Extensions.ColorContribution, colorRegistry);
+
 export function registerColor(
 	id: string,
 	defaults: ColorDefaults | ColorValue | null,

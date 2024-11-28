@@ -37,6 +37,7 @@ export const listFocusBackground = registerColor(
 		"List/Tree background color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listFocusForeground = registerColor(
 	"list.focusForeground",
 	null,
@@ -45,6 +46,7 @@ export const listFocusForeground = registerColor(
 		"List/Tree foreground color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listFocusOutline = registerColor(
 	"list.focusOutline",
 	{
@@ -58,6 +60,7 @@ export const listFocusOutline = registerColor(
 		"List/Tree outline color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listFocusAndSelectionOutline = registerColor(
 	"list.focusAndSelectionOutline",
 	null,
@@ -66,6 +69,7 @@ export const listFocusAndSelectionOutline = registerColor(
 		"List/Tree outline color for the focused item when the list/tree is active and selected. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listActiveSelectionBackground = registerColor(
 	"list.activeSelectionBackground",
 	{
@@ -79,6 +83,7 @@ export const listActiveSelectionBackground = registerColor(
 		"List/Tree background color for the selected item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listActiveSelectionForeground = registerColor(
 	"list.activeSelectionForeground",
 	{ dark: Color.white, light: Color.white, hcDark: null, hcLight: null },
@@ -87,6 +92,7 @@ export const listActiveSelectionForeground = registerColor(
 		"List/Tree foreground color for the selected item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listActiveSelectionIconForeground = registerColor(
 	"list.activeSelectionIconForeground",
 	null,
@@ -95,6 +101,7 @@ export const listActiveSelectionIconForeground = registerColor(
 		"List/Tree icon foreground color for the selected item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listInactiveSelectionBackground = registerColor(
 	"list.inactiveSelectionBackground",
 	{
@@ -108,6 +115,7 @@ export const listInactiveSelectionBackground = registerColor(
 		"List/Tree background color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listInactiveSelectionForeground = registerColor(
 	"list.inactiveSelectionForeground",
 	null,
@@ -116,6 +124,7 @@ export const listInactiveSelectionForeground = registerColor(
 		"List/Tree foreground color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listInactiveSelectionIconForeground = registerColor(
 	"list.inactiveSelectionIconForeground",
 	null,
@@ -124,6 +133,7 @@ export const listInactiveSelectionIconForeground = registerColor(
 		"List/Tree icon foreground color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listInactiveFocusBackground = registerColor(
 	"list.inactiveFocusBackground",
 	null,
@@ -132,6 +142,7 @@ export const listInactiveFocusBackground = registerColor(
 		"List/Tree background color for the focused item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listInactiveFocusOutline = registerColor(
 	"list.inactiveFocusOutline",
 	null,
@@ -140,6 +151,7 @@ export const listInactiveFocusOutline = registerColor(
 		"List/Tree outline color for the focused item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.",
 	),
 );
+
 export const listHoverBackground = registerColor(
 	"list.hoverBackground",
 	{
@@ -153,6 +165,7 @@ export const listHoverBackground = registerColor(
 		"List/Tree background when hovering over items using the mouse.",
 	),
 );
+
 export const listHoverForeground = registerColor(
 	"list.hoverForeground",
 	null,
@@ -161,6 +174,7 @@ export const listHoverForeground = registerColor(
 		"List/Tree foreground when hovering over items using the mouse.",
 	),
 );
+
 export const listDropOverBackground = registerColor(
 	"list.dropBackground",
 	{ dark: "#062F4A", light: "#D6EBFF", hcDark: null, hcLight: null },
@@ -169,6 +183,7 @@ export const listDropOverBackground = registerColor(
 		"List/Tree drag and drop background when moving items over other items when using the mouse.",
 	),
 );
+
 export const listDropBetweenBackground = registerColor(
 	"list.dropBetweenBackground",
 	{
@@ -182,6 +197,7 @@ export const listDropBetweenBackground = registerColor(
 		"List/Tree drag and drop border color when moving items between items when using the mouse.",
 	),
 );
+
 export const listHighlightForeground = registerColor(
 	"list.highlightForeground",
 	{
@@ -195,6 +211,7 @@ export const listHighlightForeground = registerColor(
 		"List/Tree foreground color of the match highlights when searching inside the list/tree.",
 	),
 );
+
 export const listFocusHighlightForeground = registerColor(
 	"list.focusHighlightForeground",
 	{
@@ -212,6 +229,7 @@ export const listFocusHighlightForeground = registerColor(
 		"List/Tree foreground color of the match highlights on actively focused items when searching inside the list/tree.",
 	),
 );
+
 export const listInvalidItemForeground = registerColor(
 	"list.invalidItemForeground",
 	{
@@ -225,6 +243,7 @@ export const listInvalidItemForeground = registerColor(
 		"List/Tree foreground color for invalid items, for example an unresolved root in explorer.",
 	),
 );
+
 export const listErrorForeground = registerColor(
 	"list.errorForeground",
 	{ dark: "#F88070", light: "#B01011", hcDark: null, hcLight: null },
@@ -233,6 +252,7 @@ export const listErrorForeground = registerColor(
 		"Foreground color of list items containing errors.",
 	),
 );
+
 export const listWarningForeground = registerColor(
 	"list.warningForeground",
 	{ dark: "#CCA700", light: "#855F00", hcDark: null, hcLight: null },
@@ -241,6 +261,7 @@ export const listWarningForeground = registerColor(
 		"Foreground color of list items containing warnings.",
 	),
 );
+
 export const listFilterWidgetBackground = registerColor(
 	"listFilterWidget.background",
 	{
@@ -254,6 +275,7 @@ export const listFilterWidgetBackground = registerColor(
 		"Background color of the type filter widget in lists and trees.",
 	),
 );
+
 export const listFilterWidgetOutline = registerColor(
 	"listFilterWidget.outline",
 	{
@@ -267,6 +289,7 @@ export const listFilterWidgetOutline = registerColor(
 		"Outline color of the type filter widget in lists and trees.",
 	),
 );
+
 export const listFilterWidgetNoMatchesOutline = registerColor(
 	"listFilterWidget.noMatchesOutline",
 	{
@@ -280,6 +303,7 @@ export const listFilterWidgetNoMatchesOutline = registerColor(
 		"Outline color of the type filter widget in lists and trees, when there are no matches.",
 	),
 );
+
 export const listFilterWidgetShadow = registerColor(
 	"listFilterWidget.shadow",
 	widgetShadow,
@@ -288,6 +312,7 @@ export const listFilterWidgetShadow = registerColor(
 		"Shadow color of the type filter widget in lists and trees.",
 	),
 );
+
 export const listFilterMatchHighlight = registerColor(
 	"list.filterMatchBackground",
 	{
@@ -301,6 +326,7 @@ export const listFilterMatchHighlight = registerColor(
 		"Background color of the filtered match.",
 	),
 );
+
 export const listFilterMatchHighlightBorder = registerColor(
 	"list.filterMatchBorder",
 	{
@@ -314,6 +340,7 @@ export const listFilterMatchHighlightBorder = registerColor(
 		"Border color of the filtered match.",
 	),
 );
+
 export const listDeemphasizedForeground = registerColor(
 	"list.deemphasizedForeground",
 	{
@@ -341,6 +368,7 @@ export const treeIndentGuidesStroke = registerColor(
 		"Tree stroke color for the indentation guides.",
 	),
 );
+
 export const treeInactiveIndentGuidesStroke = registerColor(
 	"tree.inactiveIndentGuidesStroke",
 	transparent(treeIndentGuidesStroke, 0.4),
@@ -355,6 +383,7 @@ export const tableColumnsBorder = registerColor(
 	{ dark: "#CCCCCC20", light: "#61616120", hcDark: null, hcLight: null },
 	nls.localize("tableColumnsBorder", "Table border color between columns."),
 );
+
 export const tableOddRowsBackgroundColor = registerColor(
 	"tree.tableOddRowsBackground",
 	{
@@ -374,11 +403,13 @@ export const editorActionListBackground = registerColor(
 	editorWidgetBackground,
 	nls.localize("editorActionListBackground", "Action List background color."),
 );
+
 export const editorActionListForeground = registerColor(
 	"editorActionList.foreground",
 	editorWidgetForeground,
 	nls.localize("editorActionListForeground", "Action List foreground color."),
 );
+
 export const editorActionListFocusForeground = registerColor(
 	"editorActionList.focusForeground",
 	listActiveSelectionForeground,
@@ -387,6 +418,7 @@ export const editorActionListFocusForeground = registerColor(
 		"Action List foreground color for the focused item.",
 	),
 );
+
 export const editorActionListFocusBackground = registerColor(
 	"editorActionList.focusBackground",
 	listActiveSelectionBackground,

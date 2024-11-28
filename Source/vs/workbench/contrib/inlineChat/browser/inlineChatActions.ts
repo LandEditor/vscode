@@ -41,6 +41,7 @@ export interface IHoldForSpeech {
 	(accessor: ServicesAccessor, controller: InlineChatController, source: Action2): void;
 }
 let _holdForSpeech: IHoldForSpeech | undefined = undefined;
+
 export function setHoldForSpeech(holdForSpeech: IHoldForSpeech) {
 	_holdForSpeech = holdForSpeech;
 }

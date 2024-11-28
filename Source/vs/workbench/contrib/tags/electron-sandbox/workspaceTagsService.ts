@@ -445,6 +445,7 @@ const GoModulesToLookFor = [
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore",
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/",
 ];
+
 export class WorkspaceTagsService implements IWorkspaceTagsService {
 	declare readonly _serviceBrand: undefined;
 	private _tags: Tags | undefined;

@@ -14,6 +14,7 @@ import {
 } from "../../../common/views.js";
 
 export const IViewsService = createDecorator<IViewsService>("viewsService");
+
 export interface IViewsService {
 	readonly _serviceBrand: undefined;
 	// View Container APIs

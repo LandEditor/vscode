@@ -31,6 +31,7 @@ import { NotebookDiffEditorEventDispatcher } from "./eventDispatcher.js";
 import { INotebookTextDiffEditor } from "./notebookDiffEditorBrowser.js";
 
 const MINIMUM_SLIDER_SIZE = 20;
+
 export class NotebookDiffOverviewRuler extends Themable {
 	private readonly _domNode: FastDomNode<HTMLCanvasElement>;
 	private readonly _overviewViewportDomElement: FastDomNode<HTMLElement>;

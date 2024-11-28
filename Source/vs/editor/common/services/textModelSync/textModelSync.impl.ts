@@ -39,7 +39,9 @@ import {
  * Stop syncing a model to the worker if it was not needed for 1 min.
  */
 export const STOP_SYNC_MODEL_DELTA_TIME_MS = 60 * 1000;
+
 export const WORKER_TEXT_MODEL_SYNC_CHANNEL = "workerTextModelSync";
+
 export class WorkerTextModelSyncClient extends Disposable {
 	public static create(
 		workerClient: IWorkerClient<any>,

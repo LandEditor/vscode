@@ -107,6 +107,7 @@ export const emptyProgressRunner = Object.freeze<IProgressRunner>({
 	worked() {},
 	done() {},
 });
+
 export interface IProgress<T> {
 	report(item: T): void;
 }

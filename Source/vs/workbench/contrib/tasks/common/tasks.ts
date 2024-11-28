@@ -23,6 +23,7 @@ import { ProblemMatcher } from "./problemMatcher.js";
 import { TaskDefinitionRegistry } from "./taskDefinitionRegistry.js";
 
 export const USER_TASKS_GROUP_KEY = "settings";
+
 export const TASK_RUNNING_STATE = new RawContextKey<boolean>(
 	"taskRunning",
 	false,
@@ -31,7 +32,9 @@ export const TASK_RUNNING_STATE = new RawContextKey<boolean>(
 		"Whether a task is currently running.",
 	),
 );
+
 export const TASKS_CATEGORY = nls.localize2("tasksCategory", "Tasks");
+
 export enum ShellQuoting {
 	/**
 	 * Use character escaping.
@@ -47,6 +50,7 @@ export enum ShellQuoting {
 	Weak = 3,
 }
 export const CUSTOMIZED_TASK_TYPE = "$customized";
+
 export namespace ShellQuoting {
 	export function from(this: void, value: string): ShellQuoting {
 		if (!value) {
@@ -314,6 +318,7 @@ export interface IQuotedString {
 	quoting: ShellQuoting;
 }
 export type CommandString = string | IQuotedString;
+
 export namespace CommandString {
 	export function value(value: CommandString): string {
 		if (Types.isString(value)) {
@@ -467,10 +472,12 @@ export type TaskSource =
 	| IInMemoryTaskSource
 	| IUserTaskSource
 	| WorkspaceFileTaskSource;
+
 export type FileBasedTaskSource =
 	| IWorkspaceTaskSource
 	| IUserTaskSource
 	| WorkspaceFileTaskSource;
+
 export interface ITaskIdentifier {
 	type: string;
 	[name: string]: any;
@@ -1099,6 +1106,7 @@ export class InMemoryTask extends CommonTask {
 	}
 }
 export type Task = CustomTask | ContributedTask | InMemoryTask;
+
 export interface ITaskExecution {
 	id: string;
 	task: Task;
@@ -1224,6 +1232,7 @@ export type ITaskEvent =
 	| ITaskTerminatedEvent
 	| ITaskStartedEvent
 	| ITaskGeneralEvent;
+
 export const enum TaskRunSource {
 	System,
 	User,

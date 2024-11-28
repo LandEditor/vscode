@@ -236,6 +236,7 @@ export class OffsetEdit {
 	}
 }
 export type IOffsetEdit = ISingleOffsetEdit[];
+
 export interface ISingleOffsetEdit {
 	txt: string;
 	pos: number;

@@ -75,6 +75,7 @@ export {
 	SelectionRange,
 	TextDocumentIdentifier,
 } from "vscode-languageserver";
+
 export {
 	ClientCapabilities,
 	DocumentContext,
@@ -83,7 +84,9 @@ export {
 	HTMLFormatConfiguration,
 	TokenType,
 } from "vscode-html-languageservice";
+
 export { TextDocument } from "vscode-languageserver-textdocument";
+
 export interface Settings {
 	readonly css?: any;
 	readonly html?: any;
@@ -105,6 +108,7 @@ export type CompletionItemData = {
 	uri: string;
 	offset: number;
 };
+
 export function isCompletionItemData(value: any): value is CompletionItemData {
 	return (
 		value &&

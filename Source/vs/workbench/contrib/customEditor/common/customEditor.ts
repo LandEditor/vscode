@@ -20,6 +20,7 @@ import {
 export const ICustomEditorService = createDecorator<ICustomEditorService>(
 	"customEditorService",
 );
+
 export const CONTEXT_ACTIVE_CUSTOM_EDITOR_ID = new RawContextKey<string>(
 	"activeCustomEditorId",
 	"",
@@ -31,8 +32,10 @@ export const CONTEXT_ACTIVE_CUSTOM_EDITOR_ID = new RawContextKey<string>(
 		),
 	},
 );
+
 export const CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE =
 	new RawContextKey<boolean>("focusedCustomEditorIsEditable", false);
+
 export interface CustomEditorCapabilities {
 	readonly supportsMultipleEditorsPerDocument?: boolean;
 }

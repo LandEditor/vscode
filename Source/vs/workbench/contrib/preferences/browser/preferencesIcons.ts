@@ -14,6 +14,7 @@ export const settingsScopeDropDownIcon = registerIcon(
 		"Icon for the folder dropdown button in the split JSON Settings editor.",
 	),
 );
+
 export const settingsMoreActionIcon = registerIcon(
 	"settings-more-action",
 	Codicon.gear,
@@ -22,6 +23,7 @@ export const settingsMoreActionIcon = registerIcon(
 		"Icon for the 'more actions' action in the Settings UI.",
 	),
 );
+
 export const keybindingsRecordKeysIcon = registerIcon(
 	"keybindings-record-keys",
 	Codicon.recordKeys,
@@ -30,6 +32,7 @@ export const keybindingsRecordKeysIcon = registerIcon(
 		"Icon for the 'record keys' action in the keybinding UI.",
 	),
 );
+
 export const keybindingsSortIcon = registerIcon(
 	"keybindings-sort",
 	Codicon.sortPrecedence,
@@ -38,6 +41,7 @@ export const keybindingsSortIcon = registerIcon(
 		"Icon for the 'sort by precedence' toggle in the keybinding UI.",
 	),
 );
+
 export const keybindingsEditIcon = registerIcon(
 	"keybindings-edit",
 	Codicon.edit,
@@ -46,6 +50,7 @@ export const keybindingsEditIcon = registerIcon(
 		"Icon for the edit action in the keybinding UI.",
 	),
 );
+
 export const keybindingsAddIcon = registerIcon(
 	"keybindings-add",
 	Codicon.add,
@@ -54,6 +59,7 @@ export const keybindingsAddIcon = registerIcon(
 		"Icon for the add action in the keybinding UI.",
 	),
 );
+
 export const settingsEditIcon = registerIcon(
 	"settings-edit",
 	Codicon.edit,
@@ -62,6 +68,7 @@ export const settingsEditIcon = registerIcon(
 		"Icon for the edit action in the Settings UI.",
 	),
 );
+
 export const settingsRemoveIcon = registerIcon(
 	"settings-remove",
 	Codicon.close,
@@ -70,6 +77,7 @@ export const settingsRemoveIcon = registerIcon(
 		"Icon for the remove action in the Settings UI.",
 	),
 );
+
 export const settingsDiscardIcon = registerIcon(
 	"settings-discard",
 	Codicon.discard,
@@ -78,6 +86,7 @@ export const settingsDiscardIcon = registerIcon(
 		"Icon for the discard action in the Settings UI.",
 	),
 );
+
 export const preferencesClearInputIcon = registerIcon(
 	"preferences-clear-input",
 	Codicon.clearAll,
@@ -86,6 +95,7 @@ export const preferencesClearInputIcon = registerIcon(
 		"Icon for clear input in the Settings and keybinding UI.",
 	),
 );
+
 export const preferencesFilterIcon = registerIcon(
 	"preferences-filter",
 	Codicon.filter,
@@ -94,6 +104,7 @@ export const preferencesFilterIcon = registerIcon(
 		"Icon for the button that suggests filters for the Settings UI.",
 	),
 );
+
 export const preferencesOpenSettingsIcon = registerIcon(
 	"preferences-open-settings",
 	Codicon.goToFile,

@@ -9,6 +9,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 export const IProtocolMainService = createDecorator<IProtocolMainService>(
 	"protocolMainService",
 );
+
 export interface IIPCObjectUrl<T> extends IDisposable {
 	/**
 	 * A `URI` that a renderer can use to retrieve the

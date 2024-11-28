@@ -26,6 +26,7 @@ export interface IAccountUsage {
 }
 export const IAuthenticationUsageService =
 	createDecorator<IAuthenticationUsageService>("IAuthenticationUsageService");
+
 export interface IAuthenticationUsageService {
 	readonly _serviceBrand: undefined;
 	/**

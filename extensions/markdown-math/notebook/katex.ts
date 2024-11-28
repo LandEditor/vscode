@@ -6,6 +6,7 @@ import type * as markdownIt from "markdown-it";
 import type { RendererContext } from "vscode-notebook-renderer";
 
 const styleHref = import.meta.url.replace(/katex.js$/, "katex.min.css");
+
 export async function activate(ctx: RendererContext<void>) {
 	const markdownItRenderer = (await ctx.getRenderer(
 		"vscode.markdown-it-renderer",

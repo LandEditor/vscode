@@ -185,6 +185,7 @@ PasteAction?.addImplementation(PRIORITY, "notebook-webview", (accessor) => {
 CutAction?.addImplementation(PRIORITY, "notebook-webview", (accessor) => {
 	return withWebview(accessor, (webview) => webview.cut());
 });
+
 export function runPasteCells(
 	editor: INotebookEditor,
 	activeCell: ICellViewModel | undefined,

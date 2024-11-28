@@ -113,6 +113,7 @@ type SyncErrorClassification = {
 };
 
 const LAST_SYNC_TIME_KEY = "sync.lastSyncTime";
+
 export class UserDataSyncService
 	extends Disposable
 	implements IUserDataSyncService

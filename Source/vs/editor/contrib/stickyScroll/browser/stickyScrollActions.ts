@@ -84,6 +84,7 @@ export class ToggleStickyScroll extends Action2 {
 }
 
 const weight = KeybindingWeight.EditorContrib;
+
 export class FocusStickyScroll extends EditorAction2 {
 	constructor() {
 		super({

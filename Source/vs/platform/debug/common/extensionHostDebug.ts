@@ -7,6 +7,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IExtensionHostDebugService =
 	createDecorator<IExtensionHostDebugService>("extensionHostDebugService");
+
 export interface IAttachSessionEvent {
 	sessionId: string;
 	subId?: string;

@@ -42,6 +42,7 @@ const JSCHARDET_TO_ICONV_ENCODINGS: {
 };
 
 const UTF8 = "utf8";
+
 export async function resolveTerminalEncoding(
 	verbose?: boolean,
 ): Promise<string> {

@@ -20,6 +20,7 @@ import { INotebookVariableElement } from "./notebookVariablesDataSource.js";
 const $ = dom.$;
 
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
+
 export class NotebookVariablesTree extends WorkbenchObjectTree<INotebookVariableElement> {}
 export class NotebookVariablesDelegate
 	implements IListVirtualDelegate<INotebookVariableElement>

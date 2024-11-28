@@ -175,6 +175,7 @@ export interface IRawTerminalInstanceLayoutInfo<T> {
 }
 export type ITerminalInstanceLayoutInfoById =
 	IRawTerminalInstanceLayoutInfo<number>;
+
 export type ITerminalInstanceLayoutInfo =
 	IRawTerminalInstanceLayoutInfo<IPtyHostAttachTarget>;
 
@@ -233,6 +234,7 @@ export enum TitleEventSource {
 
 export type ITerminalsLayoutInfo =
 	IRawTerminalsLayoutInfo<IPtyHostAttachTarget | null>;
+
 export type ITerminalsLayoutInfoById = IRawTerminalsLayoutInfo<number>;
 
 export enum TerminalIpcChannels {
@@ -1301,6 +1303,7 @@ export interface ILocalPtyService extends IPtyHostService {}
 
 export const ITerminalLogService =
 	createDecorator<ITerminalLogService>("terminalLogService");
+
 export interface ITerminalLogService extends ILogService {
 	/**
 	 * Similar to _serviceBrand but used to differentiate this service at compile time from

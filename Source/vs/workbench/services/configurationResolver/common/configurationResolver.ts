@@ -13,6 +13,7 @@ export const IConfigurationResolverService =
 	createDecorator<IConfigurationResolverService>(
 		"configurationResolverService",
 	);
+
 export interface IConfigurationResolverService {
 	readonly _serviceBrand: undefined;
 	resolveWithEnvironment(
@@ -120,6 +121,7 @@ export type ConfiguredInput =
 	| PromptStringInputInfo
 	| PickStringInputInfo
 	| CommandInputInfo;
+
 export enum VariableKind {
 	Unknown = "unknown",
 	Env = "env",

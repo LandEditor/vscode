@@ -433,9 +433,11 @@ const uiMap = new KeyCodeStrMap();
 const userSettingsUSMap = new KeyCodeStrMap();
 
 const userSettingsGeneralMap = new KeyCodeStrMap();
+
 export const EVENT_KEY_CODE_MAP: {
 	[keyCode: number]: KeyCode;
 } = new Array(230);
+
 export const NATIVE_WINDOWS_KEY_CODE_TO_KEY_CODE: {
 	[nativeKeyCode: string]: KeyCode;
 } = {};
@@ -449,6 +451,7 @@ const scanCodeStrToInt: {
 const scanCodeLowerCaseStrToInt: {
 	[code: string]: number;
 } = Object.create(null);
+
 export const ScanCodeUtils = {
 	lowerCaseToEnum: (scanCode: string) =>
 		scanCodeLowerCaseStrToInt[scanCode] || ScanCode.None,
@@ -2706,6 +2709,7 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 	// Manually added due to the exclusion above (due to duplication with NumpadEnter)
 	IMMUTABLE_KEY_CODE_TO_CODE[KeyCode.Enter] = ScanCode.Enter;
 })();
+
 export namespace KeyCodeUtils {
 	export function toString(keyCode: KeyCode): string {
 		return uiMap.keyCodeToStr(keyCode);

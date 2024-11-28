@@ -94,9 +94,11 @@ interface ITextStream {
 export function createTextBufferFactoryFromStream(
 	stream: ITextStream,
 ): Promise<model.ITextBufferFactory>;
+
 export function createTextBufferFactoryFromStream(
 	stream: VSBufferReadableStream,
 ): Promise<model.ITextBufferFactory>;
+
 export function createTextBufferFactoryFromStream(
 	stream: ITextStream | VSBufferReadableStream,
 ): Promise<model.ITextBufferFactory> {

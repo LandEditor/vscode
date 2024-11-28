@@ -24,6 +24,7 @@ import {
 
 export const IOutputChannelModelService =
 	createDecorator<IOutputChannelModelService>("outputChannelModelService");
+
 export interface IOutputChannelModelService {
 	readonly _serviceBrand: undefined;
 	createOutputChannelModel(

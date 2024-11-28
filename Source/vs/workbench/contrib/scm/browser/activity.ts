@@ -61,6 +61,7 @@ const ActiveRepositoryContextKeys = {
 		"",
 	),
 };
+
 export class SCMActiveRepositoryController
 	extends Disposable
 	implements IWorkbenchContribution

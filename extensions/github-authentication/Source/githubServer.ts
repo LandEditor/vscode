@@ -22,6 +22,7 @@ import { fetching } from "./node/fetch";
 const REDIRECT_URL_STABLE = "https://vscode.dev/redirect";
 
 const REDIRECT_URL_INSIDERS = "https://insiders.vscode.dev/redirect";
+
 export interface IGitHubServer {
 	login(scopes: string, existingLogin?: string): Promise<string>;
 	logout(session: vscode.AuthenticationSession): Promise<void>;

@@ -22,6 +22,7 @@ import { WindowUtilityProcess } from "./utilityProcess.js";
 
 export const IUtilityProcessWorkerMainService =
 	createDecorator<IUtilityProcessWorkerMainService>("utilityProcessWorker");
+
 export interface IUtilityProcessWorkerMainService
 	extends IUtilityProcessWorkerService {
 	readonly _serviceBrand: undefined;

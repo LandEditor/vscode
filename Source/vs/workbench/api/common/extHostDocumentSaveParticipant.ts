@@ -26,6 +26,7 @@ import {
 import { TextEdit } from "./extHostTypes.js";
 
 type Listener = [Function, any, IExtensionDescription];
+
 export class ExtHostDocumentSaveParticipant
 	implements ExtHostDocumentSaveParticipantShape
 {

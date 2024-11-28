@@ -48,6 +48,7 @@ interface CurrentChord {
 
 const HIGH_FREQ_COMMANDS =
 	/^(cursor|delete|undo|redo|tab|editor\.action\.clipboard)/;
+
 export abstract class AbstractKeybindingService
 	extends Disposable
 	implements IKeybindingService

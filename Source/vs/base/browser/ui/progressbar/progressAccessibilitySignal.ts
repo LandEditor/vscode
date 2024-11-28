@@ -18,6 +18,7 @@ let progressAccessibilitySignalSchedulerFactory: (
 	msLoopTime?: number,
 ) => IScopedAccessibilityProgressSignalDelegate =
 	nullScopedAccessibilityProgressSignalFactory;
+
 export function setProgressAcccessibilitySignalScheduler(
 	progressAccessibilitySignalScheduler: (
 		msDelayTime: number,

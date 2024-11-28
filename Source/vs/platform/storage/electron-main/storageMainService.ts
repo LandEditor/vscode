@@ -43,6 +43,7 @@ import {
 //#region Storage Main Service (intent: make application, profile and workspace storage accessible to windows from main process)
 export const IStorageMainService =
 	createDecorator<IStorageMainService>("storageMainService");
+
 export interface IProfileStorageChangeEvent extends IStorageChangeEvent {
 	readonly storage: IStorageMain;
 	readonly profile: IUserDataProfile;

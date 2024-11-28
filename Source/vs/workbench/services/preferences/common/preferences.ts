@@ -178,6 +178,7 @@ export interface IPreferencesEditorModel<T> {
 	dispose(): void;
 }
 export type IGroupFilter = (group: ISettingsGroup) => boolean | null;
+
 export type ISettingMatcher = (
 	setting: ISetting,
 	group: ISettingsGroup,
@@ -186,6 +187,7 @@ export type ISettingMatcher = (
 	matchType: SettingMatchType;
 	score: number;
 } | null;
+
 export interface ISettingsEditorModel
 	extends IPreferencesEditorModel<ISetting> {
 	readonly onDidChangeGroups: Event<void>;
@@ -237,6 +239,7 @@ export interface IKeybindingsEditorOptions extends IEditorOptions {
 }
 export const IPreferencesService =
 	createDecorator<IPreferencesService>("preferencesService");
+
 export interface IPreferencesService {
 	readonly _serviceBrand: undefined;
 	readonly onDidDefaultSettingsContentChanged: Event<URI>;
@@ -355,12 +358,16 @@ export interface IKeybindingsEditorPane extends IEditorPane {
 }
 export const DEFINE_KEYBINDING_EDITOR_CONTRIB_ID =
 	"editor.contrib.defineKeybinding";
+
 export interface IDefineKeybindingEditorContribution
 	extends IEditorContribution {
 	showDefineKeybindingWidget(): void;
 }
 export const FOLDER_SETTINGS_PATH = ".vscode/settings.json";
+
 export const DEFAULT_SETTINGS_EDITOR_SETTING =
 	"workbench.settings.openDefaultSettings";
+
 export const USE_SPLIT_JSON_SETTING = "workbench.settings.useSplitJSON";
+
 export const SETTINGS_AUTHORITY = "settings";

@@ -470,6 +470,7 @@ class PerfMarks {
 export type Writeable<T> = {
 	-readonly [P in keyof T]: Writeable<T[P]>;
 };
+
 export abstract class AbstractTimerService implements ITimerService {
 	declare readonly _serviceBrand: undefined;
 	private readonly _barrier = new Barrier();

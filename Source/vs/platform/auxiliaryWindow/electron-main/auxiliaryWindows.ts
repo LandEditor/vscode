@@ -16,6 +16,7 @@ export const IAuxiliaryWindowsMainService =
 	createDecorator<IAuxiliaryWindowsMainService>(
 		"auxiliaryWindowsMainService",
 	);
+
 export interface IAuxiliaryWindowsMainService {
 	readonly _serviceBrand: undefined;
 	readonly onDidMaximizeWindow: Event<IAuxiliaryWindow>;

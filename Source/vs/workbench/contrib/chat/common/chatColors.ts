@@ -25,6 +25,7 @@ export const chatRequestBorder = registerColor(
 	},
 	localize("chat.requestBorder", "The border color of a chat request."),
 );
+
 export const chatRequestBackground = registerColor(
 	"chat.requestBackground",
 	{
@@ -38,6 +39,7 @@ export const chatRequestBackground = registerColor(
 		"The background color of a chat request.",
 	),
 );
+
 export const chatSlashCommandBackground = registerColor(
 	"chat.slashCommandBackground",
 	{
@@ -51,6 +53,7 @@ export const chatSlashCommandBackground = registerColor(
 		"The background color of a chat slash command.",
 	),
 );
+
 export const chatSlashCommandForeground = registerColor(
 	"chat.slashCommandForeground",
 	{
@@ -64,6 +67,7 @@ export const chatSlashCommandForeground = registerColor(
 		"The foreground color of a chat slash command.",
 	),
 );
+
 export const chatAvatarBackground = registerColor(
 	"chat.avatarBackground",
 	{
@@ -74,11 +78,13 @@ export const chatAvatarBackground = registerColor(
 	},
 	localize("chat.avatarBackground", "The background color of a chat avatar."),
 );
+
 export const chatAvatarForeground = registerColor(
 	"chat.avatarForeground",
 	foreground,
 	localize("chat.avatarForeground", "The foreground color of a chat avatar."),
 );
+
 export const chatEditedFileForeground = registerColor(
 	"chat.editedFileForeground",
 	{

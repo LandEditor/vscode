@@ -9,6 +9,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
  * Use this if you don't want the onDidChangeSessions event to fire in the extension host
  */
 export const INTERNAL_AUTH_PROVIDER_PREFIX = "__";
+
 export interface AuthenticationSessionAccount {
 	label: string;
 	id: string;
@@ -53,6 +54,7 @@ export interface AllowedExtension {
 export const IAuthenticationService = createDecorator<IAuthenticationService>(
 	"IAuthenticationService",
 );
+
 export interface IAuthenticationService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -163,6 +165,7 @@ export const IAuthenticationExtensionsService =
 	createDecorator<IAuthenticationExtensionsService>(
 		"IAuthenticationExtensionsService",
 	);
+
 export interface IAuthenticationExtensionsService {
 	readonly _serviceBrand: undefined;
 	/**

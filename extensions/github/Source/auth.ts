@@ -32,12 +32,14 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 }
 
 const scopes = ["repo", "workflow", "user:email", "read:user"];
+
 export async function getSession(): Promise<AuthenticationSession> {
 	return await authentication.getSession("github", scopes, {
 		createIfNone: true,
 	});
 }
 let _octokit: Promise<Octokit> | undefined;
+
 export function getOctokit(): Promise<Octokit> {
 	if (!_octokit) {
 		_octokit = getSession()
@@ -63,6 +65,7 @@ export function getOctokit(): Promise<Octokit> {
 	return _octokit;
 }
 let _octokitGraphql: Promise<graphql> | undefined;
+
 export async function getOctokitGraphql(): Promise<graphql> {
 	if (!_octokitGraphql) {
 		try {

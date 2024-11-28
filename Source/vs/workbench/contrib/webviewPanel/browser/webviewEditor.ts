@@ -53,6 +53,7 @@ export const CONTEXT_ACTIVE_WEBVIEW_PANEL_ID = new RawContextKey<string>(
 		),
 	},
 );
+
 export class WebviewEditor extends EditorPane {
 	public static readonly ID = "WebviewEditor";
 	private _element?: HTMLElement;

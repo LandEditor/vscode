@@ -13,6 +13,7 @@ type DirWatcherEntry = {
 	readonly uri: vscode.Uri;
 	readonly disposables: readonly IDisposable[];
 };
+
 export class FileWatcherManager {
 	private readonly _fileWatchers = new Map<
 		number,

@@ -77,6 +77,7 @@ import {
 export const OpenProfileMenu = new MenuId("OpenProfile");
 
 const ProfilesMenu = new MenuId("Profiles");
+
 export class UserDataProfilesWorkbenchContribution
 	extends Disposable
 	implements IWorkbenchContribution

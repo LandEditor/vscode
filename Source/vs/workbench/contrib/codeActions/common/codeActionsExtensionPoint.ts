@@ -91,6 +91,7 @@ const codeActionsExtensionPointSchema =
 			},
 		},
 	});
+
 export const codeActionsExtensionPointDescriptor = {
 	extensionPoint: "codeActions",
 	deps: [languagesExtPoint],

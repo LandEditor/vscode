@@ -69,6 +69,7 @@ const parameterHintsPreviousIcon = registerIcon(
 		"Icon for show previous parameter hint.",
 	),
 );
+
 export class ParameterHintsWidget extends Disposable implements IContentWidget {
 	private static readonly ID = "editor.widget.parameterHintsWidget";
 	private readonly markdownRenderer: MarkdownRenderer;

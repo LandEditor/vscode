@@ -20,6 +20,7 @@ import {
 } from "./constants";
 
 const textDecoder = new TextDecoder();
+
 export function createJupyterCellFromNotebookCell(
 	vscCell: NotebookCellData,
 	preferredLanguage: string | undefined,

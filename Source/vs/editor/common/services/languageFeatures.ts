@@ -45,6 +45,7 @@ import {
 
 export const ILanguageFeaturesService =
 	createDecorator<ILanguageFeaturesService>("ILanguageFeaturesService");
+
 export interface ILanguageFeaturesService {
 	readonly _serviceBrand: undefined;
 	readonly referenceProvider: LanguageFeatureRegistry<ReferenceProvider>;

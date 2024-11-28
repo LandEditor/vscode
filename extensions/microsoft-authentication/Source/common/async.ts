@@ -9,6 +9,7 @@ import { CancellationError, CancellationToken, Disposable, Event } from 'vscode'
  * Can be passed into the Delayed to defer using a microtask
  */
 export const MicrotaskDelay = Symbol("MicrotaskDelay");
+
 export class SequencerByKey<TKey> {
 	private promiseMap = new Map<TKey, Promise<unknown>>();
 	queue<T>(key: TKey, promiseTask: () => Promise<T>): Promise<T> {

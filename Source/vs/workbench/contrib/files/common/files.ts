@@ -63,6 +63,7 @@ export const ExplorerViewletVisibleContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const FoldersViewVisibleContext = new RawContextKey<boolean>(
 	"foldersViewVisible",
 	true,
@@ -74,6 +75,7 @@ export const FoldersViewVisibleContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerFolderContext = new RawContextKey<boolean>(
 	"explorerResourceIsFolder",
 	false,
@@ -85,6 +87,7 @@ export const ExplorerFolderContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerResourceReadonlyContext = new RawContextKey<boolean>(
 	"explorerResourceReadonly",
 	false,
@@ -96,8 +99,10 @@ export const ExplorerResourceReadonlyContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerResourceNotReadonlyContext =
 	ExplorerResourceReadonlyContext.toNegated();
+
 export const ExplorerResourceParentReadOnlyContext = new RawContextKey<boolean>(
 	"explorerResourceParentReadonly",
 	false,
@@ -114,6 +119,7 @@ export const ExplorerResourceParentReadOnlyContext = new RawContextKey<boolean>(
  */
 export const ExplorerResourceAvailableEditorIdsContext =
 	new RawContextKey<string>("explorerResourceAvailableEditorIds", "");
+
 export const ExplorerRootContext = new RawContextKey<boolean>(
 	"explorerResourceIsRoot",
 	false,
@@ -125,6 +131,7 @@ export const ExplorerRootContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerResourceCut = new RawContextKey<boolean>(
 	"explorerResourceCut",
 	false,
@@ -136,6 +143,7 @@ export const ExplorerResourceCut = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerResourceMoveableToTrash = new RawContextKey<boolean>(
 	"explorerResourceMoveableToTrash",
 	false,
@@ -147,6 +155,7 @@ export const ExplorerResourceMoveableToTrash = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const FilesExplorerFocusedContext = new RawContextKey<boolean>(
 	"filesExplorerFocus",
 	true,
@@ -158,6 +167,7 @@ export const FilesExplorerFocusedContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const OpenEditorsFocusedContext = new RawContextKey<boolean>(
 	"openEditorsFocus",
 	true,
@@ -169,6 +179,7 @@ export const OpenEditorsFocusedContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerFocusedContext = new RawContextKey<boolean>(
 	"explorerViewletFocus",
 	true,
@@ -180,6 +191,7 @@ export const ExplorerFocusedContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerFindProviderActive = new RawContextKey<boolean>(
 	"explorerFindProviderActive",
 	false,
@@ -204,6 +216,7 @@ export const ExplorerCompressedFocusContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerCompressedFirstFocusContext = new RawContextKey<boolean>(
 	"explorerViewletCompressedFirstFocus",
 	true,
@@ -215,6 +228,7 @@ export const ExplorerCompressedFirstFocusContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ExplorerCompressedLastFocusContext = new RawContextKey<boolean>(
 	"explorerViewletCompressedLastFocus",
 	true,
@@ -226,6 +240,7 @@ export const ExplorerCompressedLastFocusContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const ViewHasSomeCollapsibleRootItemContext = new RawContextKey<boolean>(
 	"viewHasSomeCollapsibleItem",
 	false,
@@ -237,11 +252,13 @@ export const ViewHasSomeCollapsibleRootItemContext = new RawContextKey<boolean>(
 		),
 	},
 );
+
 export const FilesExplorerFocusCondition = ContextKeyExpr.and(
 	FoldersViewVisibleContext,
 	FilesExplorerFocusedContext,
 	ContextKeyExpr.not(InputFocusedContextKey),
 );
+
 export const ExplorerFocusCondition = ContextKeyExpr.and(
 	FoldersViewVisibleContext,
 	ExplorerFocusedContext,
@@ -263,6 +280,7 @@ export const BINARY_FILE_EDITOR_ID = "workbench.editors.files.binaryFileEditor";
  * Language identifier for binary files opened as text.
  */
 export const BINARY_TEXT_FILE_MODE = "code-text-binary";
+
 export interface IFilesConfiguration
 	extends PlatformIFilesConfiguration,
 		IWorkbenchEditorConfiguration {

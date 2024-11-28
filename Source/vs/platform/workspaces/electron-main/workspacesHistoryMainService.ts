@@ -54,6 +54,7 @@ export const IWorkspacesHistoryMainService =
 	createDecorator<IWorkspacesHistoryMainService>(
 		"workspacesHistoryMainService",
 	);
+
 export interface IWorkspacesHistoryMainService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeRecentlyOpened: CommonEvent<void>;

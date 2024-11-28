@@ -545,6 +545,7 @@ registerAction2(class AddWatchExpressionAction extends Action2 {
 });
 
 export const REMOVE_WATCH_EXPRESSIONS_COMMAND_ID = 'workbench.debug.viewlet.action.removeAllWatchExpressions';
+
 export const REMOVE_WATCH_EXPRESSIONS_LABEL = localize('removeAllWatchExpressions', "Remove All Expressions");
 registerAction2(class RemoveAllWatchExpressionsAction extends Action2 {
 	constructor() {

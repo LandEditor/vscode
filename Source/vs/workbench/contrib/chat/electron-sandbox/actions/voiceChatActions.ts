@@ -1187,6 +1187,7 @@ const sentenceDelimiter = [".", "!", "?", ":"];
 const lineDelimiter = "\n";
 
 const wordDelimiter = " ";
+
 export function parseNextChatResponseChunk(
 	text: string,
 	offset: number,

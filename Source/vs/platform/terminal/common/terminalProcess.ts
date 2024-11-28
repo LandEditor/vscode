@@ -36,6 +36,7 @@ export type ITerminalEnvironmentVariableCollections = [
 	string,
 	ISerializableEnvironmentVariableCollection,
 ][];
+
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
 	name: string;
@@ -73,6 +74,7 @@ export interface IProcessDetails {
 }
 export type ITerminalTabLayoutInfoDto =
 	IRawTerminalTabLayoutInfo<IProcessDetails>;
+
 export interface ReplayEntry {
 	cols: number;
 	rows: number;

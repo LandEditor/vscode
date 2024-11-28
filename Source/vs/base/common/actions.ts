@@ -30,11 +30,13 @@ export type WorkbenchActionExecutedClassification = {
 	owner: "bpasero";
 	comment: "Provides insight into actions that are executed within the workbench.";
 };
+
 export type WorkbenchActionExecutedEvent = {
 	id: string;
 	from: string;
 	detail?: string;
 };
+
 export interface IAction {
 	readonly id: string;
 	label: string;

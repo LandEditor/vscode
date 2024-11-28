@@ -120,6 +120,7 @@ CommandsRegistry.registerCommandAlias(
 	"cursorWordPartStartLeft",
 	"cursorWordPartLeft",
 );
+
 export class CursorWordPartLeftSelect extends WordPartLeftCommand {
 	constructor() {
 		super({
@@ -147,6 +148,7 @@ CommandsRegistry.registerCommandAlias(
 	"cursorWordPartStartLeftSelect",
 	"cursorWordPartLeftSelect",
 );
+
 export class WordPartRightCommand extends MoveWordCommand {
 	protected _move(
 		wordSeparators: WordCharacterClassifier,

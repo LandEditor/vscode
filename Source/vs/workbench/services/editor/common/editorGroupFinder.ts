@@ -36,31 +36,37 @@ export function findGroup(
 	editor: IUntypedEditorInput,
 	preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined,
 ): [IEditorGroup, EditorActivation | undefined];
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: EditorInputWithOptions,
 	preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined,
 ): [IEditorGroup, EditorActivation | undefined];
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: EditorInputWithOptions | IUntypedEditorInput,
 	preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined,
 ): [IEditorGroup, EditorActivation | undefined];
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: IUntypedEditorInput,
 	preferredGroup: AUX_WINDOW_GROUP_TYPE,
 ): Promise<[IEditorGroup, EditorActivation | undefined]>;
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: EditorInputWithOptions,
 	preferredGroup: AUX_WINDOW_GROUP_TYPE,
 ): Promise<[IEditorGroup, EditorActivation | undefined]>;
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: EditorInputWithOptions | IUntypedEditorInput,
 	preferredGroup: AUX_WINDOW_GROUP_TYPE,
 ): Promise<[IEditorGroup, EditorActivation | undefined]>;
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: EditorInputWithOptions | IUntypedEditorInput,
@@ -68,6 +74,7 @@ export function findGroup(
 ):
 	| Promise<[IEditorGroup, EditorActivation | undefined]>
 	| [IEditorGroup, EditorActivation | undefined];
+
 export function findGroup(
 	accessor: ServicesAccessor,
 	editor: EditorInputWithOptions | IUntypedEditorInput,

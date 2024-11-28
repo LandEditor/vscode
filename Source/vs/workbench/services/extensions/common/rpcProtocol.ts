@@ -154,6 +154,7 @@ const noop = () => {};
 const _RPCProtocolSymbol = Symbol.for("rpcProtocol");
 
 const _RPCProxySymbol = Symbol.for("rpcProxy");
+
 export class RPCProtocol extends Disposable implements IRPCProtocol {
 	[_RPCProtocolSymbol] = true;
 	private static readonly UNRESPONSIVE_TIME = 3 * 1000; // 3s

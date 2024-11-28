@@ -32,6 +32,7 @@ export interface IEmbedderTerminalService {
 }
 export type EmbedderTerminal = IShellLaunchConfig &
 	Required<Pick<IShellLaunchConfig, "customPtyImplementation">>;
+
 export interface IEmbedderTerminalOptions {
 	name: string;
 	pty: IEmbedderTerminalPty;

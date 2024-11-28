@@ -31,6 +31,7 @@ export const CodeDataTransfers = {
 	FILES: "CodeFiles",
 	SYMBOLS: "application/vnd.code.symbols",
 };
+
 export interface IDraggedResourceEditorInput
 	extends IBaseTextResourceEditorInput {
 	resource: URI | undefined;

@@ -19,6 +19,7 @@ import {
 
 export const ICommandService =
 	createDecorator<ICommandService>("commandService");
+
 export interface ICommandEvent {
 	commandId: string;
 	args: any[];
@@ -33,6 +34,7 @@ export interface ICommandService {
 	): Promise<T | undefined>;
 }
 export type ICommandsMap = Map<string, ICommand>;
+
 export interface ICommandHandler {
 	(accessor: ServicesAccessor, ...args: any[]): void;
 }

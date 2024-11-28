@@ -42,6 +42,7 @@ export interface IPreflightDataUnsupported {
 export type IPreflightData =
 	| IPreflightDataSupported
 	| IPreflightDataUnsupported;
+
 export interface ISimpleModel {
 	getLineContent(lineNumber: number): string;
 }

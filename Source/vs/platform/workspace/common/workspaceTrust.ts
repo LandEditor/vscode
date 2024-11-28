@@ -27,6 +27,7 @@ export const IWorkspaceTrustEnablementService =
 	createDecorator<IWorkspaceTrustEnablementService>(
 		"workspaceTrustEnablementService",
 	);
+
 export interface IWorkspaceTrustEnablementService {
 	readonly _serviceBrand: undefined;
 	isWorkspaceTrustEnabled(): boolean;
@@ -35,6 +36,7 @@ export const IWorkspaceTrustManagementService =
 	createDecorator<IWorkspaceTrustManagementService>(
 		"workspaceTrustManagementService",
 	);
+
 export interface IWorkspaceTrustManagementService {
 	readonly _serviceBrand: undefined;
 	onDidChangeTrust: Event<boolean>;
@@ -71,6 +73,7 @@ export const IWorkspaceTrustRequestService =
 	createDecorator<IWorkspaceTrustRequestService>(
 		"workspaceTrustRequestService",
 	);
+
 export interface IWorkspaceTrustRequestService {
 	readonly _serviceBrand: undefined;
 	readonly onDidInitiateOpenFilesTrustRequest: Event<void>;

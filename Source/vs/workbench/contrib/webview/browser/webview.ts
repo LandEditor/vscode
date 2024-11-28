@@ -40,8 +40,10 @@ export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED =
  */
 export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED =
 	new RawContextKey<boolean>("webviewFindWidgetEnabled", false);
+
 export const IWebviewService =
 	createDecorator<IWebviewService>("webviewService");
+
 export interface IWebviewService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -84,6 +86,7 @@ export const enum WebviewContentPurpose {
 export type WebviewStyles = {
 	readonly [key: string]: string | number;
 };
+
 export interface WebviewOptions {
 	/**
 	 * The purpose of the webview; this is (currently) only used for filtering in js-debug

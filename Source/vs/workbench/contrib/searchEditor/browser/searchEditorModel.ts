@@ -29,6 +29,7 @@ export type SearchEditorData = {
 	resultsModel: ITextModel;
 	configurationModel: SearchConfigurationModel;
 };
+
 export class SearchConfigurationModel {
 	private _onConfigDidUpdate = new Emitter<SearchConfiguration>();
 	public readonly onConfigDidUpdate = this._onConfigDidUpdate.event;

@@ -66,11 +66,13 @@ export function reviveWorkspaceEditDto(
 	uriIdentityService: IUriIdentityService,
 	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>,
 ): WorkspaceEdit;
+
 export function reviveWorkspaceEditDto(
 	data: IWorkspaceEditDto | undefined,
 	uriIdentityService: IUriIdentityService,
 	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>,
 ): WorkspaceEdit | undefined;
+
 export function reviveWorkspaceEditDto(
 	data: IWorkspaceEditDto | undefined,
 	uriIdentityService: IUriIdentityService,

@@ -8,6 +8,7 @@ import { Derived } from "./derived.js";
 import { FromEventObservable } from "./utils.js";
 
 let globalObservableLogger: IObservableLogger | undefined;
+
 export function setLogger(logger: IObservableLogger): void {
 	globalObservableLogger = logger;
 }

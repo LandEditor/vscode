@@ -11,6 +11,7 @@ import { Range } from "../../../../common/core/range.js";
 import { ScreenReaderContentState } from "../screenReaderUtils.js";
 
 export const _debugComposition = false;
+
 export interface ITextAreaWrapper {
 	getValue(): string;
 

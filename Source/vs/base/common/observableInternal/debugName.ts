@@ -34,11 +34,13 @@ export class DebugNameData {
  * Is only used for debugging purposes, such as computing a name for the observable by iterating over the fields of the owner.
  */
 export type DebugOwner = object | undefined;
+
 export type DebugNameSource = string | (() => string | undefined);
 
 const countPerName = new Map<string, number>();
 
 const cachedDebugName = new WeakMap<object, string>();
+
 export function getDebugName(
 	target: object,
 	data: DebugNameData,

@@ -71,6 +71,7 @@ const getOverrides = (() => {
 		return value;
 	};
 })();
+
 export function format(fileName: string, text: string) {
 	const host = new LanguageServiceHost();
 	host.addFile(fileName, text);

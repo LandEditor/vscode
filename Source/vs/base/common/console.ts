@@ -54,9 +54,11 @@ export function parse(entry: IRemoteConsoleLog): {
 export function getFirstFrame(
 	entry: IRemoteConsoleLog,
 ): IStackFrame | undefined;
+
 export function getFirstFrame(
 	stack: string | undefined,
 ): IStackFrame | undefined;
+
 export function getFirstFrame(
 	arg0: IRemoteConsoleLog | string | undefined,
 ): IStackFrame | undefined {

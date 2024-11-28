@@ -37,52 +37,62 @@ export const accessibilityHelpIsShown = new RawContextKey<boolean>(
 	false,
 	true,
 );
+
 export const accessibleViewIsShown = new RawContextKey<boolean>(
 	"accessibleViewIsShown",
 	false,
 	true,
 );
+
 export const accessibleViewSupportsNavigation = new RawContextKey<boolean>(
 	"accessibleViewSupportsNavigation",
 	false,
 	true,
 );
+
 export const accessibleViewVerbosityEnabled = new RawContextKey<boolean>(
 	"accessibleViewVerbosityEnabled",
 	false,
 	true,
 );
+
 export const accessibleViewGoToSymbolSupported = new RawContextKey<boolean>(
 	"accessibleViewGoToSymbolSupported",
 	false,
 	true,
 );
+
 export const accessibleViewOnLastLine = new RawContextKey<boolean>(
 	"accessibleViewOnLastLine",
 	false,
 	true,
 );
+
 export const accessibleViewCurrentProviderId = new RawContextKey<string>(
 	"accessibleViewCurrentProviderId",
 	undefined,
 	undefined,
 );
+
 export const accessibleViewInCodeBlock = new RawContextKey<boolean>(
 	"accessibleViewInCodeBlock",
 	undefined,
 	undefined,
 );
+
 export const accessibleViewContainsCodeBlocks = new RawContextKey<boolean>(
 	"accessibleViewContainsCodeBlocks",
 	undefined,
 	undefined,
 );
+
 export const accessibleViewHasUnassignedKeybindings =
 	new RawContextKey<boolean>(
 		"accessibleViewHasUnassignedKeybindings",
 		undefined,
 		undefined,
 	);
+
 export const accessibleViewHasAssignedKeybindings = new RawContextKey<boolean>(
 	"accessibleViewHasAssignedKeybindings",
 	undefined,

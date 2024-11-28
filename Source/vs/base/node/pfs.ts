@@ -426,6 +426,7 @@ interface IEnsuredWriteFileOptions extends IWriteFileOptions {
 	flag: string;
 }
 let canFlush = true;
+
 export function configureFlushOnWrite(enabled: boolean): void {
 	canFlush = enabled;
 }

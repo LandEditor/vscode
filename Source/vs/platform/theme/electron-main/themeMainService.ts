@@ -39,6 +39,7 @@ namespace ThemeSettings {
 }
 export const IThemeMainService =
 	createDecorator<IThemeMainService>("themeMainService");
+
 export interface IThemeMainService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeColorScheme: Event<IColorScheme>;

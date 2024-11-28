@@ -49,8 +49,10 @@ export const ctxHasSymbols = new RawContextKey(
 		"Whether there are symbol locations that can be navigated via keyboard-only.",
 	),
 );
+
 export const ISymbolNavigationService =
 	createDecorator<ISymbolNavigationService>("ISymbolNavigationService");
+
 export interface ISymbolNavigationService {
 	readonly _serviceBrand: undefined;
 	reset(): void;

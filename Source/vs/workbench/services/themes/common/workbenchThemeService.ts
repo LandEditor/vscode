@@ -23,14 +23,23 @@ export const IWorkbenchThemeService = refineServiceDecorator<
 	IThemeService,
 	IWorkbenchThemeService
 >(IThemeService);
+
 export const VS_LIGHT_THEME = "vs";
+
 export const VS_DARK_THEME = "vs-dark";
+
 export const VS_HC_THEME = "hc-black";
+
 export const VS_HC_LIGHT_THEME = "hc-light";
+
 export const THEME_SCOPE_OPEN_PAREN = "[";
+
 export const THEME_SCOPE_CLOSE_PAREN = "]";
+
 export const THEME_SCOPE_WILDCARD = "*";
+
 export const themeScopeRegex = /\[(.+?)\]/g;
+
 export enum ThemeSettings {
 	COLOR_THEME = "workbench.colorTheme",
 	FILE_ICON_THEME = "workbench.iconTheme",
@@ -82,6 +91,7 @@ export const COLOR_THEME_DARK_INITIAL_COLORS = {
 	"titleBar.inactiveForeground": "#9d9d9d",
 	"welcomePage.tileBackground": "#2b2b2b",
 };
+
 export const COLOR_THEME_LIGHT_INITIAL_COLORS = {
 	"activityBar.activeBorder": "#005FB8",
 	"activityBar.background": "#f8f8f8",
@@ -108,6 +118,7 @@ export const COLOR_THEME_LIGHT_INITIAL_COLORS = {
 	"titleBar.inactiveForeground": "#8b949e",
 	"welcomePage.tileBackground": "#f3f3f3",
 };
+
 export interface IWorkbenchTheme {
 	readonly id: string;
 	readonly label: string;
@@ -137,6 +148,7 @@ export type ThemeSettingTarget =
 	| undefined
 	| "auto"
 	| "preview";
+
 export interface IWorkbenchThemeService extends IThemeService {
 	readonly _serviceBrand: undefined;
 
@@ -264,11 +276,13 @@ export type IThemeScopedCustomizations =
 	| IThemeScopedTokenColorCustomizations
 	| IThemeScopedExperimentalSemanticTokenColorCustomizations
 	| IThemeScopedSemanticTokenColorCustomizations;
+
 export type IThemeScopableCustomizations =
 	| IColorCustomizations
 	| ITokenColorCustomizations
 	| IExperimentalSemanticTokenColorCustomizations
 	| ISemanticTokenColorCustomizations;
+
 export interface ISemanticTokenRules {
 	[selector: string]: string | ISemanticTokenColorizationSetting | undefined;
 }

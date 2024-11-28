@@ -28,6 +28,7 @@ export const IProfileAnalysisWorkerService =
 	createDecorator<IProfileAnalysisWorkerService>(
 		"IProfileAnalysisWorkerService",
 	);
+
 export interface IProfileAnalysisWorkerService {
 	readonly _serviceBrand: undefined;
 	analyseBottomUp(

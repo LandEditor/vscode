@@ -8,6 +8,7 @@ import * as os from "os";
 import * as path from "path";
 
 let hasWSLFeaturePromise: Promise<boolean> | undefined;
+
 export async function hasWSLFeatureInstalled(
 	refresh = false,
 ): Promise<boolean> {

@@ -91,6 +91,7 @@ export const TEXT_DIFF_EDITOR_ID = "workbench.editors.textDiffEditor";
  */
 export const BINARY_DIFF_EDITOR_ID =
 	"workbench.editors.binaryResourceDiffEditor";
+
 export interface IEditorDescriptor<T extends IEditorPane> {
 	/**
 	 * The unique type identifier of the editor. All instances
@@ -739,6 +740,7 @@ class SaveSourceFactory {
 	}
 }
 export const SaveSourceRegistry = new SaveSourceFactory();
+
 export interface ISaveOptions {
 	/**
 	 * An indicator how the save operation was triggered.
@@ -841,6 +843,7 @@ export type IUntypedEditorInput =
 	| IResourceMultiDiffEditorInput
 	| IResourceSideBySideEditorInput
 	| IResourceMergeEditorInput;
+
 export abstract class AbstractEditorInput extends Disposable {}
 export function isEditorInput(editor: unknown): editor is EditorInput {
 	return editor instanceof AbstractEditorInput;
@@ -1147,6 +1150,7 @@ export interface IWillInstantiateEditorPaneEvent {
 	readonly typeId: string;
 }
 export type GroupIdentifier = number;
+
 export const enum GroupModelChangeKind {
 	/* Group Changes */
 	GROUP_ACTIVE,
@@ -1566,6 +1570,7 @@ export type PreventPinnedEditorClose =
 	| "mouse"
 	| "never"
 	| undefined;
+
 export enum EditorCloseMethod {
 	UNKNOWN,
 	KEYBOARD,
@@ -1596,6 +1601,7 @@ export function preventEditorClose(
 	return false;
 }
 export const EditorResourceAccessor = new EditorResourceAccessorImpl();
+
 export const enum CloseDirection {
 	LEFT,
 	RIGHT,
@@ -1687,6 +1693,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 	}
 }
 Registry.add(EditorExtensions.EditorFactory, new EditorFactoryRegistry());
+
 export async function pathsToEditors(
 	paths: IPathData[] | undefined,
 	fileService: IFileService,

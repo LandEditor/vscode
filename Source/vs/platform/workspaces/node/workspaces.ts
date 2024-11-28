@@ -50,10 +50,12 @@ export function getWorkspaceIdentifier(configPath: URI): IWorkspaceIdentifier {
 export function getSingleFolderWorkspaceIdentifier(
 	folderUri: URI,
 ): ISingleFolderWorkspaceIdentifier | undefined;
+
 export function getSingleFolderWorkspaceIdentifier(
 	folderUri: URI,
 	folderStat: Stats,
 ): ISingleFolderWorkspaceIdentifier;
+
 export function getSingleFolderWorkspaceIdentifier(
 	folderUri: URI,
 	folderStat?: Stats,

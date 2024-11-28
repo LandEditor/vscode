@@ -8,7 +8,9 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 export const IExtensionHostStarter = createDecorator<IExtensionHostStarter>(
 	"extensionHostStarter",
 );
+
 export const ipcExtensionHostStarterChannelName = "extensionHostStarter";
+
 export interface IExtensionHostProcessOptions {
 	responseWindowId: number;
 	responseChannel: string;

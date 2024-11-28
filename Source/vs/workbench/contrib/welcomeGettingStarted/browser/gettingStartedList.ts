@@ -23,6 +23,7 @@ type GettingStartedIndexListOptions<T> = {
 	rankElement?: (item: T) => number | null;
 	contextService: IContextKeyService;
 };
+
 export class GettingStartedIndexList<
 	T extends {
 		id: string;

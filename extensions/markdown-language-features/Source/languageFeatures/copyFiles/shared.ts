@@ -23,7 +23,9 @@ export const baseLinkEditKind = vscode.DocumentDropOrPasteEditKind.Empty.append(
 export const linkEditKind = baseLinkEditKind.append("uri");
 
 export const imageEditKind = baseLinkEditKind.append("image");
+
 export const audioEditKind = baseLinkEditKind.append("audio");
+
 export const videoEditKind = baseLinkEditKind.append("video");
 
 enum MediaKind {

@@ -22,6 +22,7 @@ import {
 } from "./debug.js";
 
 const _formatPIIRegexp = /{([^}]+)}/g;
+
 export function formatPII(
 	value: string,
 	excludePII: boolean,
@@ -224,6 +225,7 @@ export async function getEvaluatableExpressionAtPosition(
 }
 // RFC 2396, Appendix A: https://www.ietf.org/rfc/rfc2396.txt
 const _schemePattern = /^[a-zA-Z][a-zA-Z0-9\+\-\.]+:/;
+
 export function isUri(s: string | undefined): boolean {
 	// heuristics: a valid uri starts with a scheme and
 	// the scheme has at least 2 characters so that it doesn't look like a drive letter.

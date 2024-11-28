@@ -413,6 +413,7 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
 const openSettingsCommand = "workbench.action.openSettings";
 
 const configureSettingsLabel = l10n.t("Configure");
+
 export function createDocumentSymbolsLimitItem(
 	documentSelector: DocumentSelector,
 	settingId: string,

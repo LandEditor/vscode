@@ -20,6 +20,7 @@ export const IProfileAwareExtensionManagementService = refineServiceDecorator<
 	IExtensionManagementService,
 	IProfileAwareExtensionManagementService
 >(IExtensionManagementService);
+
 export interface IProfileAwareExtensionManagementService
 	extends IExtensionManagementService {
 	readonly onProfileAwareDidInstallExtensions: Event<
@@ -46,6 +47,7 @@ export const IExtensionManagementServerService =
 	createDecorator<IExtensionManagementServerService>(
 		"extensionManagementServerService",
 	);
+
 export interface IExtensionManagementServerService {
 	readonly _serviceBrand: undefined;
 	readonly localExtensionManagementServer: IExtensionManagementServer | null;
@@ -77,12 +79,15 @@ export interface IResourceExtension {
 export type InstallExtensionOnServerEvent = InstallExtensionEvent & {
 	server: IExtensionManagementServer;
 };
+
 export type UninstallExtensionOnServerEvent = UninstallExtensionEvent & {
 	server: IExtensionManagementServer;
 };
+
 export type DidUninstallExtensionOnServerEvent = DidUninstallExtensionEvent & {
 	server: IExtensionManagementServer;
 };
+
 export type DidChangeProfileForServerEvent = DidChangeProfileEvent & {
 	server: IExtensionManagementServer;
 };
@@ -92,6 +97,7 @@ export interface IWorkbenchInstallOptions extends InstallOptions {
 }
 
 export const IWorkbenchExtensionManagementService = refineServiceDecorator<IProfileAwareExtensionManagementService, IWorkbenchExtensionManagementService>(IProfileAwareExtensionManagementService);
+
 export interface IWorkbenchExtensionManagementService extends IProfileAwareExtensionManagementService {
 	readonly _serviceBrand: undefined;
 
@@ -243,6 +249,7 @@ export const IWebExtensionsScannerService =
 	createDecorator<IWebExtensionsScannerService>(
 		"IWebExtensionsScannerService",
 	);
+
 export interface IWebExtensionsScannerService {
 	readonly _serviceBrand: undefined;
 

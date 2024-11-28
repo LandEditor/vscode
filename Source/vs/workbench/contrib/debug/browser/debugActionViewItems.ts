@@ -49,6 +49,7 @@ import { ADD_CONFIGURATION_ID } from "./debugCommands.js";
 import { debugStart } from "./debugIcons.js";
 
 const $ = dom.$;
+
 export class StartDebugActionViewItem extends BaseActionViewItem {
 	private static readonly SEPARATOR =
 		"\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";

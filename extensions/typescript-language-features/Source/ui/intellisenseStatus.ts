@@ -59,6 +59,7 @@ type CreateOrOpenConfigCommandArgs = [
 	root: vscode.Uri,
 	projectType: ProjectType,
 ];
+
 export class IntellisenseStatus extends Disposable {
 	public readonly openOpenConfigCommandId = "_typescript.openConfig";
 	public readonly createOrOpenConfigCommandId =

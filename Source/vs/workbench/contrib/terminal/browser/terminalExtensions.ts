@@ -38,6 +38,7 @@ export type DetachedCompatibleTerminalContributionCtor = IConstructorSignature<
 	ITerminalContribution,
 	[IDetachedCompatibleTerminalContributionContext]
 >;
+
 export type ITerminalContributionDescription = {
 	readonly id: string;
 } & (
@@ -69,6 +70,7 @@ export function registerTerminalContribution<Services extends BrandedService[]>(
 	},
 	canRunInDetachedTerminals?: false,
 ): void;
+
 export function registerTerminalContribution<Services extends BrandedService[]>(
 	id: string,
 	ctor: {
@@ -79,6 +81,7 @@ export function registerTerminalContribution<Services extends BrandedService[]>(
 	},
 	canRunInDetachedTerminals: true,
 ): void;
+
 export function registerTerminalContribution<Services extends BrandedService[]>(
 	id: string,
 	ctor: {

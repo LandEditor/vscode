@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import { Utils } from "vscode-uri";
 
 type OverwriteBehavior = "overwrite" | "nameIncrementally";
+
 export interface CopyFileConfiguration {
 	readonly destination: Record<string, string>;
 	readonly overwriteBehavior: OverwriteBehavior;
@@ -47,6 +48,7 @@ export function parseGlob(rawGlob: string): Iterable<string> {
 	return [rawGlob];
 }
 type GetWorkspaceFolder = (documentUri: vscode.Uri) => vscode.Uri | undefined;
+
 export function resolveCopyDestination(
 	documentUri: vscode.Uri,
 	fileName: string,

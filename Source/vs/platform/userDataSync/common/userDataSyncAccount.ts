@@ -17,6 +17,7 @@ export interface IUserDataSyncAccount {
 }
 export const IUserDataSyncAccountService =
 	createDecorator<IUserDataSyncAccountService>("IUserDataSyncAccountService");
+
 export interface IUserDataSyncAccountService {
 	readonly _serviceBrand: undefined;
 	readonly onTokenFailed: Event<boolean /*bail out*/>;

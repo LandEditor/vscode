@@ -28,6 +28,7 @@ type IManagedHoverResolvedContent =
 	| string
 	| HTMLElement
 	| undefined;
+
 export class ManagedHoverWidget implements IDisposable {
 	private _hoverWidget: IHoverWidget | undefined;
 	private _cancellationTokenSource: CancellationTokenSource | undefined;

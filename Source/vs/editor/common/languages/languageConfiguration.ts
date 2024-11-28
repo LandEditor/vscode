@@ -182,6 +182,7 @@ export interface IDocComment {
  * opening and closing brackets.
  */
 export type CharacterPair = [string, string];
+
 export interface IAutoClosingPair {
 	open: string;
 	close: string;

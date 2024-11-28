@@ -169,6 +169,7 @@ export const openWindowCommand = (
 		hostService.openWindow(toOpen, options);
 	}
 };
+
 export const newWindowCommand = (
 	accessor: ServicesAccessor,
 	options?: IOpenEmptyWindowOptions,

@@ -58,6 +58,7 @@ const TUNNELS_TO_RESTORE_EXPIRATION = "remote.tunnels.toRestoreExpiration";
 
 const RESTORE_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14; // 2 weeks
 export const ACTIVATION_EVENT = "onTunnel";
+
 export const forwardedPortsFeaturesEnabled = new RawContextKey<boolean>(
 	"forwardedPortsViewEnabled",
 	false,
@@ -66,6 +67,7 @@ export const forwardedPortsFeaturesEnabled = new RawContextKey<boolean>(
 		"Whether the Ports view is enabled.",
 	),
 );
+
 export const forwardedPortsViewEnabled = new RawContextKey<boolean>(
 	"forwardedPortsViewOnlyEnabled",
 	false,
@@ -74,6 +76,7 @@ export const forwardedPortsViewEnabled = new RawContextKey<boolean>(
 		"Whether the Ports view is enabled.",
 	),
 );
+
 export interface RestorableTunnel {
 	remoteHost: string;
 	remotePort: number;
@@ -137,10 +140,12 @@ export const UserTunnelSource = {
 	source: TunnelSource.User,
 	description: nls.localize("tunnel.source.user", "User Forwarded"),
 };
+
 export const AutoTunnelSource = {
 	source: TunnelSource.Auto,
 	description: nls.localize("tunnel.source.auto", "Auto Forwarded"),
 };
+
 export function mapHasAddress<T>(
 	map: Map<string, T>,
 	host: string,

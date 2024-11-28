@@ -152,6 +152,7 @@ export type SocketCloseEvent =
 	| NodeSocketCloseEvent
 	| WebSocketCloseEvent
 	| undefined;
+
 export interface SocketTimeoutEvent {
 	readonly unacknowledgedMsgCount: number;
 	readonly timeSinceOldestUnacknowledgedMsg: number;

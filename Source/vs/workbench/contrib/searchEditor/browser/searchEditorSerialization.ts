@@ -264,6 +264,7 @@ const contentPatternToSearchConfiguration = (
 		},
 	};
 };
+
 export const serializeSearchConfiguration = (
 	config: Partial<SearchConfiguration>,
 ): string => {
@@ -300,12 +301,14 @@ export const serializeSearchConfiguration = (
 		"",
 	]).join(lineDelimiter);
 };
+
 export const extractSearchQueryFromModel = (
 	model: ITextModel,
 ): SearchConfiguration =>
 	extractSearchQueryFromLines(
 		model.getValueInRange(new Range(1, 1, 6, 1)).split(lineDelimiter),
 	);
+
 export const defaultSearchConfig = (): SearchConfiguration => ({
 	query: "",
 	filesToInclude: "",
@@ -324,6 +327,7 @@ export const defaultSearchConfig = (): SearchConfiguration => ({
 		includeOutput: true,
 	},
 });
+
 export const extractSearchQueryFromLines = (
 	lines: string[],
 ): SearchConfiguration => {
@@ -406,6 +410,7 @@ export const extractSearchQueryFromLines = (
 
 	return query;
 };
+
 export const serializeSearchResultForEditor = (
 	searchResult: ISearchResult,
 	rawIncludePattern: string,
@@ -503,6 +508,7 @@ const flattenSearchResultSerializations = (
 
 	return { text, matchRanges };
 };
+
 export const parseSavedSearchEditor = async (
 	accessor: ServicesAccessor,
 	resource: URI,
@@ -513,6 +519,7 @@ export const parseSavedSearchEditor = async (
 
 	return parseSerializedSearchEditor(text);
 };
+
 export const parseSerializedSearchEditor = (text: string) => {
 	const headerlines = [];
 

@@ -58,6 +58,7 @@ type Environment = {
 	env: IProcessEnvironment | undefined;
 	userHome: string | undefined;
 };
+
 export class AbstractVariableResolverService
 	implements IConfigurationResolverService
 {

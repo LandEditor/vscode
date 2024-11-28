@@ -18,6 +18,7 @@ export type UnchangedEditorRegionOptions = {
 	};
 	onDidChangeEnablement: Event<boolean>;
 };
+
 export function getUnchangedRegionSettings(
 	configurationService: IConfigurationService,
 ): Readonly<UnchangedEditorRegionOptions> & IDisposable {

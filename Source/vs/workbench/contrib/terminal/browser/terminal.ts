@@ -84,16 +84,20 @@ import { XtermTerminal } from "./xterm/xtermTerminal.js";
 
 export const ITerminalService =
 	createDecorator<ITerminalService>("terminalService");
+
 export const ITerminalConfigurationService =
 	createDecorator<ITerminalConfigurationService>(
 		"terminalConfigurationService",
 	);
+
 export const ITerminalEditorService = createDecorator<ITerminalEditorService>(
 	"terminalEditorService",
 );
+
 export const ITerminalGroupService = createDecorator<ITerminalGroupService>(
 	"terminalGroupService",
 );
+
 export const ITerminalInstanceService =
 	createDecorator<ITerminalInstanceService>("terminalInstanceService");
 

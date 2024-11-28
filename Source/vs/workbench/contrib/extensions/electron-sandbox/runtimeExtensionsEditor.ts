@@ -66,12 +66,15 @@ export const IExtensionHostProfileService =
 	createDecorator<IExtensionHostProfileService>(
 		"extensionHostProfileService",
 	);
+
 export const CONTEXT_PROFILE_SESSION_STATE = new RawContextKey<string>(
 	"profileSessionState",
 	"none",
 );
+
 export const CONTEXT_EXTENSION_HOST_PROFILE_RECORDED =
 	new RawContextKey<boolean>("extensionHostProfileRecorded", false);
+
 export enum ProfileSessionState {
 	None = 0,
 	Starting = 1,

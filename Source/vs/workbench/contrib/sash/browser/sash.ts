@@ -17,6 +17,7 @@ import { ILayoutService } from "../../../../platform/layout/browser/layoutServic
 import { IWorkbenchContribution } from "../../../common/contributions.js";
 
 export const minSize = 1;
+
 export const maxSize = 20; // see also https://ux.stackexchange.com/questions/39023/what-is-the-optimum-button-size-of-touch-screen-applications
 export class SashSettingsController
 	implements IWorkbenchContribution, IDisposable

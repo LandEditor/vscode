@@ -24,6 +24,7 @@ export const IExtensionRecommendationsService =
 	createDecorator<IExtensionRecommendationsService>(
 		"extensionRecommendationsService",
 	);
+
 export interface IExtensionRecommendationsService {
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeRecommendations: Event<void>;
@@ -58,10 +59,12 @@ export type IgnoredRecommendationChangeNotification = {
 	extensionId: string;
 	isRecommended: boolean;
 };
+
 export const IExtensionIgnoredRecommendationsService =
 	createDecorator<IExtensionIgnoredRecommendationsService>(
 		"IExtensionIgnoredRecommendationsService",
 	);
+
 export interface IExtensionIgnoredRecommendationsService {
 	readonly _serviceBrand: undefined;
 	onDidChangeIgnoredRecommendations: Event<void>;

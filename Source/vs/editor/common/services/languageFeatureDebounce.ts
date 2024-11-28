@@ -24,6 +24,7 @@ export const ILanguageFeatureDebounceService =
 	createDecorator<ILanguageFeatureDebounceService>(
 		"ILanguageFeatureDebounceService",
 	);
+
 export interface ILanguageFeatureDebounceService {
 	readonly _serviceBrand: undefined;
 

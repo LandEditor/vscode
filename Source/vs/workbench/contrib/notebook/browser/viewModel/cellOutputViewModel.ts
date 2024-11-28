@@ -18,6 +18,7 @@ import {
 } from "../notebookBrowser.js";
 
 let handle = 0;
+
 export class CellOutputViewModel
 	extends Disposable
 	implements ICellOutputViewModel

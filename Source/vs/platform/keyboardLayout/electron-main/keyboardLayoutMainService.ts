@@ -19,6 +19,7 @@ import {
 
 export const IKeyboardLayoutMainService =
 	createDecorator<IKeyboardLayoutMainService>("keyboardLayoutMainService");
+
 export interface IKeyboardLayoutMainService
 	extends INativeKeyboardLayoutService {}
 export class KeyboardLayoutMainService

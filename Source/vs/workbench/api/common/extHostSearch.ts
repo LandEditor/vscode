@@ -64,6 +64,7 @@ export interface IExtHostSearch extends ExtHostSearchShape {
 	): Promise<ISearchCompleteStats>;
 }
 export const IExtHostSearch = createDecorator<IExtHostSearch>("IExtHostSearch");
+
 export class ExtHostSearch implements IExtHostSearch {
 	protected readonly _proxy: MainThreadSearchShape = this.extHostRpc.getProxy(
 		MainContext.MainThreadSearch,

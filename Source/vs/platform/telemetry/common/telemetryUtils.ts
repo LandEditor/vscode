@@ -49,6 +49,7 @@ export class NullTelemetryServiceShape implements ITelemetryService {
 	setExperimentProperty() {}
 }
 export const NullTelemetryService = new NullTelemetryServiceShape();
+
 export class NullEndpointTelemetryService
 	implements ICustomEndpointTelemetryService
 {
@@ -70,7 +71,9 @@ export class NullEndpointTelemetryService
 	}
 }
 export const telemetryLogId = "telemetry";
+
 export const extensionTelemetryLogChannelId = "extensionTelemetryLog";
+
 export interface ITelemetryAppender {
 	log(eventName: string, data: any): void;
 	flush(): Promise<void>;
@@ -237,6 +240,7 @@ const telemetryAllowedAuthorities = new Set([
 	"codespaces",
 	"amlext",
 ]);
+
 export function cleanRemoteAuthority(remoteAuthority?: string): string {
 	if (!remoteAuthority) {
 		return "none";

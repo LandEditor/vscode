@@ -7,10 +7,12 @@ import { createDecorator } from "../../../../../platform/instantiation/common/in
 import { INotebookDiffResult } from "../notebookCommon.js";
 
 export const ID_NOTEBOOK_EDITOR_WORKER_SERVICE = "notebookEditorWorkerService";
+
 export const INotebookEditorWorkerService =
 	createDecorator<INotebookEditorWorkerService>(
 		ID_NOTEBOOK_EDITOR_WORKER_SERVICE,
 	);
+
 export interface INotebookEditorWorkerService {
 	readonly _serviceBrand: undefined;
 	canComputeDiff(original: URI, modified: URI): boolean;

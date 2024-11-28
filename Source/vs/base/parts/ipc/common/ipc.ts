@@ -335,6 +335,7 @@ const BufferPresets = {
 declare const Buffer: any;
 
 const hasBuffer = typeof Buffer !== "undefined";
+
 export function serialize(writer: IWriter, data: any): void {
 	if (typeof data === "undefined") {
 		writer.write(BufferPresets.Undefined);

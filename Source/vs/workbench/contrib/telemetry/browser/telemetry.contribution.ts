@@ -102,6 +102,7 @@ type FileTelemetryDataFragment = {
 		comment: "The name of the file but only if it matches some well known file names such as package.json or tsconfig.json.";
 	};
 };
+
 export class TelemetryContribution
 	extends Disposable
 	implements IWorkbenchContribution

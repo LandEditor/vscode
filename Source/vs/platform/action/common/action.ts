@@ -38,6 +38,7 @@ export type Icon =
 			light?: URI;
 	  }
 	| ThemeIcon;
+
 export interface ICommandActionToggleInfo {
 	/**
 	 * The condition that marks the action as toggled.

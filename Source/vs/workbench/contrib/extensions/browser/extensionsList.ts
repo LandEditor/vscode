@@ -74,6 +74,7 @@ import {
 } from "./extensionsWidgets.js";
 
 const EXTENSION_LIST_ELEMENT_HEIGHT = 72;
+
 export interface IExtensionsViewState {
 	onFocus: Event<IExtension>;
 	onBlur: Event<IExtension>;
@@ -105,6 +106,7 @@ export type ExtensionListRendererOptions = {
 		position: () => HoverPosition;
 	};
 };
+
 export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 	constructor(
 		private extensionViewState: IExtensionsViewState,

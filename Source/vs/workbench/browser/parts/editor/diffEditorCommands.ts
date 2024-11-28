@@ -27,19 +27,28 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { TextDiffEditor } from "./textDiffEditor.js";
 
 export const TOGGLE_DIFF_SIDE_BY_SIDE = "toggle.diff.renderSideBySide";
+
 export const GOTO_NEXT_CHANGE = "workbench.action.compareEditor.nextChange";
+
 export const GOTO_PREVIOUS_CHANGE =
 	"workbench.action.compareEditor.previousChange";
+
 export const DIFF_FOCUS_PRIMARY_SIDE =
 	"workbench.action.compareEditor.focusPrimarySide";
+
 export const DIFF_FOCUS_SECONDARY_SIDE =
 	"workbench.action.compareEditor.focusSecondarySide";
+
 export const DIFF_FOCUS_OTHER_SIDE =
 	"workbench.action.compareEditor.focusOtherSide";
+
 export const DIFF_OPEN_SIDE = "workbench.action.compareEditor.openSide";
+
 export const TOGGLE_DIFF_IGNORE_TRIM_WHITESPACE =
 	"toggle.diff.ignoreTrimWhitespace";
+
 export const DIFF_SWAP_SIDES = "workbench.action.compareEditor.swapSides";
+
 export function registerDiffEditorCommands(): void {
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: GOTO_NEXT_CHANGE,

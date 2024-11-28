@@ -20,6 +20,7 @@ import "./keybindingLabel.css";
 import { localize } from "../../../../nls.js";
 
 const $ = dom.$;
+
 export interface ChordMatches {
 	ctrlKey?: boolean;
 	shiftKey?: boolean;
@@ -52,6 +53,7 @@ export const unthemedKeybindingLabelOptions: KeybindingLabelOptions = {
 	keybindingLabelBottomBorder: undefined,
 	keybindingLabelShadow: undefined,
 };
+
 export class KeybindingLabel extends Disposable {
 	private domNode: HTMLElement;
 	private options: KeybindingLabelOptions;

@@ -19,6 +19,7 @@ const noopRequestCanceller = new (class implements OngoingRequestCanceller {
 		return false;
 	}
 })();
+
 export const noopRequestCancellerFactory = new (class
 	implements OngoingRequestCancellerFactory
 {

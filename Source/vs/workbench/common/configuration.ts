@@ -41,6 +41,7 @@ export const applicationConfigurationNodeBase =
 		"title": localize("applicationConfigurationTitle", "Application"),
 		"type": "object",
 	});
+
 export const workbenchConfigurationNodeBase = Object.freeze<IConfigurationNode>(
 	{
 		"id": "workbench",
@@ -49,6 +50,7 @@ export const workbenchConfigurationNodeBase = Object.freeze<IConfigurationNode>(
 		"type": "object",
 	},
 );
+
 export const securityConfigurationNodeBase = Object.freeze<IConfigurationNode>({
 	"id": "security",
 	"scope": ConfigurationScope.APPLICATION,
@@ -56,25 +58,31 @@ export const securityConfigurationNodeBase = Object.freeze<IConfigurationNode>({
 	"type": "object",
 	"order": 7,
 });
+
 export const problemsConfigurationNodeBase = Object.freeze<IConfigurationNode>({
 	"id": "problems",
 	"title": localize("problemsConfigurationTitle", "Problems"),
 	"type": "object",
 	"order": 101,
 });
+
 export const windowConfigurationNodeBase = Object.freeze<IConfigurationNode>({
 	"id": "window",
 	"order": 8,
 	"title": localize("windowConfigurationTitle", "Window"),
 	"type": "object",
 });
+
 export const Extensions = {
 	ConfigurationMigration: "base.contributions.configuration.migration",
 };
+
 export type ConfigurationValue = {
 	value: any | undefined /* Remove */;
 };
+
 export type ConfigurationKeyValuePairs = [string, ConfigurationValue][];
+
 export type ConfigurationMigrationFn = (
 	value: any,
 	valueAccessor: (key: string) => any,
@@ -82,10 +90,12 @@ export type ConfigurationMigrationFn = (
 	| ConfigurationValue
 	| ConfigurationKeyValuePairs
 	| Promise<ConfigurationValue | ConfigurationKeyValuePairs>;
+
 export type ConfigurationMigration = {
 	key: string;
 	migrateFn: ConfigurationMigrationFn;
 };
+
 export interface IConfigurationMigrationRegistry {
 	registerConfigurationMigrations(
 		configurationMigrations: ConfigurationMigration[],
@@ -109,6 +119,7 @@ class ConfigurationMigrationRegistry
 
 const configurationMigrationRegistry = new ConfigurationMigrationRegistry();
 Registry.add(Extensions.ConfigurationMigration, configurationMigrationRegistry);
+
 export class ConfigurationMigrationWorkbenchContribution
 	extends Disposable
 	implements IWorkbenchContribution
@@ -349,6 +360,7 @@ export class DynamicWorkbenchSecurityConfiguration
 	}
 }
 export const CONFIG_NEW_WINDOW_PROFILE = "window.newWindowProfile";
+
 export class DynamicWindowConfiguration
 	extends Disposable
 	implements IWorkbenchContribution

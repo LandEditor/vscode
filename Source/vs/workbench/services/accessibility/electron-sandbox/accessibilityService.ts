@@ -37,6 +37,7 @@ type AccessibilityMetricsClassification = {
 		comment: "Whether or not accessibility features are enabled";
 	};
 };
+
 export class NativeAccessibilityService
 	extends AccessibilityService
 	implements IAccessibilityService

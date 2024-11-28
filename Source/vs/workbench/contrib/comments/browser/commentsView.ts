@@ -79,10 +79,12 @@ export const CONTEXT_KEY_HAS_COMMENTS = new RawContextKey<boolean>(
 	"commentsView.hasComments",
 	false,
 );
+
 export const CONTEXT_KEY_SOME_COMMENTS_EXPANDED = new RawContextKey<boolean>(
 	"commentsView.someCommentsExpanded",
 	false,
 );
+
 export const CONTEXT_KEY_COMMENT_FOCUSED = new RawContextKey<boolean>(
 	"commentsView.commentFocused",
 	false,

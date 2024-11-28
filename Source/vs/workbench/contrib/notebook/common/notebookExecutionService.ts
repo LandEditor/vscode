@@ -32,6 +32,7 @@ export interface ICellExecuteOutputItemEdit {
 }
 export const INotebookExecutionService =
 	createDecorator<INotebookExecutionService>("INotebookExecutionService");
+
 export interface INotebookExecutionService {
 	_serviceBrand: undefined;
 	executeNotebookCells(

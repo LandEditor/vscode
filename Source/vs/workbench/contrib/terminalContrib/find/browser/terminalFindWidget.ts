@@ -33,6 +33,7 @@ import { TerminalFindCommandId } from "../common/terminal.find.js";
 import { openContextMenu } from "./textInputContextMenu.js";
 
 const TERMINAL_FIND_WIDGET_INITIAL_WIDTH = 419;
+
 export class TerminalFindWidget extends SimpleFindWidget {
 	private _findInputFocused: IContextKey<boolean>;
 	private _findWidgetFocused: IContextKey<boolean>;

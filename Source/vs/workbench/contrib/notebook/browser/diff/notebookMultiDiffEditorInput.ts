@@ -18,6 +18,7 @@ import { NotebookEditorInput } from "../../common/notebookEditorInput.js";
 import { NotebookDiffViewModel } from "./notebookDiffViewModel.js";
 
 export const NotebookMultiDiffEditorScheme = "multi-cell-notebook-diff-editor";
+
 export class NotebookMultiDiffEditorInput extends NotebookDiffEditorInput {
 	static override readonly ID: string =
 		"workbench.input.multiDiffNotebookInput";

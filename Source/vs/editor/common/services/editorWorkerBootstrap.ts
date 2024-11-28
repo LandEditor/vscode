@@ -18,6 +18,7 @@ declare const globalThis: {
 };
 
 let initialized = false;
+
 export function initialize(factory: any) {
 	if (initialized) {
 		return;
@@ -45,6 +46,7 @@ globalThis.onmessage = (e: MessageEvent) => {
 	}
 };
 type CreateFunction<C, D, R = any> = (ctx: C, data: D) => R;
+
 export function bootstrapSimpleEditorWorker<C, D, R>(
 	createFn: CreateFunction<C, D, R>,
 ) {

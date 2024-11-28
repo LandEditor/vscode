@@ -92,6 +92,7 @@ export function isRecursiveWatchRequest(
 export type IUniversalWatchRequest =
 	| IRecursiveWatchRequest
 	| INonRecursiveWatchRequest;
+
 export interface IWatcherErrorEvent {
 	readonly error: string;
 	readonly request?: IUniversalWatchRequest;

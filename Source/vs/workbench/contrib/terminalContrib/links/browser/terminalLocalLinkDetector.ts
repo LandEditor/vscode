@@ -73,6 +73,7 @@ const fallbackMatchers: RegExp[] = [
 	// The whole line is the path
 	/^ *(?<link>(?<path>.+))/,
 ];
+
 export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 	static id = "local";
 	// This was chosen as a reasonable maximum line length given the tradeoff between performance

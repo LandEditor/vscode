@@ -14,6 +14,7 @@ interface ILocalHistoryDateFormatter {
 }
 let localHistoryDateFormatter: ILocalHistoryDateFormatter | undefined =
 	undefined;
+
 export function getLocalHistoryDateFormatter(): ILocalHistoryDateFormatter {
 	if (!localHistoryDateFormatter) {
 		const options: Intl.DateTimeFormatOptions = {
@@ -33,10 +34,12 @@ export function getLocalHistoryDateFormatter(): ILocalHistoryDateFormatter {
 	return localHistoryDateFormatter;
 }
 export const LOCAL_HISTORY_MENU_CONTEXT_VALUE = "localHistory:item";
+
 export const LOCAL_HISTORY_MENU_CONTEXT_KEY = ContextKeyExpr.equals(
 	"timelineItem",
 	LOCAL_HISTORY_MENU_CONTEXT_VALUE,
 );
+
 export const LOCAL_HISTORY_ICON_ENTRY = registerIcon(
 	"localHistory-icon",
 	Codicon.circleOutline,
@@ -45,6 +48,7 @@ export const LOCAL_HISTORY_ICON_ENTRY = registerIcon(
 		"Icon for a local history entry in the timeline view.",
 	),
 );
+
 export const LOCAL_HISTORY_ICON_RESTORE = registerIcon(
 	"localHistory-restore",
 	Codicon.check,

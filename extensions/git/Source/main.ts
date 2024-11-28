@@ -364,6 +364,7 @@ export async function _activate(
 }
 
 let _context: ExtensionContext;
+
 export function getExtensionContext(): ExtensionContext {
 	return _context;
 }

@@ -21,6 +21,7 @@ import { applyFontInfo } from "../config/domFontInfo.js";
 const ttPolicy = createTrustedTypesPolicy("domLineBreaksComputer", {
 	createHTML: (value) => value,
 });
+
 export class DOMLineBreaksComputerFactory
 	implements ILineBreaksComputerFactory
 {

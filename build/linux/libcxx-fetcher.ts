@@ -12,6 +12,7 @@ import * as extract from "extract-zip";
 const root = path.dirname(path.dirname(__dirname));
 
 const d = debug("libcxx-fetcher");
+
 export async function downloadLibcxxHeaders(
 	outDir: string,
 	electronVersion: string,

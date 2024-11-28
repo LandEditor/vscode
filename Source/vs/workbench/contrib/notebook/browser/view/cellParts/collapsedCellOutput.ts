@@ -14,6 +14,7 @@ import {
 import { CellContentPart } from "../cellPart.js";
 
 const $ = DOM.$;
+
 export class CollapsedCellOutput extends CellContentPart {
 	constructor(
 		private readonly notebookEditor: INotebookEditor,

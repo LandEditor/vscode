@@ -24,6 +24,7 @@ export type LanguageClientConstructor = (
 	description: string,
 	clientOptions: LanguageClientOptions,
 ) => BaseLanguageClient;
+
 export class MdLanguageClient implements IDisposable {
 	constructor(
 		private readonly _client: BaseLanguageClient,

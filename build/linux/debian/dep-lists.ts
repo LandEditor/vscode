@@ -17,6 +17,7 @@ export const additionalDeps = [
 export const recommendedDeps = [
 	"libvulkan1", // Move to additionalDeps once support for Trusty and Jessie are dropped.
 ];
+
 export const referenceGeneratedDepsByArch = {
 	"amd64": [
 		"ca-certificates",

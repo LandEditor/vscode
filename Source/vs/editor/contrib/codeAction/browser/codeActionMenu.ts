@@ -67,6 +67,7 @@ const codeActionGroups = Object.freeze<ActionGroup[]>([
 	},
 	uncategorizedCodeActionGroup,
 ]);
+
 export function toMenuItems(
 	inputCodeActions: readonly CodeActionItem[],
 	showHeaders: boolean,

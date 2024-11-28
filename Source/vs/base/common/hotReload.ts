@@ -38,9 +38,11 @@ export type HotReloadHandler = (args: {
 	newSrc: string;
 	config: IHotReloadConfig;
 }) => AcceptNewExportsHandler | undefined;
+
 export type AcceptNewExportsHandler = (
 	newExports: Record<string, unknown>,
 ) => boolean;
+
 export type IHotReloadConfig = HotReloadConfig;
 function registerGlobalHotReloadHandler() {
 	if (!hotReloadHandlers) {

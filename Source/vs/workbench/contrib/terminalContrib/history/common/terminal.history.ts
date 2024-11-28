@@ -15,6 +15,7 @@ export const defaultTerminalHistoryCommandsToSkipShell = [
 	TerminalHistoryCommandId.GoToRecentDirectory,
 	TerminalHistoryCommandId.RunRecentCommand,
 ];
+
 export const enum TerminalHistorySettingId {
 	ShellIntegrationCommandHistory = "terminal.integrated.shellIntegration.history",
 }

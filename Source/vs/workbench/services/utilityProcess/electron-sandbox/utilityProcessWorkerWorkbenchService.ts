@@ -30,6 +30,7 @@ export const IUtilityProcessWorkerWorkbenchService =
 	createDecorator<IUtilityProcessWorkerWorkbenchService>(
 		"utilityProcessWorkerWorkbenchService",
 	);
+
 export interface IUtilityProcessWorker extends IDisposable {
 	/**
 	 * A IPC client to communicate to the worker process.

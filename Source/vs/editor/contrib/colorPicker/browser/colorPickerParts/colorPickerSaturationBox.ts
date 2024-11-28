@@ -12,6 +12,7 @@ import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { ColorPickerModel } from "../colorPickerModel.js";
 
 const $ = dom.$;
+
 export class SaturationBox extends Disposable {
 	private readonly _domNode: HTMLElement;
 	private readonly selection: HTMLElement;

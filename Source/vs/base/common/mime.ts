@@ -79,6 +79,7 @@ const mapExtToMediaMimes: MapExtToMediaMimes = {
 	".wmv": "video/x-ms-wmv",
 	".woff": "application/font-woff",
 };
+
 export function getMediaOrTextMime(path: string): string | undefined {
 	const ext = extname(path);
 
@@ -105,11 +106,14 @@ export function getExtensionForMimeType(mimeType: string): string | undefined {
 }
 
 const _simplePattern = /^(.+)\/(.+?)(;.+)?$/;
+
 export function normalizeMimeType(mimeType: string): string;
+
 export function normalizeMimeType(
 	mimeType: string,
 	strict: true,
 ): string | undefined;
+
 export function normalizeMimeType(
 	mimeType: string,
 	strict?: true,

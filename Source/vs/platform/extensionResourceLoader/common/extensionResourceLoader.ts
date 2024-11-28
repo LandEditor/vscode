@@ -21,6 +21,7 @@ import {
 } from "../../telemetry/common/telemetryUtils.js";
 
 const WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT = "/web-extension-resource/";
+
 export const IExtensionResourceLoaderService =
 	createDecorator<IExtensionResourceLoaderService>(
 		"extensionResourceLoaderService",

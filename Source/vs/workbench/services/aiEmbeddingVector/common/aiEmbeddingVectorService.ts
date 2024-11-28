@@ -20,6 +20,7 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 
 export const IAiEmbeddingVectorService =
 	createDecorator<IAiEmbeddingVectorService>("IAiEmbeddingVectorService");
+
 export interface IAiEmbeddingVectorService {
 	readonly _serviceBrand: undefined;
 	isEnabled(): boolean;

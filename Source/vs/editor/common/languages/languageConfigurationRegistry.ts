@@ -72,6 +72,7 @@ export const ILanguageConfigurationService =
 	createDecorator<ILanguageConfigurationService>(
 		"languageConfigurationService",
 	);
+
 export class LanguageConfigurationService
 	extends Disposable
 	implements ILanguageConfigurationService

@@ -235,6 +235,7 @@ export class PrefixMemory extends Memory {
 	}
 }
 export type MemMode = "first" | "recentlyUsed" | "recentlyUsedByPrefix";
+
 export class SuggestMemoryService implements ISuggestMemoryService {
 	private static readonly _strategyCtors = new Map<
 		MemMode,
@@ -340,6 +341,7 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 }
 export const ISuggestMemoryService =
 	createDecorator<ISuggestMemoryService>("ISuggestMemories");
+
 export interface ISuggestMemoryService {
 	readonly _serviceBrand: undefined;
 	memorize(model: ITextModel, pos: IPosition, item: CompletionItem): void;

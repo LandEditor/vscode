@@ -18,6 +18,7 @@ export interface IBannerItem {
 	readonly closeLabel?: string;
 }
 export const IBannerService = createDecorator<IBannerService>("bannerService");
+
 export interface IBannerService {
 	readonly _serviceBrand: undefined;
 	focus(): void;

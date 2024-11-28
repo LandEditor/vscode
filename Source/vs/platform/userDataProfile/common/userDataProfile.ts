@@ -42,7 +42,9 @@ export const enum ProfileResourceType {
 export type UseDefaultProfileFlags = {
 	[key in ProfileResourceType]?: boolean;
 };
+
 export type ProfileResourceTypeFlags = UseDefaultProfileFlags;
+
 export interface IUserDataProfile {
 	readonly id: string;
 	readonly isDefault: boolean;
@@ -84,14 +86,17 @@ export type DidChangeProfilesEvent = {
 	readonly updated: readonly IUserDataProfile[];
 	readonly all: readonly IUserDataProfile[];
 };
+
 export type WillCreateProfileEvent = {
 	profile: IUserDataProfile;
 	join(promise: Promise<void>): void;
 };
+
 export type WillRemoveProfileEvent = {
 	profile: IUserDataProfile;
 	join(promise: Promise<void>): void;
 };
+
 export interface IUserDataProfileOptions {
 	readonly icon?: string;
 	readonly useDefaultFlags?: UseDefaultProfileFlags;
@@ -105,6 +110,7 @@ export interface IUserDataProfileUpdateOptions
 }
 export const IUserDataProfilesService =
 	createDecorator<IUserDataProfilesService>("IUserDataProfilesService");
+
 export interface IUserDataProfilesService {
 	readonly _serviceBrand: undefined;
 	readonly profilesHome: URI;
@@ -216,16 +222,19 @@ export type UserDataProfilesObject = {
 	profiles: IUserDataProfile[];
 	emptyWindows: Map<string, IUserDataProfile>;
 };
+
 export type StoredUserDataProfile = {
 	name: string;
 	location: URI;
 	icon?: string;
 	useDefaultFlags?: UseDefaultProfileFlags;
 };
+
 export type StoredProfileAssociations = {
 	workspaces?: IStringDictionary<string>;
 	emptyWindows?: IStringDictionary<string>;
 };
+
 export class UserDataProfilesService
 	extends Disposable
 	implements IUserDataProfilesService

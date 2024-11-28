@@ -129,6 +129,7 @@ function createCheckbox(disposables: DisposableStore): HTMLInputElement {
 }
 
 const MAX_VISIBLE_BREAKPOINTS = 9;
+
 export function getExpandedBodySize(
 	model: IDebugModel,
 	sessionId: string | undefined,

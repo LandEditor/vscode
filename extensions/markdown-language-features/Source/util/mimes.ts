@@ -6,6 +6,7 @@ export const Mime = {
 	textUriList: "text/uri-list",
 	textPlain: "text/plain",
 } as const;
+
 export const mediaMimes = new Set([
 	"image/avif",
 	"image/bmp",

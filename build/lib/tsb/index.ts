@@ -15,6 +15,7 @@ import { ESBuildTranspiler, ITranspiler, TscTranspiler } from "./transpiler";
 import { strings } from "./utils";
 
 import colors = require("ansi-colors");
+
 export interface IncrementalCompiler {
 	(token?: any): Readable & Writable;
 	src(opts?: { cwd?: string; base?: string }): Readable;
@@ -42,6 +43,7 @@ function createNullCompiler(): IncrementalCompiler {
 
 const _defaultOnError = (err: string) =>
 	console.log(JSON.stringify(err, null, 4));
+
 export function create(
 	projectPath: string,
 	existingOptions: Partial<ts.CompilerOptions>,

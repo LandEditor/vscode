@@ -90,6 +90,7 @@ const altKeyMod = KeyMod.Alt;
 const shiftKeyMod = KeyMod.Shift;
 
 const metaKeyMod = platform.isMacintosh ? KeyMod.CtrlCmd : KeyMod.WinCtrl;
+
 export function printKeyboardEvent(e: KeyboardEvent): string {
 	const modifiers: string[] = [];
 

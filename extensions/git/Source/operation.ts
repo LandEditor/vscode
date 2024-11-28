@@ -129,114 +129,169 @@ type BaseOperation = {
 	retry: boolean;
 	showProgress: boolean;
 };
+
 export type AddOperation = BaseOperation & { kind: OperationKind.Add };
+
 export type ApplyOperation = BaseOperation & { kind: OperationKind.Apply };
+
 export type BlameOperation = BaseOperation & { kind: OperationKind.Blame };
+
 export type BranchOperation = BaseOperation & { kind: OperationKind.Branch };
+
 export type CheckIgnoreOperation = BaseOperation & {
 	kind: OperationKind.CheckIgnore;
 };
+
 export type CherryPickOperation = BaseOperation & {
 	kind: OperationKind.CherryPick;
 };
+
 export type CheckoutOperation = BaseOperation & {
 	kind: OperationKind.Checkout;
 	refLabel: string;
 };
+
 export type CheckoutTrackingOperation = BaseOperation & {
 	kind: OperationKind.CheckoutTracking;
 	refLabel: string;
 };
+
 export type CleanOperation = BaseOperation & { kind: OperationKind.Clean };
+
 export type CommitOperation = BaseOperation & { kind: OperationKind.Commit };
+
 export type ConfigOperation = BaseOperation & { kind: OperationKind.Config };
+
 export type DeleteBranchOperation = BaseOperation & {
 	kind: OperationKind.DeleteBranch;
 };
+
 export type DeleteRefOperation = BaseOperation & {
 	kind: OperationKind.DeleteRef;
 };
+
 export type DeleteRemoteTagOperation = BaseOperation & {
 	kind: OperationKind.DeleteRemoteTag;
 };
+
 export type DeleteTagOperation = BaseOperation & {
 	kind: OperationKind.DeleteTag;
 };
+
 export type DiffOperation = BaseOperation & { kind: OperationKind.Diff };
+
 export type FetchOperation = BaseOperation & { kind: OperationKind.Fetch };
+
 export type FindTrackingBranchesOperation = BaseOperation & {
 	kind: OperationKind.FindTrackingBranches;
 };
+
 export type GetBranchOperation = BaseOperation & {
 	kind: OperationKind.GetBranch;
 };
+
 export type GetBranchesOperation = BaseOperation & {
 	kind: OperationKind.GetBranches;
 };
+
 export type GetCommitTemplateOperation = BaseOperation & {
 	kind: OperationKind.GetCommitTemplate;
 };
+
 export type GetObjectDetailsOperation = BaseOperation & {
 	kind: OperationKind.GetObjectDetails;
 };
+
 export type GetObjectFilesOperation = BaseOperation & {
 	kind: OperationKind.GetObjectFiles;
 };
+
 export type GetRefsOperation = BaseOperation & { kind: OperationKind.GetRefs };
+
 export type GetRemoteRefsOperation = BaseOperation & {
 	kind: OperationKind.GetRemoteRefs;
 };
+
 export type HashObjectOperation = BaseOperation & {
 	kind: OperationKind.HashObject;
 };
+
 export type IgnoreOperation = BaseOperation & { kind: OperationKind.Ignore };
+
 export type LogOperation = BaseOperation & { kind: OperationKind.Log };
+
 export type LogFileOperation = BaseOperation & { kind: OperationKind.LogFile };
+
 export type MergeOperation = BaseOperation & { kind: OperationKind.Merge };
+
 export type MergeAbortOperation = BaseOperation & {
 	kind: OperationKind.MergeAbort;
 };
+
 export type MergeBaseOperation = BaseOperation & {
 	kind: OperationKind.MergeBase;
 };
+
 export type MoveOperation = BaseOperation & { kind: OperationKind.Move };
+
 export type PostCommitCommandOperation = BaseOperation & {
 	kind: OperationKind.PostCommitCommand;
 };
+
 export type PullOperation = BaseOperation & { kind: OperationKind.Pull };
+
 export type PushOperation = BaseOperation & { kind: OperationKind.Push };
+
 export type RemoteOperation = BaseOperation & { kind: OperationKind.Remote };
+
 export type RenameBranchOperation = BaseOperation & {
 	kind: OperationKind.RenameBranch;
 };
+
 export type RemoveOperation = BaseOperation & { kind: OperationKind.Remove };
+
 export type ResetOperation = BaseOperation & { kind: OperationKind.Reset };
+
 export type RebaseOperation = BaseOperation & { kind: OperationKind.Rebase };
+
 export type RebaseAbortOperation = BaseOperation & {
 	kind: OperationKind.RebaseAbort;
 };
+
 export type RebaseContinueOperation = BaseOperation & {
 	kind: OperationKind.RebaseContinue;
 };
+
 export type RefreshOperation = BaseOperation & { kind: OperationKind.Refresh };
+
 export type RevertFilesOperation = BaseOperation & {
 	kind: OperationKind.RevertFiles;
 };
+
 export type RevListOperation = BaseOperation & { kind: OperationKind.RevList };
+
 export type RevParseOperation = BaseOperation & {
 	kind: OperationKind.RevParse;
 };
+
 export type SetBranchUpstreamOperation = BaseOperation & {
 	kind: OperationKind.SetBranchUpstream;
 };
+
 export type ShowOperation = BaseOperation & { kind: OperationKind.Show };
+
 export type StageOperation = BaseOperation & { kind: OperationKind.Stage };
+
 export type StatusOperation = BaseOperation & { kind: OperationKind.Status };
+
 export type StashOperation = BaseOperation & { kind: OperationKind.Stash };
+
 export type SubmoduleUpdateOperation = BaseOperation & {
 	kind: OperationKind.SubmoduleUpdate;
 };
+
 export type SyncOperation = BaseOperation & { kind: OperationKind.Sync };
+
 export type TagOperation = BaseOperation & { kind: OperationKind.Tag };
 
 export const Operation = {

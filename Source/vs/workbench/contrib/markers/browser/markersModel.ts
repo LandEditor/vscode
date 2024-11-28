@@ -20,6 +20,7 @@ import {
 import { unsupportedSchemas } from "../../../../platform/markers/common/markerService.js";
 
 export type MarkerElement = ResourceMarkers | Marker | RelatedInformation;
+
 export function compareMarkersByUri(a: IMarker, b: IMarker) {
 	return extUri.compare(a.resource, b.resource);
 }

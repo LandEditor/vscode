@@ -28,6 +28,7 @@ const webviewActiveContextKeyExpr = ContextKeyExpr.and(
 	ContextKeyExpr.equals("activeEditor", WebviewEditor.ID),
 	EditorContextKeys.focus.toNegated() /* https://github.com/microsoft/vscode/issues/58668 */,
 )!;
+
 export class ShowWebViewEditorFindWidgetAction extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.showFind";
 	public static readonly LABEL = nls.localize(

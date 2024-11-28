@@ -118,6 +118,7 @@ type IInternalUntitledFileWorkingCopyOptions =
 	INewUntitledFileWorkingCopyOptions &
 		INewUntitledFileWorkingCopyWithAssociatedResourceOptions &
 		INewOrExistingUntitledFileWorkingCopyOptions;
+
 export class UntitledFileWorkingCopyManager<
 		M extends IUntitledFileWorkingCopyModel,
 	>

@@ -80,6 +80,7 @@ import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js"
 type FormattingEditProvider =
 	| DocumentFormattingEditProvider
 	| DocumentRangeFormattingEditProvider;
+
 export class DefaultFormatter
 	extends Disposable
 	implements IWorkbenchContribution

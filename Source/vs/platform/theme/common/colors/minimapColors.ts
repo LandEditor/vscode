@@ -34,6 +34,7 @@ export const minimapFindMatch = registerColor(
 	),
 	true,
 );
+
 export const minimapSelectionOccurrenceHighlight = registerColor(
 	"minimap.selectionOccurrenceHighlight",
 	{
@@ -48,6 +49,7 @@ export const minimapSelectionOccurrenceHighlight = registerColor(
 	),
 	true,
 );
+
 export const minimapSelection = registerColor(
 	"minimap.selectionHighlight",
 	{
@@ -62,6 +64,7 @@ export const minimapSelection = registerColor(
 	),
 	true,
 );
+
 export const minimapInfo = registerColor(
 	"minimap.infoHighlight",
 	{
@@ -72,6 +75,7 @@ export const minimapInfo = registerColor(
 	},
 	nls.localize("minimapInfo", "Minimap marker color for infos."),
 );
+
 export const minimapWarning = registerColor(
 	"minimap.warningHighlight",
 	{
@@ -82,6 +86,7 @@ export const minimapWarning = registerColor(
 	},
 	nls.localize("overviewRuleWarning", "Minimap marker color for warnings."),
 );
+
 export const minimapError = registerColor(
 	"minimap.errorHighlight",
 	{
@@ -92,11 +97,13 @@ export const minimapError = registerColor(
 	},
 	nls.localize("minimapError", "Minimap marker color for errors."),
 );
+
 export const minimapBackground = registerColor(
 	"minimap.background",
 	null,
 	nls.localize("minimapBackground", "Minimap background color."),
 );
+
 export const minimapForegroundOpacity = registerColor(
 	"minimap.foregroundOpacity",
 	Color.fromHex("#000f"),
@@ -105,11 +112,13 @@ export const minimapForegroundOpacity = registerColor(
 		'Opacity of foreground elements rendered in the minimap. For example, "#000000c0" will render the elements with 75% opacity.',
 	),
 );
+
 export const minimapSliderBackground = registerColor(
 	"minimapSlider.background",
 	transparent(scrollbarSliderBackground, 0.5),
 	nls.localize("minimapSliderBackground", "Minimap slider background color."),
 );
+
 export const minimapSliderHoverBackground = registerColor(
 	"minimapSlider.hoverBackground",
 	transparent(scrollbarSliderHoverBackground, 0.5),
@@ -118,6 +127,7 @@ export const minimapSliderHoverBackground = registerColor(
 		"Minimap slider background color when hovering.",
 	),
 );
+
 export const minimapSliderActiveBackground = registerColor(
 	"minimapSlider.activeBackground",
 	transparent(scrollbarSliderActiveBackground, 0.5),

@@ -78,6 +78,7 @@ type StateT =
 			state: State.Error;
 			error: string;
 	  };
+
 export async function activate(context: vscode.ExtensionContext) {
 	if (vscode.env.remoteAuthority) {
 		return; // forwarding is local-only at the moment

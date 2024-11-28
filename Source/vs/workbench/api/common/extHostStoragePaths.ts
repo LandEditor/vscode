@@ -16,6 +16,7 @@ import { IExtHostInitDataService } from "./extHostInitDataService.js";
 export const IExtensionStoragePaths = createDecorator<IExtensionStoragePaths>(
 	"IExtensionStoragePaths",
 );
+
 export interface IExtensionStoragePaths {
 	readonly _serviceBrand: undefined;
 	whenReady: Promise<any>;

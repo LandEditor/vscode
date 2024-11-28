@@ -68,6 +68,7 @@ export type StorageValue =
 	| undefined
 	| null
 	| object;
+
 export interface IStorage extends IDisposable {
 	readonly onDidChangeStorage: Event<IStorageChangeEvent>;
 	readonly items: Map<string, string>;

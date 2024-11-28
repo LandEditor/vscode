@@ -99,6 +99,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 	},
 	when: TaskExecutionSupportedContext,
 });
+
 export class TaskStatusBarContributions
 	extends Disposable
 	implements IWorkbenchContribution
@@ -572,6 +573,7 @@ const jsonRegistry = <jsonContributionRegistry.IJSONContributionRegistry>(
 	Registry.as(jsonContributionRegistry.Extensions.JSONContribution)
 );
 jsonRegistry.registerSchema(tasksSchemaId, schema);
+
 export class TaskRegistryContribution
 	extends Disposable
 	implements IWorkbenchContribution

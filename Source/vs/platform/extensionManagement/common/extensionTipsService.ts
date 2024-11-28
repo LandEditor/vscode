@@ -150,6 +150,7 @@ const promptedExecutableTipsStorageKey = "extensionTips/promptedExecutableTips";
 
 const lastPromptedMediumImpExeTimeStorageKey =
 	"extensionTips/lastPromptedMediumImpExeTime";
+
 export abstract class AbstractNativeExtensionTipsService extends ExtensionTipsService {
 	private readonly highImportanceExecutableTips: Map<
 		string,

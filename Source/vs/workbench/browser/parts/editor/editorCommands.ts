@@ -108,72 +108,118 @@ import { TextDiffEditor } from "./textDiffEditor.js";
 
 export const CLOSE_SAVED_EDITORS_COMMAND_ID =
 	"workbench.action.closeUnmodifiedEditors";
+
 export const CLOSE_EDITORS_IN_GROUP_COMMAND_ID =
 	"workbench.action.closeEditorsInGroup";
+
 export const CLOSE_EDITORS_AND_GROUP_COMMAND_ID =
 	"workbench.action.closeEditorsAndGroup";
+
 export const CLOSE_EDITORS_TO_THE_RIGHT_COMMAND_ID =
 	"workbench.action.closeEditorsToTheRight";
+
 export const CLOSE_EDITOR_COMMAND_ID = "workbench.action.closeActiveEditor";
+
 export const CLOSE_PINNED_EDITOR_COMMAND_ID =
 	"workbench.action.closeActivePinnedEditor";
+
 export const CLOSE_EDITOR_GROUP_COMMAND_ID = "workbench.action.closeGroup";
+
 export const CLOSE_OTHER_EDITORS_IN_GROUP_COMMAND_ID =
 	"workbench.action.closeOtherEditors";
+
 export const MOVE_ACTIVE_EDITOR_COMMAND_ID = "moveActiveEditor";
+
 export const COPY_ACTIVE_EDITOR_COMMAND_ID = "copyActiveEditor";
+
 export const LAYOUT_EDITOR_GROUPS_COMMAND_ID = "layoutEditorGroups";
+
 export const KEEP_EDITOR_COMMAND_ID = "workbench.action.keepEditor";
+
 export const TOGGLE_KEEP_EDITORS_COMMAND_ID =
 	"workbench.action.toggleKeepEditors";
+
 export const TOGGLE_LOCK_GROUP_COMMAND_ID =
 	"workbench.action.toggleEditorGroupLock";
+
 export const LOCK_GROUP_COMMAND_ID = "workbench.action.lockEditorGroup";
+
 export const UNLOCK_GROUP_COMMAND_ID = "workbench.action.unlockEditorGroup";
+
 export const SHOW_EDITORS_IN_GROUP = "workbench.action.showEditorsInGroup";
+
 export const REOPEN_WITH_COMMAND_ID = "workbench.action.reopenWithEditor";
+
 export const PIN_EDITOR_COMMAND_ID = "workbench.action.pinEditor";
+
 export const UNPIN_EDITOR_COMMAND_ID = "workbench.action.unpinEditor";
+
 export const SPLIT_EDITOR = "workbench.action.splitEditor";
+
 export const SPLIT_EDITOR_UP = "workbench.action.splitEditorUp";
+
 export const SPLIT_EDITOR_DOWN = "workbench.action.splitEditorDown";
+
 export const SPLIT_EDITOR_LEFT = "workbench.action.splitEditorLeft";
+
 export const SPLIT_EDITOR_RIGHT = "workbench.action.splitEditorRight";
+
 export const TOGGLE_MAXIMIZE_EDITOR_GROUP =
 	"workbench.action.toggleMaximizeEditorGroup";
+
 export const SPLIT_EDITOR_IN_GROUP = "workbench.action.splitEditorInGroup";
+
 export const TOGGLE_SPLIT_EDITOR_IN_GROUP =
 	"workbench.action.toggleSplitEditorInGroup";
+
 export const JOIN_EDITOR_IN_GROUP = "workbench.action.joinEditorInGroup";
+
 export const TOGGLE_SPLIT_EDITOR_IN_GROUP_LAYOUT =
 	"workbench.action.toggleSplitEditorInGroupLayout";
+
 export const FOCUS_FIRST_SIDE_EDITOR = "workbench.action.focusFirstSideEditor";
+
 export const FOCUS_SECOND_SIDE_EDITOR =
 	"workbench.action.focusSecondSideEditor";
+
 export const FOCUS_OTHER_SIDE_EDITOR = "workbench.action.focusOtherSideEditor";
+
 export const FOCUS_LEFT_GROUP_WITHOUT_WRAP_COMMAND_ID =
 	"workbench.action.focusLeftGroupWithoutWrap";
+
 export const FOCUS_RIGHT_GROUP_WITHOUT_WRAP_COMMAND_ID =
 	"workbench.action.focusRightGroupWithoutWrap";
+
 export const FOCUS_ABOVE_GROUP_WITHOUT_WRAP_COMMAND_ID =
 	"workbench.action.focusAboveGroupWithoutWrap";
+
 export const FOCUS_BELOW_GROUP_WITHOUT_WRAP_COMMAND_ID =
 	"workbench.action.focusBelowGroupWithoutWrap";
+
 export const OPEN_EDITOR_AT_INDEX_COMMAND_ID =
 	"workbench.action.openEditorAtIndex";
+
 export const MOVE_EDITOR_INTO_NEW_WINDOW_COMMAND_ID =
 	"workbench.action.moveEditorToNewWindow";
+
 export const COPY_EDITOR_INTO_NEW_WINDOW_COMMAND_ID =
 	"workbench.action.copyEditorToNewWindow";
+
 export const MOVE_EDITOR_GROUP_INTO_NEW_WINDOW_COMMAND_ID =
 	"workbench.action.moveEditorGroupToNewWindow";
+
 export const COPY_EDITOR_GROUP_INTO_NEW_WINDOW_COMMAND_ID =
 	"workbench.action.copyEditorGroupToNewWindow";
+
 export const NEW_EMPTY_EDITOR_WINDOW_COMMAND_ID =
 	"workbench.action.newEmptyEditorWindow";
+
 export const API_OPEN_EDITOR_COMMAND_ID = "_workbench.open";
+
 export const API_OPEN_DIFF_EDITOR_COMMAND_ID = "_workbench.diff";
+
 export const API_OPEN_WITH_EDITOR_COMMAND_ID = "_workbench.openWith";
+
 export const EDITOR_CORE_NAVIGATION_COMMANDS = [
 	SPLIT_EDITOR,
 	CLOSE_EDITOR_COMMAND_ID,
@@ -181,6 +227,7 @@ export const EDITOR_CORE_NAVIGATION_COMMANDS = [
 	UNLOCK_GROUP_COMMAND_ID,
 	TOGGLE_MAXIMIZE_EDITOR_GROUP,
 ];
+
 export interface ActiveEditorMoveCopyArguments {
 	to?:
 		| "first"

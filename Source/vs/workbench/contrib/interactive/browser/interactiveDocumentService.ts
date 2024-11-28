@@ -9,6 +9,7 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export const IInteractiveDocumentService =
 	createDecorator<IInteractiveDocumentService>("IInteractiveDocumentService");
+
 export interface IInteractiveDocumentService {
 	readonly _serviceBrand: undefined;
 	onWillAddInteractiveDocument: Event<{

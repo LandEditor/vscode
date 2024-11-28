@@ -8,6 +8,7 @@ import { ILanguagePackItem } from "../../../../platform/languagePacks/common/lan
 export const ILocaleService = createDecorator<ILocaleService>(
 	"localizationService",
 );
+
 export interface ILocaleService {
 	readonly _serviceBrand: undefined;
 
@@ -19,6 +20,7 @@ export interface ILocaleService {
 }
 export const IActiveLanguagePackService =
 	createDecorator<IActiveLanguagePackService>("activeLanguageService");
+
 export interface IActiveLanguagePackService {
 	readonly _serviceBrand: undefined;
 

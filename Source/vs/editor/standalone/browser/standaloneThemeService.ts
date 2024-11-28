@@ -54,8 +54,11 @@ import {
 import { hc_black, hc_light, vs, vs_dark } from "../common/themes.js";
 
 export const VS_LIGHT_THEME_NAME = "vs";
+
 export const VS_DARK_THEME_NAME = "vs-dark";
+
 export const HC_BLACK_THEME_NAME = "hc-black";
+
 export const HC_LIGHT_THEME_NAME = "hc-light";
 
 const colorRegistry = Registry.as<IColorRegistry>(Extensions.ColorContribution);

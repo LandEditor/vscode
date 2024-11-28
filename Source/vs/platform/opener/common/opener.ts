@@ -12,6 +12,7 @@ import {
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IOpenerService = createDecorator<IOpenerService>("openerService");
+
 export type OpenInternalOptions = {
 	/**
 	 * Signals that the intent is to open an editor to the side
@@ -34,16 +35,20 @@ export type OpenInternalOptions = {
 	 */
 	readonly allowCommands?: boolean | readonly string[];
 };
+
 export type OpenExternalOptions = {
 	readonly openExternal?: boolean;
 	readonly allowTunneling?: boolean;
 	readonly allowContributedOpeners?: boolean | string;
 	readonly fromWorkspace?: boolean;
 };
+
 export type OpenOptions = OpenInternalOptions & OpenExternalOptions;
+
 export type ResolveExternalUriOptions = {
 	readonly allowTunneling?: boolean;
 };
+
 export interface IResolvedExternalUri extends IDisposable {
 	resolved: URI;
 }

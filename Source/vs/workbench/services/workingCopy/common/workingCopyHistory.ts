@@ -10,6 +10,7 @@ import { SaveSource } from "../../../common/editor.js";
 
 export const IWorkingCopyHistoryService =
 	createDecorator<IWorkingCopyHistoryService>("workingCopyHistoryService");
+
 export interface IWorkingCopyHistoryEvent {
 	/**
 	 * The entry this event is about.

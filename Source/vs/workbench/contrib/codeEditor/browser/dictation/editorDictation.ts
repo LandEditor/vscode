@@ -60,6 +60,7 @@ const EDITOR_DICTATION_IN_PROGRESS = new RawContextKey<boolean>(
 );
 
 const VOICE_CATEGORY = localize2("voiceCategory", "Voice");
+
 export class EditorDictationStartAction extends EditorAction2 {
 	constructor() {
 		super({

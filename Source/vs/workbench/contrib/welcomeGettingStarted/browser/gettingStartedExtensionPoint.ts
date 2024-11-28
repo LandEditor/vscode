@@ -7,6 +7,7 @@ import { IWalkthrough } from "../../../../platform/extensions/common/extensions.
 import { ExtensionsRegistry } from "../../../services/extensions/common/extensionsRegistry.js";
 
 const titleTranslated = localize("title", "Title");
+
 export const walkthroughsExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<IWalkthrough[]>({
 		extensionPoint: "walkthroughs",

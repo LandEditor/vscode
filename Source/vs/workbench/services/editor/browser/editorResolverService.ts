@@ -94,6 +94,7 @@ interface RegisteredEditor {
 	editorFactoryObject: EditorInputFactoryObject;
 }
 type RegisteredEditors = Array<RegisteredEditor>;
+
 export class EditorResolverService
 	extends Disposable
 	implements IEditorResolverService

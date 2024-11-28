@@ -109,6 +109,7 @@ import {
 import { KeybindingsEditorInput } from "./keybindingsEditorInput.js";
 
 const emptyEditableSettingsContent = "{\n}";
+
 export class PreferencesService
 	extends Disposable
 	implements IPreferencesService

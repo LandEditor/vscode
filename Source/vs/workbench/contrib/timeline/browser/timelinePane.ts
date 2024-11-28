@@ -232,6 +232,7 @@ class LoadMoreCommand {
 }
 
 export const TimelineFollowActiveEditorContext = new RawContextKey<boolean>('timelineFollowActiveEditor', true, true);
+
 export const TimelineExcludeSources = new RawContextKey<string>('timelineExcludeSources', '[]', true);
 
 export class TimelinePane extends ViewPane {

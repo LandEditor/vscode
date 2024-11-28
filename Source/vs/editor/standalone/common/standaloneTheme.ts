@@ -15,10 +15,13 @@ import {
 
 export const IStandaloneThemeService =
 	createDecorator<IStandaloneThemeService>("themeService");
+
 export type BuiltinTheme = "vs" | "vs-dark" | "hc-black" | "hc-light";
+
 export type IColors = {
 	[colorId: string]: string;
 };
+
 export interface IStandaloneThemeData {
 	base: BuiltinTheme;
 	inherit: boolean;

@@ -15,6 +15,7 @@ import {
 import { API } from "./typings/git";
 
 const SUPPORTED_SCHEMES = ["ssh", "https", "file"];
+
 export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 	private disposables: Disposable[] = [];
 

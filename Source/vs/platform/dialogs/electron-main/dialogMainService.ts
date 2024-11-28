@@ -28,6 +28,7 @@ import {
 
 export const IDialogMainService =
 	createDecorator<IDialogMainService>("dialogMainService");
+
 export interface IDialogMainService {
 	readonly _serviceBrand: undefined;
 	pickFileFolder(

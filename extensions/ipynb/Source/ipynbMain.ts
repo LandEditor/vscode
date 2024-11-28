@@ -32,6 +32,7 @@ type OptionsWithCellContentMetadata = vscode.NotebookDocumentContentOptions & {
 		attachments: boolean;
 	};
 };
+
 export function activate(
 	context: vscode.ExtensionContext,
 	serializer: vscode.NotebookSerializer,

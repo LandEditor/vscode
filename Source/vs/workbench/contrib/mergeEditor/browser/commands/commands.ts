@@ -219,6 +219,7 @@ type IRelaxedOpenArgs = {
 	input2: IRelaxedInputData | string;
 	output: UriComponents | string;
 };
+
 export class SetMixedLayout extends Action2 {
 	constructor() {
 		super({
@@ -389,6 +390,7 @@ const mergeEditorCategory: ILocalizedString = localize2(
 	"mergeEditor",
 	"Merge Editor",
 );
+
 export class OpenResultResource extends MergeEditorAction {
 	constructor() {
 		super({

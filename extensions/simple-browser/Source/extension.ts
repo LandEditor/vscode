@@ -31,6 +31,7 @@ const enabledHosts = new Set<string>([
 ]);
 
 const openerId = "simpleBrowser.open";
+
 export function activate(context: vscode.ExtensionContext) {
 	const manager = new SimpleBrowserManager(context.extensionUri);
 	context.subscriptions.push(manager);

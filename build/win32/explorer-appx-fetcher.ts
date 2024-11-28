@@ -13,6 +13,7 @@ import * as extract from "extract-zip";
 const root = path.dirname(path.dirname(__dirname));
 
 const d = debug("explorer-appx-fetcher");
+
 export async function downloadExplorerAppx(
 	outDir: string,
 	quality: string = "stable",

@@ -158,12 +158,14 @@ export interface ITransaction {
 	): void;
 }
 let _recomputeInitiallyAndOnChange: typeof recomputeInitiallyAndOnChange;
+
 export function _setRecomputeInitiallyAndOnChange(
 	recomputeInitiallyAndOnChange: typeof _recomputeInitiallyAndOnChange,
 ) {
 	_recomputeInitiallyAndOnChange = recomputeInitiallyAndOnChange;
 }
 let _keepObserved: typeof keepObserved;
+
 export function _setKeepObserved(keepObserved: typeof _keepObserved) {
 	_keepObserved = keepObserved;
 }
@@ -322,6 +324,7 @@ export function transaction(
 	}
 }
 let _globalTransaction: ITransaction | undefined = undefined;
+
 export function globalTransaction(fn: (tx: ITransaction) => void) {
 	if (_globalTransaction) {
 		fn(_globalTransaction);
@@ -421,10 +424,12 @@ export function observableValue<T, TChange = void>(
 	name: string,
 	initialValue: T,
 ): ISettableObservable<T, TChange>;
+
 export function observableValue<T, TChange = void>(
 	owner: object,
 	initialValue: T,
 ): ISettableObservable<T, TChange>;
+
 export function observableValue<T, TChange = void>(
 	nameOrOwner: string | object,
 	initialValue: T,

@@ -771,6 +771,7 @@ export type PersistentConnectionEvent =
 	| ReconnectionWaitEvent
 	| ReconnectionRunningEvent
 	| ReconnectionPermanentFailureEvent;
+
 export abstract class PersistentConnection extends Disposable {
 	public static triggerPermanentFailure(
 		millisSinceLastIncomingData: number,

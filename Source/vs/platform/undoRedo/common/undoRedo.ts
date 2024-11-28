@@ -8,6 +8,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IUndoRedoService =
 	createDecorator<IUndoRedoService>("undoRedoService");
+
 export const enum UndoRedoElementType {
 	Resource,
 	Workspace,
@@ -67,6 +68,7 @@ export interface IWorkspaceUndoRedoElement {
 export type IUndoRedoElement =
 	| IResourceUndoRedoElement
 	| IWorkspaceUndoRedoElement;
+
 export interface IPastFutureElements {
 	past: IUndoRedoElement[];
 	future: IUndoRedoElement[];

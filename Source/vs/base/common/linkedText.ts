@@ -10,6 +10,7 @@ export interface ILink {
 	readonly title?: string;
 }
 export type LinkedTextNode = string | ILink;
+
 export class LinkedText {
 	constructor(readonly nodes: LinkedTextNode[]) {}
 	@memoize
@@ -22,6 +23,7 @@ export class LinkedText {
 
 const LINK_REGEX =
 	/\[([^\]]+)\]\(((?:https?:\/\/|command:|file:)[^\)\s]+)(?: (["'])(.+?)(\3))?\)/gi;
+
 export function parseLinkedText(text: string): LinkedText {
 	const result: LinkedTextNode[] = [];
 

@@ -32,6 +32,7 @@ export interface ICreateGrammarResult {
 }
 export const missingTMGrammarErrorMessage =
 	"No TM Grammar registered for this language.";
+
 export class TMGrammarFactory extends Disposable {
 	private readonly _host: ITMGrammarFactoryHost;
 	private readonly _initialState: StateStack;

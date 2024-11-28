@@ -47,6 +47,7 @@ export interface IBracket {
 	close: string;
 }
 export type FuzzyAction = IAction | string;
+
 export function isFuzzyActionArr(
 	what: FuzzyAction | FuzzyAction[],
 ): what is FuzzyAction[] {

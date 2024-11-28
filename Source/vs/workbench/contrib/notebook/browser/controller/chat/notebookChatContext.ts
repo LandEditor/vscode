@@ -14,6 +14,7 @@ export const CTX_NOTEBOOK_CELL_CHAT_FOCUSED = new RawContextKey<boolean>(
 		"Whether the cell chat editor is focused",
 	),
 );
+
 export const CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST = new RawContextKey<boolean>(
 	"notebookChatHasActiveRequest",
 	false,
@@ -22,6 +23,7 @@ export const CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST = new RawContextKey<boolean>(
 		"Whether the cell chat editor has an active request",
 	),
 );
+
 export const CTX_NOTEBOOK_CHAT_USER_DID_EDIT = new RawContextKey<boolean>(
 	"notebookChatUserDidEdit",
 	false,
@@ -30,6 +32,7 @@ export const CTX_NOTEBOOK_CHAT_USER_DID_EDIT = new RawContextKey<boolean>(
 		"Whether the user did changes ontop of the notebook cell chat",
 	),
 );
+
 export const CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION = new RawContextKey<
 	"above" | "below" | ""
 >(
@@ -40,15 +43,21 @@ export const CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION = new RawContextKey<
 		"Whether the focus of the notebook editor is above or below the cell chat",
 	),
 );
+
 export const MENU_CELL_CHAT_INPUT = MenuId.for("cellChatInput");
+
 export const MENU_CELL_CHAT_WIDGET = MenuId.for("cellChatWidget");
+
 export const MENU_CELL_CHAT_WIDGET_STATUS = MenuId.for("cellChatWidget.status");
+
 export const MENU_CELL_CHAT_WIDGET_FEEDBACK = MenuId.for(
 	"cellChatWidget.feedback",
 );
+
 export const MENU_CELL_CHAT_WIDGET_TOOLBAR = MenuId.for(
 	"cellChatWidget.toolbar",
 );
+
 export const CTX_NOTEBOOK_CHAT_HAS_AGENT = new RawContextKey<boolean>(
 	"notebookChatAgentRegistered",
 	false,

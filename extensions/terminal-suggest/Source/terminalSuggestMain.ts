@@ -282,7 +282,9 @@ function getPrefix(commandLine: string, cursorPosition: number): string {
 }
 
 export function asArray<T>(x: T | T[]): T[];
+
 export function asArray<T>(x: T | readonly T[]): readonly T[];
+
 export function asArray<T>(x: T | T[]): T[] {
 	return Array.isArray(x) ? x : [x];
 }

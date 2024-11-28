@@ -109,6 +109,7 @@ const diffEditorCategory: ILocalizedString = localize2(
 	"diffEditor",
 	"Diff Editor",
 );
+
 export class SwitchSide extends EditorAction2 {
 	constructor() {
 		super({
@@ -251,6 +252,7 @@ const accessibleDiffViewerCategory: ILocalizedString = localize2(
 	"accessibleDiffViewer",
 	"Accessible Diff Viewer",
 );
+
 export class AccessibleDiffViewerNext extends Action2 {
 	public static id = "editor.action.accessibleDiffViewer.next";
 

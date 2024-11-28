@@ -15,6 +15,7 @@ export const ITextResourceConfigurationService =
 	createDecorator<ITextResourceConfigurationService>(
 		"textResourceConfigurationService",
 	);
+
 export interface ITextResourceConfigurationChangeEvent {
 	/**
 	 * All affected keys. Also includes language overrides and keys changed under language overrides.
@@ -88,6 +89,7 @@ export const ITextResourcePropertiesService =
 	createDecorator<ITextResourcePropertiesService>(
 		"textResourcePropertiesService",
 	);
+
 export interface ITextResourcePropertiesService {
 	readonly _serviceBrand: undefined;
 	/**

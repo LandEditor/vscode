@@ -63,6 +63,7 @@ import {
 import { DomScrollableElement } from "../scrollbar/scrollableElement.js";
 
 export const MENU_MNEMONIC_REGEX = /\(&([^\s&])\)|(^|[^&])&([^\s&])/;
+
 export const MENU_ESCAPED_MNEMONIC_REGEX = /(&amp;)?(&amp;)([^\s&])/g;
 
 export enum HorizontalDirection {

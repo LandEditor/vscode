@@ -64,9 +64,11 @@ const ActionWidgetContextKeys = {
 		),
 	),
 };
+
 export const IActionWidgetService = createDecorator<IActionWidgetService>(
 	"actionWidgetService",
 );
+
 export interface IActionWidgetService {
 	readonly _serviceBrand: undefined;
 	show<T>(

@@ -76,6 +76,7 @@ export const originalBackgroundColor = registerColor(
 	"",
 	true,
 );
+
 export const modifiedBackgroundColor = registerColor(
 	"inlineEdit.modifiedBackground",
 	transparent(diffInserted, 0.4),

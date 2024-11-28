@@ -16,6 +16,7 @@ export const testFs = new TestFS("fake-fs", true);
 vscode.workspace.registerFileSystemProvider(testFs.scheme, testFs, {
 	isCaseSensitive: testFs.isCaseSensitive,
 });
+
 export async function createRandomFile(
 	contents = "",
 	dir: vscode.Uri | undefined = undefined,

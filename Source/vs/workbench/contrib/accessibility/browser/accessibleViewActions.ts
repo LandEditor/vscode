@@ -279,6 +279,7 @@ export const AccessibilityHelpAction = registerCommand(
 		],
 	}),
 );
+
 export const AccessibleViewAction = registerCommand(
 	new MultiCommand({
 		id: AccessibilityCommandId.OpenAccessibleView,

@@ -14,6 +14,7 @@ import {
 export const INotebookSearchService = createDecorator<INotebookSearchService>(
 	"notebookSearchService",
 );
+
 export interface INotebookSearchService {
 	readonly _serviceBrand: undefined;
 	notebookSearch(

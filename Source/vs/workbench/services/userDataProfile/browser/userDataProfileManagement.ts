@@ -53,9 +53,11 @@ export type ProfileManagementActionExecutedClassification = {
 		comment: "The identifier of the action that was run.";
 	};
 };
+
 export type ProfileManagementActionExecutedEvent = {
 	id: string;
 };
+
 export class UserDataProfileManagementService
 	extends Disposable
 	implements IUserDataProfileManagementService

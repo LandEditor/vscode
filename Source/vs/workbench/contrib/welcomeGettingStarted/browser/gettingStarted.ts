@@ -156,6 +156,7 @@ export const allWalkthroughsHiddenContext = new RawContextKey<boolean>(
 	"allWalkthroughsHidden",
 	false,
 );
+
 export const inWelcomeContext = new RawContextKey<boolean>("inWelcome", false);
 
 export interface IWelcomePageStartEntry {
@@ -209,6 +210,7 @@ type GettingStartedActionEvent = {
 type RecentEntry = (IRecentFolder | IRecentWorkspace) & { id: string };
 
 const REDUCED_MOTION_KEY = "workbench.welcomePage.preferReducedMotion";
+
 export class GettingStartedPage extends EditorPane {
 	public static readonly ID = "gettingStartedPage";
 

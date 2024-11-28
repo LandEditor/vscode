@@ -497,6 +497,7 @@ export const NewWindowTabHandler: ICommandHandler = function (
 	}
 	return accessor.get(INativeHostService).newWindowTab();
 };
+
 export const ShowPreviousWindowTabHandler: ICommandHandler = function (
 	accessor: ServicesAccessor,
 ) {
@@ -505,6 +506,7 @@ export const ShowPreviousWindowTabHandler: ICommandHandler = function (
 	}
 	return accessor.get(INativeHostService).showPreviousWindowTab();
 };
+
 export const ShowNextWindowTabHandler: ICommandHandler = function (
 	accessor: ServicesAccessor,
 ) {
@@ -513,6 +515,7 @@ export const ShowNextWindowTabHandler: ICommandHandler = function (
 	}
 	return accessor.get(INativeHostService).showNextWindowTab();
 };
+
 export const MoveWindowTabToNewWindowHandler: ICommandHandler = function (
 	accessor: ServicesAccessor,
 ) {
@@ -521,6 +524,7 @@ export const MoveWindowTabToNewWindowHandler: ICommandHandler = function (
 	}
 	return accessor.get(INativeHostService).moveWindowTabToNewWindow();
 };
+
 export const MergeWindowTabsHandlerHandler: ICommandHandler = function (
 	accessor: ServicesAccessor,
 ) {
@@ -529,6 +533,7 @@ export const MergeWindowTabsHandlerHandler: ICommandHandler = function (
 	}
 	return accessor.get(INativeHostService).mergeAllWindowTabs();
 };
+
 export const ToggleWindowTabsBarHandler: ICommandHandler = function (
 	accessor: ServicesAccessor,
 ) {

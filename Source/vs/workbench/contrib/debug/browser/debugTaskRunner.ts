@@ -54,6 +54,7 @@ const onceFilter = (
 	event: Event<ITaskEvent>,
 	filter: (e: ITaskEvent) => boolean,
 ) => Event.once(Event.filter(event, filter));
+
 export const enum TaskRunResult {
 	Failure,
 	Success,

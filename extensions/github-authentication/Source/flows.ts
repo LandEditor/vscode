@@ -589,6 +589,7 @@ const allFlows: IFlow[] = [
 		}
 	})(),
 ];
+
 export function getFlows(query: IFlowQuery) {
 	return allFlows.filter((flow) => {
 		let useFlow: boolean = true;

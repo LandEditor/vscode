@@ -45,6 +45,7 @@ interface SessionData {
 }
 // TODO@jrieken this duplicates a config key
 const key = "chat.editing.alwaysSaveWithGeneratedChanges";
+
 export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 	declare readonly _serviceBrand: undefined;
 	private readonly _store = new DisposableStore();

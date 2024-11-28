@@ -31,6 +31,7 @@ const NLS_REGEX_TOGGLE_LABEL = nls.localize(
 	"regexDescription",
 	"Use Regular Expression",
 );
+
 export class CaseSensitiveToggle extends Toggle {
 	constructor(opts: IFindInputToggleOpts) {
 		super({

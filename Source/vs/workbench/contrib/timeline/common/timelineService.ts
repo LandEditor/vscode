@@ -27,6 +27,7 @@ export const TimelineHasProviderContext = new RawContextKey<boolean>(
 	"timelineHasProvider",
 	false,
 );
+
 export class TimelineService implements ITimelineService {
 	declare readonly _serviceBrand: undefined;
 	private readonly _onDidChangeProviders =

@@ -62,6 +62,7 @@ export class ExtensionKey {
 }
 
 const EXTENSION_IDENTIFIER_WITH_VERSION_REGEX = /^([^.]+\..+)@((prerelease)|(\d+\.\d+\.\d+(-.*)?))$/;
+
 export function getIdAndVersion(id: string): [string, string | undefined] {
 	const matches = EXTENSION_IDENTIFIER_WITH_VERSION_REGEX.exec(id);
 	if (matches && matches[1]) {

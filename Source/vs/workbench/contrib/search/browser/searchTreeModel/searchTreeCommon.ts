@@ -30,11 +30,13 @@ import { NotebookEditorWidget } from "../../../notebook/browser/notebookEditorWi
 import { RangeHighlightDecorations } from "./rangeDecorations.js";
 
 export type FileMatchOrMatch = ISearchTreeFileMatch | ISearchTreeMatch;
+
 export type RenderableMatch =
 	| ITextSearchHeading
 	| ISearchTreeFolderMatch
 	| ISearchTreeFileMatch
 	| ISearchTreeMatch;
+
 export function arrayContainsElementOrParent(
 	element: RenderableMatch,
 	testArray: RenderableMatch[],
@@ -61,7 +63,9 @@ export enum SearchModelLocation {
 	QUICK_ACCESS,
 }
 export const PLAIN_TEXT_SEARCH__RESULT_ID = "plainTextSearch";
+
 export const AI_TEXT_SEARCH_RESULT_ID = "aiTextSearch";
+
 export function createParentList(element: RenderableMatch): RenderableMatch[] {
 	const parentArray: RenderableMatch[] = [];
 
@@ -74,11 +78,17 @@ export function createParentList(element: RenderableMatch): RenderableMatch[] {
 	return parentArray;
 }
 export const SEARCH_MODEL_PREFIX = "SEARCH_MODEL_";
+
 export const SEARCH_RESULT_PREFIX = "SEARCH_RESULT_";
+
 export const TEXT_SEARCH_HEADING_PREFIX = "TEXT_SEARCH_HEADING_";
+
 export const FOLDER_MATCH_PREFIX = "FOLDER_MATCH_";
+
 export const FILE_MATCH_PREFIX = "FILE_MATCH_";
+
 export const MATCH_PREFIX = "MATCH_";
+
 export function mergeSearchResultEvents(events: IChangeEvent[]): IChangeEvent {
 	const retEvent: IChangeEvent = {
 		elements: [],

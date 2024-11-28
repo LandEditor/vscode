@@ -45,6 +45,7 @@ import {
  * @see https://github.com/microsoft/vscode/issues/211462#issuecomment-2155471996
  */
 const socketEndTimeoutMs = 30000;
+
 export class NodeSocket implements ISocket {
 	public readonly debugLabel: string;
 	public readonly socket: Socket;
@@ -952,6 +953,7 @@ const safeIpcPathLengths: {
 	[Platform.Linux]: 107,
 	[Platform.Mac]: 103,
 };
+
 export function createRandomIPCHandle(): string {
 	const randomSuffix = generateUuid();
 	// Windows: use named pipe
@@ -1057,7 +1059,9 @@ export class Server extends IPCServer {
 	}
 }
 export function serve(port: number): Promise<Server>;
+
 export function serve(namedPipe: string): Promise<Server>;
+
 export function serve(hook: any): Promise<Server> {
 	return new Promise<Server>((c, e) => {
 		const server = createServer();
@@ -1075,8 +1079,11 @@ export function connect(
 	},
 	clientId: string,
 ): Promise<Client>;
+
 export function connect(port: number, clientId: string): Promise<Client>;
+
 export function connect(namedPipe: string, clientId: string): Promise<Client>;
+
 export function connect(hook: any, clientId: string): Promise<Client> {
 	return new Promise<Client>((c, e) => {
 		const socket = createConnection(hook, () => {

@@ -179,6 +179,7 @@ const _REGULAR_OPTIONS = ModelDecorationOptions.register({
 		position: MinimapPosition.Inline,
 	},
 });
+
 export function getHighlightDecorationOptions(
 	kind: DocumentHighlightKind | undefined,
 ): ModelDecorationOptions {

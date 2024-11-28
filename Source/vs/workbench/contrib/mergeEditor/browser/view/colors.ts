@@ -18,6 +18,7 @@ export const diff = registerColor(
 		"The background color for changes.",
 	),
 );
+
 export const diffWord = registerColor(
 	"mergeEditor.change.word.background",
 	{
@@ -31,6 +32,7 @@ export const diffWord = registerColor(
 		"The background color for word changes.",
 	),
 );
+
 export const diffBase = registerColor(
 	"mergeEditor.changeBase.background",
 	{
@@ -44,6 +46,7 @@ export const diffBase = registerColor(
 		"The background color for changes in base.",
 	),
 );
+
 export const diffWordBase = registerColor(
 	"mergeEditor.changeBase.word.background",
 	{
@@ -57,6 +60,7 @@ export const diffWordBase = registerColor(
 		"The background color for word changes in base.",
 	),
 );
+
 export const conflictBorderUnhandledUnfocused = registerColor(
 	"mergeEditor.conflict.unhandledUnfocused.border",
 	{
@@ -70,6 +74,7 @@ export const conflictBorderUnhandledUnfocused = registerColor(
 		"The border color of unhandled unfocused conflicts.",
 	),
 );
+
 export const conflictBorderUnhandledFocused = registerColor(
 	"mergeEditor.conflict.unhandledFocused.border",
 	"#ffa600",
@@ -78,6 +83,7 @@ export const conflictBorderUnhandledFocused = registerColor(
 		"The border color of unhandled focused conflicts.",
 	),
 );
+
 export const conflictBorderHandledUnfocused = registerColor(
 	"mergeEditor.conflict.handledUnfocused.border",
 	"#86868649",
@@ -86,6 +92,7 @@ export const conflictBorderHandledUnfocused = registerColor(
 		"The border color of handled unfocused conflicts.",
 	),
 );
+
 export const conflictBorderHandledFocused = registerColor(
 	"mergeEditor.conflict.handledFocused.border",
 	"#c1c1c1cc",
@@ -94,6 +101,7 @@ export const conflictBorderHandledFocused = registerColor(
 		"The border color of handled focused conflicts.",
 	),
 );
+
 export const handledConflictMinimapOverViewRulerColor = registerColor(
 	"mergeEditor.conflict.handled.minimapOverViewRuler",
 	"#adaca8ee",
@@ -102,6 +110,7 @@ export const handledConflictMinimapOverViewRulerColor = registerColor(
 		"The foreground color for changes in input 1.",
 	),
 );
+
 export const unhandledConflictMinimapOverViewRulerColor = registerColor(
 	"mergeEditor.conflict.unhandled.minimapOverViewRuler",
 	"#fcba03FF",
@@ -110,6 +119,7 @@ export const unhandledConflictMinimapOverViewRulerColor = registerColor(
 		"The foreground color for changes in input 1.",
 	),
 );
+
 export const conflictingLinesBackground = registerColor(
 	"mergeEditor.conflictingLines.background",
 	"#ffea0047",
@@ -120,6 +130,7 @@ export const conflictingLinesBackground = registerColor(
 );
 
 const contentTransparency = 0.4;
+
 export const conflictInput1Background = registerColor(
 	"mergeEditor.conflict.input1.background",
 	transparent(mergeCurrentHeaderBackground, contentTransparency),
@@ -128,6 +139,7 @@ export const conflictInput1Background = registerColor(
 		"The background color of decorations in input 1.",
 	),
 );
+
 export const conflictInput2Background = registerColor(
 	"mergeEditor.conflict.input2.background",
 	transparent(mergeIncomingHeaderBackground, contentTransparency),

@@ -118,7 +118,9 @@ export type LanguageClientConstructor = (
 	description: string,
 	clientOptions: LanguageClientOptions,
 ) => BaseLanguageClient;
+
 export const languageServerDescription = l10n.t("HTML Language Server");
+
 export interface Runtime {
 	TextDecoder: {
 		new (encoding?: string): {

@@ -207,6 +207,7 @@ export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
 }
 
 export const explorerRootErrorEmitter = new Emitter<URI>();
+
 export class ExplorerDataSource
 	implements IAsyncDataSource<ExplorerItem | ExplorerItem[], ExplorerItem>
 {

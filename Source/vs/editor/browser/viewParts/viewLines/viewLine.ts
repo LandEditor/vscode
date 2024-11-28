@@ -55,6 +55,7 @@ const canUseFastRenderedViewLine = (function () {
 })();
 
 let monospaceAssumptionsAreValid = true;
+
 export class ViewLine implements IVisibleLine {
 	public static readonly CLASS_NAME = "view-line";
 	private _options: ViewLineOptions;

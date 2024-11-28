@@ -35,6 +35,7 @@ const bundledDeps = [
 	"libvk_swiftshader.so",
 	"libffmpeg.so",
 ];
+
 export async function getDependencies(
 	packageType: "deb" | "rpm",
 	buildDir: string,

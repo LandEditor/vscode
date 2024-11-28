@@ -22,7 +22,9 @@ export type MarkedToken =
 	| Tokens.Codespan
 	| Tokens.Br
 	| Tokens.Del;
+
 export type Token = MarkedToken | Tokens.Generic;
+
 export declare namespace Tokens {
 	interface Space {
 		type: "space";
@@ -182,6 +184,7 @@ export type Links = Record<
 	string,
 	Pick<Tokens.Link | Tokens.Image, "href" | "title">
 >;
+
 export type TokensList = Token[] & {
 	links: Links;
 };
@@ -274,6 +277,7 @@ declare const blockNormal: {
 	table: RegExp;
 	text: RegExp;
 };
+
 export type BlockKeys = keyof typeof blockNormal;
 declare const inlineNormal: {
 	_backpedal: RegExp;
@@ -296,6 +300,7 @@ declare const inlineNormal: {
 	text: RegExp;
 	url: RegExp;
 };
+
 export type InlineKeys = keyof typeof inlineNormal;
 /**
  * exports
@@ -349,6 +354,7 @@ export declare const block: {
 		RegExp
 	>;
 };
+
 export declare const inline: {
 	normal: {
 		_backpedal: RegExp;
@@ -439,6 +445,7 @@ export declare const inline: {
 		RegExp
 	>;
 };
+
 export interface Rules {
 	block: Record<BlockKeys, RegExp>;
 	inline: Record<InlineKeys, RegExp>;
@@ -510,10 +517,12 @@ export type TokenizerExtensionFunction = (
 	src: string,
 	tokens: Token[] | TokensList,
 ) => Tokens.Generic | undefined;
+
 export type TokenizerStartFunction = (
 	this: TokenizerThis,
 	src: string,
 ) => number | void;
+
 export interface TokenizerExtension {
 	name: string;
 	level: "block" | "inline";
@@ -528,6 +537,7 @@ export type RendererExtensionFunction = (
 	this: RendererThis,
 	token: Tokens.Generic,
 ) => string | false | undefined;
+
 export interface RendererExtension {
 	name: string;
 	renderer: RendererExtensionFunction;
@@ -536,30 +546,37 @@ export type TokenizerAndRendererExtension =
 	| TokenizerExtension
 	| RendererExtension
 	| (TokenizerExtension & RendererExtension);
+
 export type HooksApi = Omit<_Hooks, "constructor" | "options">;
+
 export type HooksObject = {
 	[K in keyof HooksApi]?: (
 		this: _Hooks,
 		...args: Parameters<HooksApi[K]>
 	) => ReturnType<HooksApi[K]> | Promise<ReturnType<HooksApi[K]>>;
 };
+
 export type RendererApi = Omit<_Renderer, "constructor" | "options" | "parser">;
+
 export type RendererObject = {
 	[K in keyof RendererApi]?: (
 		this: _Renderer,
 		...args: Parameters<RendererApi[K]>
 	) => ReturnType<RendererApi[K]> | false;
 };
+
 export type TokenizerApi = Omit<
 	_Tokenizer,
 	"constructor" | "options" | "rules" | "lexer"
 >;
+
 export type TokenizerObject = {
 	[K in keyof TokenizerApi]?: (
 		this: _Tokenizer,
 		...args: Parameters<TokenizerApi[K]>
 	) => ReturnType<TokenizerApi[K]> | false;
 };
+
 export interface MarkedExtension {
 	/**
 	 * True will tell marked to await any walkTokens functions before parsing the tokens and returning an HTML string.
@@ -846,7 +863,9 @@ declare class _Lexer {
  */
 declare function _getDefaults(): MarkedOptions;
 declare let _defaults: MarkedOptions;
+
 export type MaybePromise = void | Promise<void>;
+
 export declare class Marked {
 	defaults: MarkedOptions;
 	options: (opt: MarkedOptions) => this;
@@ -935,16 +954,19 @@ export declare function marked(
 		async: false;
 	},
 ): string;
+
 export declare function marked(
 	src: string,
 	options: MarkedOptions & {
 		async: true;
 	},
 ): Promise<string>;
+
 export declare function marked(
 	src: string,
 	options?: MarkedOptions | undefined | null,
 ): string | Promise<string>;
+
 export declare namespace marked {
 	var options: (options: MarkedOptions) => typeof marked;
 
@@ -999,12 +1021,16 @@ export declare namespace marked {
 	var parse: typeof marked;
 }
 export declare const options: (options: MarkedOptions) => typeof marked;
+
 export declare const setOptions: (options: MarkedOptions) => typeof marked;
+
 export declare const use: (...args: MarkedExtension[]) => typeof marked;
+
 export declare const walkTokens: (
 	tokens: Token[] | TokensList,
 	callback: (token: Token) => MaybePromise | MaybePromise[],
 ) => MaybePromise[];
+
 export declare const parseInline: {
 	(
 		src: string,
@@ -1023,8 +1049,11 @@ export declare const parseInline: {
 		options?: MarkedOptions | undefined | null,
 	): string | Promise<string>;
 };
+
 export declare const parse: typeof marked;
+
 export declare const parser: typeof _Parser.parse;
+
 export declare const lexer: typeof _Lexer.lex;
 
 export {

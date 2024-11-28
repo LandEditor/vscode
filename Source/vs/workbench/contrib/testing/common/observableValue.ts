@@ -14,6 +14,7 @@ export const staticObservableValue = <T>(value: T): IObservableValue<T> => ({
 	onDidChange: Event.None,
 	value,
 });
+
 export class MutableObservableValue<T>
 	extends Disposable
 	implements IObservableValue<T>

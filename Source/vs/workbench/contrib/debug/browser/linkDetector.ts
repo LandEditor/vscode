@@ -60,6 +60,7 @@ type LinkPart = {
 	value: string;
 	captures: string[];
 };
+
 export const enum DebugLinkHoverBehavior {
 	/** A nice workbench hover */
 	Rich,
@@ -80,6 +81,7 @@ export type DebugLinkHoverBehaviorTypeData =
 			type: DebugLinkHoverBehavior.Rich;
 			store: DisposableStore;
 	  };
+
 export interface ILinkDetector {
 	linkify(
 		text: string,

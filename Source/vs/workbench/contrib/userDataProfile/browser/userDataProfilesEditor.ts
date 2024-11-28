@@ -195,6 +195,7 @@ const removeIcon = registerIcon(
 		"Icon for the remove folder icon in the profiles editor.",
 	),
 );
+
 export const profilesSashBorder = registerColor(
 	"profiles.sashBorder",
 	PANEL_BORDER,
@@ -223,6 +224,7 @@ const listStyles = getListStyles({
 	treeInactiveIndentGuidesStroke: undefined,
 	tableOddRowsBackgroundColor: editorBackground,
 });
+
 export class UserDataProfilesEditor
 	extends EditorPane
 	implements IUserDataProfilesEditor

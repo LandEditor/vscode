@@ -447,6 +447,7 @@ registerAction2(
 		}
 	},
 );
+
 export const WorkspacePlatform = new RawContextKey<
 	"mac" | "linux" | "windows" | "webworker" | undefined
 >(

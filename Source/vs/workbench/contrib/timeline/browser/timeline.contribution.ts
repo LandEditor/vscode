@@ -52,6 +52,7 @@ const timelineOpenIcon = registerIcon(
 	Codicon.history,
 	localize("timelineOpenIcon", "Icon for the open timeline action."),
 );
+
 export class TimelinePaneDescriptor implements IViewDescriptor {
 	readonly id = TimelinePaneId;
 	readonly name: ILocalizedString = TimelinePane.TITLE;

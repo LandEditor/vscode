@@ -16,6 +16,7 @@ import {
 export type MementoObject = {
 	[key: string]: any;
 };
+
 export class Memento {
 	private static readonly applicationMementos = new Map<
 		string,

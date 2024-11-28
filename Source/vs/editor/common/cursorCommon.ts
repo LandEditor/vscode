@@ -52,6 +52,7 @@ const autoCloseAlways = () => true;
 const autoCloseNever = () => false;
 
 const autoCloseBeforeWhitespace = (chr: string) => chr === " " || chr === "\t";
+
 export class CursorConfiguration {
 	_cursorMoveConfigurationBrand: void = undefined;
 	public readonly readOnly: boolean;
@@ -345,6 +346,7 @@ export type PartialCursorState =
 	| CursorState
 	| PartialModelCursorState
 	| PartialViewCursorState;
+
 export class CursorState {
 	_cursorStateBrand: void = undefined;
 	public static fromModelState(

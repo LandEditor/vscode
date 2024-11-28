@@ -18,6 +18,7 @@ export const foldSourceAbbr = {
 	[FoldSource.userDefined]: "u",
 	[FoldSource.recovered]: "r",
 };
+
 export interface FoldRange {
 	startLineNumber: number;
 	endLineNumber: number;
@@ -26,6 +27,7 @@ export interface FoldRange {
 	source: FoldSource;
 }
 export const MAX_FOLDING_REGIONS = 0xffff;
+
 export const MAX_LINE_NUMBER = 0xffffff;
 
 const MASK_INDENT = 0xff000000;

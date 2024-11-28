@@ -59,6 +59,7 @@ export const AutoSaveAfterShortDelayContext = new RawContextKey<boolean>(
 	false,
 	true,
 );
+
 export interface IAutoSaveConfiguration {
 	autoSave?: "afterDelay" | "onFocusChange" | "onWindowChange";
 	autoSaveDelay?: number;
@@ -86,6 +87,7 @@ export const enum AutoSaveDisabledReason {
 	DISABLED,
 }
 export type IAutoSaveMode = IEnabledAutoSaveMode | IDisabledAutoSaveMode;
+
 export interface IEnabledAutoSaveMode {
 	readonly mode:
 		| AutoSaveMode.AFTER_SHORT_DELAY
@@ -99,6 +101,7 @@ export interface IDisabledAutoSaveMode {
 }
 export const IFilesConfigurationService =
 	createDecorator<IFilesConfigurationService>("filesConfigurationService");
+
 export interface IFilesConfigurationService {
 	readonly _serviceBrand: undefined;
 	//#region Auto Save

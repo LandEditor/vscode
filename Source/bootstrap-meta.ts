@@ -23,4 +23,5 @@ if (pkgObj["BUILD_INSERT_PACKAGE_CONFIGURATION"]) {
 	pkgObj = require("../package.json"); // Running out of sources
 }
 export const product = productObj;
+
 export const pkg = pkgObj;

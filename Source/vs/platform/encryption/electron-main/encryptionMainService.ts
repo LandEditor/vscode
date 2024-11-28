@@ -22,6 +22,7 @@ interface ISafeStorageAdditionalAPIs {
 
 const safeStorage: typeof import("electron").safeStorage &
 	Partial<ISafeStorageAdditionalAPIs> = safeStorageElectron;
+
 export class EncryptionMainService implements IEncryptionMainService {
 	_serviceBrand: undefined;
 

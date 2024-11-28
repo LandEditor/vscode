@@ -97,7 +97,9 @@ export const REMOTE_TUNNEL_CATEGORY = localize2(
 	"Remote Tunnels",
 );
 type CONTEXT_KEY_STATES = "connected" | "connecting" | "disconnected";
+
 export const REMOTE_TUNNEL_CONNECTION_STATE_KEY = "remoteTunnelConnection";
+
 export const REMOTE_TUNNEL_CONNECTION_STATE =
 	new RawContextKey<CONTEXT_KEY_STATES>(
 		REMOTE_TUNNEL_CONNECTION_STATE_KEY,

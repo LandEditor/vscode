@@ -12,6 +12,7 @@ import { GlyphMarginLane } from "../../../common/model.js";
 import { IHoverComputer } from "./hoverOperation.js";
 
 export type LaneOrLineNumber = GlyphMarginLane | "lineNo";
+
 export interface IHoverMessage {
 	value: IMarkdownString;
 }

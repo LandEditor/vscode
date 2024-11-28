@@ -11,36 +11,43 @@ export const debugConsoleViewIcon = registerIcon(
 	Codicon.debugConsole,
 	localize("debugConsoleViewIcon", "View icon of the debug console view."),
 );
+
 export const runViewIcon = registerIcon(
 	"run-view-icon",
 	Codicon.debugAlt,
 	localize("runViewIcon", "View icon of the run view."),
 );
+
 export const variablesViewIcon = registerIcon(
 	"variables-view-icon",
 	Codicon.debugAlt,
 	localize("variablesViewIcon", "View icon of the variables view."),
 );
+
 export const watchViewIcon = registerIcon(
 	"watch-view-icon",
 	Codicon.debugAlt,
 	localize("watchViewIcon", "View icon of the watch view."),
 );
+
 export const callStackViewIcon = registerIcon(
 	"callstack-view-icon",
 	Codicon.debugAlt,
 	localize("callStackViewIcon", "View icon of the call stack view."),
 );
+
 export const breakpointsViewIcon = registerIcon(
 	"breakpoints-view-icon",
 	Codicon.debugAlt,
 	localize("breakpointsViewIcon", "View icon of the breakpoints view."),
 );
+
 export const loadedScriptsViewIcon = registerIcon(
 	"loaded-scripts-view-icon",
 	Codicon.debugAlt,
 	localize("loadedScriptsViewIcon", "View icon of the loaded scripts view."),
 );
+
 export const breakpoint = {
 	regular: registerIcon(
 		"debug-breakpoint",
@@ -69,6 +76,7 @@ export const breakpoint = {
 		),
 	),
 };
+
 export const functionBreakpoint = {
 	regular: registerIcon(
 		"debug-breakpoint-function",
@@ -92,6 +100,7 @@ export const functionBreakpoint = {
 		),
 	),
 };
+
 export const conditionalBreakpoint = {
 	regular: registerIcon(
 		"debug-breakpoint-conditional",
@@ -118,6 +127,7 @@ export const conditionalBreakpoint = {
 		),
 	),
 };
+
 export const dataBreakpoint = {
 	regular: registerIcon(
 		"debug-breakpoint-data",
@@ -141,6 +151,7 @@ export const dataBreakpoint = {
 		),
 	),
 };
+
 export const logBreakpoint = {
 	regular: registerIcon(
 		"debug-breakpoint-log",
@@ -164,6 +175,7 @@ export const logBreakpoint = {
 		),
 	),
 };
+
 export const debugBreakpointHint = registerIcon(
 	"debug-hint",
 	Codicon.debugHint,
@@ -172,11 +184,13 @@ export const debugBreakpointHint = registerIcon(
 		"Icon for breakpoint hints shown on hover in editor glyph margin.",
 	),
 );
+
 export const debugBreakpointUnsupported = registerIcon(
 	"debug-breakpoint-unsupported",
 	Codicon.debugBreakpointUnsupported,
 	localize("debugBreakpointUnsupported", "Icon for unsupported breakpoints."),
 );
+
 export const allBreakpoints = [
 	breakpoint,
 	functionBreakpoint,
@@ -184,6 +198,7 @@ export const allBreakpoints = [
 	dataBreakpoint,
 	logBreakpoint,
 ];
+
 export const debugStackframe = registerIcon(
 	"debug-stackframe",
 	Codicon.debugStackframe,
@@ -192,6 +207,7 @@ export const debugStackframe = registerIcon(
 		"Icon for a stackframe shown in the editor glyph margin.",
 	),
 );
+
 export const debugStackframeFocused = registerIcon(
 	"debug-stackframe-focused",
 	Codicon.debugStackframeFocused,
@@ -200,61 +216,73 @@ export const debugStackframeFocused = registerIcon(
 		"Icon for a focused stackframe  shown in the editor glyph margin.",
 	),
 );
+
 export const debugGripper = registerIcon(
 	"debug-gripper",
 	Codicon.gripper,
 	localize("debugGripper", "Icon for the debug bar gripper."),
 );
+
 export const debugRestartFrame = registerIcon(
 	"debug-restart-frame",
 	Codicon.debugRestartFrame,
 	localize("debugRestartFrame", "Icon for the debug restart frame action."),
 );
+
 export const debugStop = registerIcon(
 	"debug-stop",
 	Codicon.debugStop,
 	localize("debugStop", "Icon for the debug stop action."),
 );
+
 export const debugDisconnect = registerIcon(
 	"debug-disconnect",
 	Codicon.debugDisconnect,
 	localize("debugDisconnect", "Icon for the debug disconnect action."),
 );
+
 export const debugRestart = registerIcon(
 	"debug-restart",
 	Codicon.debugRestart,
 	localize("debugRestart", "Icon for the debug restart action."),
 );
+
 export const debugStepOver = registerIcon(
 	"debug-step-over",
 	Codicon.debugStepOver,
 	localize("debugStepOver", "Icon for the debug step over action."),
 );
+
 export const debugStepInto = registerIcon(
 	"debug-step-into",
 	Codicon.debugStepInto,
 	localize("debugStepInto", "Icon for the debug step into action."),
 );
+
 export const debugStepOut = registerIcon(
 	"debug-step-out",
 	Codicon.debugStepOut,
 	localize("debugStepOut", "Icon for the debug step out action."),
 );
+
 export const debugStepBack = registerIcon(
 	"debug-step-back",
 	Codicon.debugStepBack,
 	localize("debugStepBack", "Icon for the debug step back action."),
 );
+
 export const debugPause = registerIcon(
 	"debug-pause",
 	Codicon.debugPause,
 	localize("debugPause", "Icon for the debug pause action."),
 );
+
 export const debugContinue = registerIcon(
 	"debug-continue",
 	Codicon.debugContinue,
 	localize("debugContinue", "Icon for the debug continue action."),
 );
+
 export const debugReverseContinue = registerIcon(
 	"debug-reverse-continue",
 	Codicon.debugReverseContinue,
@@ -263,31 +291,37 @@ export const debugReverseContinue = registerIcon(
 		"Icon for the debug reverse continue action.",
 	),
 );
+
 export const debugRun = registerIcon(
 	"debug-run",
 	Codicon.run,
 	localize("debugRun", "Icon for the run or debug action."),
 );
+
 export const debugStart = registerIcon(
 	"debug-start",
 	Codicon.debugStart,
 	localize("debugStart", "Icon for the debug start action."),
 );
+
 export const debugConfigure = registerIcon(
 	"debug-configure",
 	Codicon.gear,
 	localize("debugConfigure", "Icon for the debug configure action."),
 );
+
 export const debugConsole = registerIcon(
 	"debug-console",
 	Codicon.gear,
 	localize("debugConsole", "Icon for the debug console open action."),
 );
+
 export const debugRemoveConfig = registerIcon(
 	"debug-remove-config",
 	Codicon.trash,
 	localize("debugRemoveConfig", "Icon for removing debug configurations."),
 );
+
 export const debugCollapseAll = registerIcon(
 	"debug-collapse-all",
 	Codicon.collapseAll,
@@ -296,6 +330,7 @@ export const debugCollapseAll = registerIcon(
 		"Icon for the collapse all action in the debug views.",
 	),
 );
+
 export const callstackViewSession = registerIcon(
 	"callstack-view-session",
 	Codicon.bug,
@@ -304,6 +339,7 @@ export const callstackViewSession = registerIcon(
 		"Icon for the session icon in the call stack view.",
 	),
 );
+
 export const debugConsoleClearAll = registerIcon(
 	"debug-console-clear-all",
 	Codicon.clearAll,
@@ -312,6 +348,7 @@ export const debugConsoleClearAll = registerIcon(
 		"Icon for the clear all action in the debug console.",
 	),
 );
+
 export const watchExpressionsRemoveAll = registerIcon(
 	"watch-expressions-remove-all",
 	Codicon.closeAll,
@@ -320,6 +357,7 @@ export const watchExpressionsRemoveAll = registerIcon(
 		"Icon for the Remove All action in the watch view.",
 	),
 );
+
 export const watchExpressionRemove = registerIcon(
 	"watch-expression-remove",
 	Codicon.removeClose,
@@ -328,6 +366,7 @@ export const watchExpressionRemove = registerIcon(
 		"Icon for the Remove action in the watch view.",
 	),
 );
+
 export const watchExpressionsAdd = registerIcon(
 	"watch-expressions-add",
 	Codicon.add,
@@ -336,6 +375,7 @@ export const watchExpressionsAdd = registerIcon(
 		"Icon for the add action in the watch view.",
 	),
 );
+
 export const watchExpressionsAddFuncBreakpoint = registerIcon(
 	"watch-expressions-add-function-breakpoint",
 	Codicon.add,
@@ -344,6 +384,7 @@ export const watchExpressionsAddFuncBreakpoint = registerIcon(
 		"Icon for the add function breakpoint action in the watch view.",
 	),
 );
+
 export const watchExpressionsAddDataBreakpoint = registerIcon(
 	"watch-expressions-add-data-breakpoint",
 	Codicon.variableGroup,
@@ -352,6 +393,7 @@ export const watchExpressionsAddDataBreakpoint = registerIcon(
 		"Icon for the add data breakpoint action in the breakpoints view.",
 	),
 );
+
 export const breakpointsRemoveAll = registerIcon(
 	"breakpoints-remove-all",
 	Codicon.closeAll,
@@ -360,6 +402,7 @@ export const breakpointsRemoveAll = registerIcon(
 		"Icon for the Remove All action in the breakpoints view.",
 	),
 );
+
 export const breakpointsActivate = registerIcon(
 	"breakpoints-activate",
 	Codicon.activateBreakpoints,
@@ -368,6 +411,7 @@ export const breakpointsActivate = registerIcon(
 		"Icon for the activate action in the breakpoints view.",
 	),
 );
+
 export const debugConsoleEvaluationInput = registerIcon(
 	"debug-console-evaluation-input",
 	Codicon.arrowSmallRight,
@@ -376,6 +420,7 @@ export const debugConsoleEvaluationInput = registerIcon(
 		"Icon for the debug evaluation input marker.",
 	),
 );
+
 export const debugConsoleEvaluationPrompt = registerIcon(
 	"debug-console-evaluation-prompt",
 	Codicon.chevronRight,
@@ -384,6 +429,7 @@ export const debugConsoleEvaluationPrompt = registerIcon(
 		"Icon for the debug evaluation prompt.",
 	),
 );
+
 export const debugInspectMemory = registerIcon(
 	"debug-inspect-memory",
 	Codicon.fileBinary,

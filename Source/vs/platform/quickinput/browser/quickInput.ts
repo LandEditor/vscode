@@ -82,6 +82,7 @@ import {
 } from "./quickInputUtils.js";
 
 export const inQuickInputContextKeyValue = "inQuickInput";
+
 export const InQuickInputContextKey = new RawContextKey<boolean>(
 	inQuickInputContextKeyValue,
 	false,
@@ -90,16 +91,21 @@ export const InQuickInputContextKey = new RawContextKey<boolean>(
 		"Whether keyboard focus is inside the quick input control",
 	),
 );
+
 export const inQuickInputContext = ContextKeyExpr.has(
 	inQuickInputContextKeyValue,
 );
+
 export const quickInputTypeContextKeyValue = "quickInputType";
+
 export const QuickInputTypeContextKey = new RawContextKey<QuickInputType>(
 	quickInputTypeContextKeyValue,
 	undefined,
 	localize("quickInputType", "The type of the currently visible quick input"),
 );
+
 export const endOfQuickInputBoxContextKeyValue = "cursorAtEndOfQuickInputBox";
+
 export const EndOfQuickInputBoxContextKey = new RawContextKey<boolean>(
 	endOfQuickInputBoxContextKeyValue,
 	false,
@@ -108,9 +114,11 @@ export const EndOfQuickInputBoxContextKey = new RawContextKey<boolean>(
 		"Whether the cursor in the quick input is at the end of the input box",
 	),
 );
+
 export const endOfQuickInputBoxContext = ContextKeyExpr.has(
 	endOfQuickInputBoxContextKeyValue,
 );
+
 export interface IQuickInputOptions {
 	idPrefix: string;
 	container: HTMLElement;
@@ -152,11 +160,13 @@ export interface IQuickInputWidgetStyles {
 export type Writeable<T> = {
 	-readonly [P in keyof T]: T[P];
 };
+
 export const backButton = {
 	iconClass: ThemeIcon.asClassName(Codicon.quickInputBack),
 	tooltip: localize("quickInput.back", "Back"),
 	handle: -1, // TODO
 };
+
 export interface QuickInputUI {
 	container: HTMLElement;
 	styleSheet: HTMLStyleElement;

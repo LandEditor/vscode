@@ -214,6 +214,7 @@ export interface IDiffEditorViewState {
  * An editor view state.
  */
 export type IEditorViewState = ICodeEditorViewState | IDiffEditorViewState;
+
 export const enum ScrollType {
 	Smooth = 0,
 	Immediate = 1,

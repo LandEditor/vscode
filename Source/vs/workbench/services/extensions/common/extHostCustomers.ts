@@ -27,10 +27,12 @@ export type IExtHostNamedCustomer<T extends IDisposable> = [
 	ProxyIdentifier<T>,
 	IExtHostCustomerCtor<T>,
 ];
+
 export type IExtHostCustomerCtor<T extends IDisposable> = IConstructorSignature<
 	T,
 	[IExtHostContext]
 >;
+
 export function extHostNamedCustomer<T extends IDisposable>(
 	id: ProxyIdentifier<T>,
 ) {

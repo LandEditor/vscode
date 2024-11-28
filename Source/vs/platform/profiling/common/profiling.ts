@@ -33,6 +33,7 @@ export interface IV8CallFrame {
 }
 export const IV8InspectProfilingService =
 	createDecorator<IV8InspectProfilingService>("IV8InspectProfilingService");
+
 export interface IV8InspectProfilingService {
 	_serviceBrand: undefined;
 	startProfiling(options: { host: string; port: number }): Promise<string>;

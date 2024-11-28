@@ -63,6 +63,7 @@ const decorationRefUrl = `http://_vscodedecoration_`;
 const agentRefUrl = `http://_chatagent_`;
 /** For rendering agent decorations with hover */
 const agentSlashRefUrl = `http://_chatslash_`;
+
 export function agentToMarkdown(
 	agent: IChatAgentData,
 	isClickable: boolean,

@@ -56,6 +56,7 @@ type ErrorEventFragment = {
 		comment: "How many times this error has been thrown";
 	};
 };
+
 export interface ErrorEvent {
 	callstack: string;
 	msg?: string;

@@ -88,6 +88,7 @@ import {
 import { NotebooKernelActionViewItem } from "./viewParts/notebookKernelView.js";
 
 const NOTEBOOK_EDITOR_VIEW_STATE_PREFERENCE_KEY = "NotebookEditorViewState";
+
 export class NotebookEditor
 	extends EditorPane
 	implements INotebookEditorPane, IEditorPaneWithScrolling

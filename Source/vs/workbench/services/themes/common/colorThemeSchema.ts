@@ -114,7 +114,9 @@ const textMateScopes = [
 	"variable.other.readwrite",
 	"variable.parameter",
 ];
+
 export const textmateColorsSchemaId = "vscode://schemas/textmate-colors";
+
 export const textmateColorGroupSchemaId = `${textmateColorsSchemaId}#/definitions/colorGroup`;
 
 const textmateColorSchema: IJSONSchema = {
@@ -256,6 +258,7 @@ const textmateColorSchema: IJSONSchema = {
 		additionalProperties: false,
 	},
 };
+
 export const colorThemeSchemaId = "vscode://schemas/color-theme";
 
 const colorThemeSchema: IJSONSchema = {
@@ -306,6 +309,7 @@ const colorThemeSchema: IJSONSchema = {
 		},
 	},
 };
+
 export function registerColorThemeSchemas() {
 	const schemaRegistry = Registry.as<IJSONContributionRegistry>(
 		JSONExtensions.JSONContribution,

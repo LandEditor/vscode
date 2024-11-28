@@ -13,9 +13,11 @@ export const ISemanticTokensStylingService =
 	createDecorator<ISemanticTokensStylingService>(
 		"semanticTokensStylingService",
 	);
+
 export type DocumentTokensProvider =
 	| DocumentSemanticTokensProvider
 	| DocumentRangeSemanticTokensProvider;
+
 export interface ISemanticTokensStylingService {
 	readonly _serviceBrand: undefined;
 

@@ -12,6 +12,7 @@ export const Schemes = Object.freeze({
 	"vscode-insiders": "vscode-insiders",
 	notebookCell: "vscode-notebook-cell",
 });
+
 export function isOfScheme(scheme: string, link: string): boolean {
 	return link.toLowerCase().startsWith(scheme + ":");
 }

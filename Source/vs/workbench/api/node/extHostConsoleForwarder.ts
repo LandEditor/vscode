@@ -8,6 +8,7 @@ import { IExtHostInitDataService } from "../common/extHostInitDataService.js";
 import { IExtHostRpcService } from "../common/extHostRpcService.js";
 
 const MAX_STREAM_BUFFER_LENGTH = 1024 * 1024;
+
 export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 	private _isMakingConsoleCall: boolean = false;
 

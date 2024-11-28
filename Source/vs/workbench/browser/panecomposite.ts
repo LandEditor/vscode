@@ -234,6 +234,7 @@ export const Extensions = {
 	Panels: "workbench.contributions.panels",
 	Auxiliary: "workbench.contributions.auxiliary",
 };
+
 export class PaneCompositeRegistry extends CompositeRegistry<PaneComposite> {
 	/**
 	 * Registers a viewlet to the platform.

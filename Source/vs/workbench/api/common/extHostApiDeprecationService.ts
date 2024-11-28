@@ -20,6 +20,7 @@ export const IExtHostApiDeprecationService =
 	createDecorator<IExtHostApiDeprecationService>(
 		"IExtHostApiDeprecationService",
 	);
+
 export class ExtHostApiDeprecationService
 	implements IExtHostApiDeprecationService
 {

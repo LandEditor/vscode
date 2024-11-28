@@ -29,6 +29,7 @@ const NotebookEditorContribution = Object.freeze({
 	selector: "selector",
 	priority: "priority",
 });
+
 export interface INotebookEditorContribution {
 	readonly [NotebookEditorContribution.type]: string;
 	readonly [NotebookEditorContribution.displayName]: string;
@@ -48,6 +49,7 @@ const NotebookRendererContribution = Object.freeze({
 	optionalDependencies: "optionalDependencies",
 	requiresMessaging: "requiresMessaging",
 });
+
 export interface INotebookRendererContribution {
 	readonly [NotebookRendererContribution.id]?: string;
 	readonly [NotebookRendererContribution.displayName]: string;
@@ -341,6 +343,7 @@ const notebookPreloadContribution: IJSONSchema = {
 		},
 	},
 };
+
 export const notebooksExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<INotebookEditorContribution[]>({
 		extensionPoint: "notebooks",
@@ -358,6 +361,7 @@ export const notebooksExtensionPoint =
 			}
 		},
 	});
+
 export const notebookRendererExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<INotebookRendererContribution[]>({
 		extensionPoint: "notebookRenderer",
@@ -375,6 +379,7 @@ export const notebookRendererExtensionPoint =
 			}
 		},
 	});
+
 export const notebookPreloadExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<INotebookPreloadContribution[]>({
 		extensionPoint: "notebookPreload",

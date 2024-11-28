@@ -39,6 +39,7 @@ export const searchEditorFindMatch = registerColor(
 		"Color of the Search Editor query matches.",
 	),
 );
+
 export const searchEditorFindMatchBorder = registerColor(
 	"searchEditor.findMatchBorder",
 	{

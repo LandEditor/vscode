@@ -17,6 +17,7 @@ import { IPosition, Position } from "../../../common/core/position.js";
 const TOP_HEIGHT = 30;
 
 const BOTTOM_HEIGHT = 24;
+
 export abstract class ResizableContentWidget
 	extends Disposable
 	implements IContentWidget

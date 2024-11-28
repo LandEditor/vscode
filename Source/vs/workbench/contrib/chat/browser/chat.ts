@@ -67,6 +67,7 @@ export async function showEditsView(
 
 export const IQuickChatService =
 	createDecorator<IQuickChatService>("quickChatService");
+
 export interface IQuickChatService {
 	readonly _serviceBrand: undefined;
 	readonly onDidClose: Event<void>;
@@ -96,6 +97,7 @@ export interface IQuickChatOpenOptions {
 
 export const IChatAccessibilityService =
 	createDecorator<IChatAccessibilityService>("chatAccessibilityService");
+
 export interface IChatAccessibilityService {
 	readonly _serviceBrand: undefined;
 	acceptRequest(): number;
@@ -263,6 +265,7 @@ export const IChatCodeBlockContextProviderService =
 	createDecorator<IChatCodeBlockContextProviderService>(
 		"chatCodeBlockContextProviderService",
 	);
+
 export interface IChatCodeBlockContextProviderService {
 	readonly _serviceBrand: undefined;
 	readonly providers: ICodeBlockActionContextProvider[];

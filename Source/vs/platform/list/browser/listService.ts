@@ -119,6 +119,7 @@ export type ListWidget =
 	| DataTree<any, any, any>
 	| AsyncDataTree<any, any, any>
 	| Table<any>;
+
 export type WorkbenchListWidget =
 	| WorkbenchList<any>
 	| WorkbenchPagedList<any>
@@ -128,7 +129,9 @@ export type WorkbenchListWidget =
 	| WorkbenchAsyncDataTree<any, any, any>
 	| WorkbenchCompressibleAsyncDataTree<any, any, any>
 	| WorkbenchTable<any>;
+
 export const IListService = createDecorator<IListService>("listService");
+
 export interface IListService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -195,65 +198,81 @@ export class ListService implements IListService {
 export const RawWorkbenchListScrollAtBoundaryContextKey = new RawContextKey<
 	"none" | "top" | "bottom" | "both"
 >("listScrollAtBoundary", "none");
+
 export const WorkbenchListScrollAtTopContextKey = ContextKeyExpr.or(
 	RawWorkbenchListScrollAtBoundaryContextKey.isEqualTo("top"),
 	RawWorkbenchListScrollAtBoundaryContextKey.isEqualTo("both"),
 );
+
 export const WorkbenchListScrollAtBottomContextKey = ContextKeyExpr.or(
 	RawWorkbenchListScrollAtBoundaryContextKey.isEqualTo("bottom"),
 	RawWorkbenchListScrollAtBoundaryContextKey.isEqualTo("both"),
 );
+
 export const RawWorkbenchListFocusContextKey = new RawContextKey<boolean>(
 	"listFocus",
 	true,
 );
+
 export const WorkbenchTreeStickyScrollFocused = new RawContextKey<boolean>(
 	"treestickyScrollFocused",
 	false,
 );
+
 export const WorkbenchListSupportsMultiSelectContextKey =
 	new RawContextKey<boolean>("listSupportsMultiselect", true);
+
 export const WorkbenchListFocusContextKey = ContextKeyExpr.and(
 	RawWorkbenchListFocusContextKey,
 	ContextKeyExpr.not(InputFocusedContextKey),
 	WorkbenchTreeStickyScrollFocused.negate(),
 );
+
 export const WorkbenchListHasSelectionOrFocus = new RawContextKey<boolean>(
 	"listHasSelectionOrFocus",
 	false,
 );
+
 export const WorkbenchListDoubleSelection = new RawContextKey<boolean>(
 	"listDoubleSelection",
 	false,
 );
+
 export const WorkbenchListMultiSelection = new RawContextKey<boolean>(
 	"listMultiSelection",
 	false,
 );
+
 export const WorkbenchListSelectionNavigation = new RawContextKey<boolean>(
 	"listSelectionNavigation",
 	false,
 );
+
 export const WorkbenchListSupportsFind = new RawContextKey<boolean>(
 	"listSupportsFind",
 	true,
 );
+
 export const WorkbenchTreeElementCanCollapse = new RawContextKey<boolean>(
 	"treeElementCanCollapse",
 	false,
 );
+
 export const WorkbenchTreeElementHasParent = new RawContextKey<boolean>(
 	"treeElementHasParent",
 	false,
 );
+
 export const WorkbenchTreeElementCanExpand = new RawContextKey<boolean>(
 	"treeElementCanExpand",
 	false,
 );
+
 export const WorkbenchTreeElementHasChild = new RawContextKey<boolean>(
 	"treeElementHasChild",
 	false,
 );
+
 export const WorkbenchTreeFindOpen = new RawContextKey<boolean>(
 	"treeFindOpen",
 	false,

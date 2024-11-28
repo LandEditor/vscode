@@ -101,13 +101,16 @@ const tokenGroupToScopesMap = {
 	functions: ["entity.name.function", "support.function"],
 	variables: ["variable", "entity.name.variable"],
 };
+
 export type TokenStyleDefinition =
 	| SemanticTokenRule
 	| ProbeScope[]
 	| TokenStyleValue;
+
 export type TokenStyleDefinitions = {
 	[P in keyof TokenStyleData]?: TokenStyleDefinition | undefined;
 };
+
 export type TextMateThemingRuleDefinitions = {
 	[P in keyof TokenStyleData]?: ITextMateThemingRule | undefined;
 } & {

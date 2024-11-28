@@ -68,6 +68,7 @@ export const unthemedSelectBoxStyles: ISelectBoxStyles = {
 	selectListBorder: undefined,
 	focusBorder: undefined,
 };
+
 export interface ISelectData {
 	selected: string;
 	index: number;

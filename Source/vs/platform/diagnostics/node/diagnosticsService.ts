@@ -41,6 +41,7 @@ interface ConfigFilePatterns {
 }
 
 const workspaceStatsCache = new Map<string, Promise<WorkspaceStats>>();
+
 export async function collectWorkspaceStats(
 	folder: string,
 	filter: string[],

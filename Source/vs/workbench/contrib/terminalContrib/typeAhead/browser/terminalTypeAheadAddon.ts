@@ -1358,6 +1358,7 @@ const compileExcludeRegexp = (programs = DEFAULT_LOCAL_ECHO_EXCLUDE) =>
 		`\\b(${programs.map(escapeRegExpCharacters).join("|")})\\b`,
 		"i",
 	);
+
 export const enum CharPredictState {
 	/** No characters typed on this line yet */
 	Unknown,

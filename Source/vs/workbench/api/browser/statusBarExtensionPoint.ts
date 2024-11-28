@@ -48,6 +48,7 @@ export const IExtensionStatusBarItemService =
 	createDecorator<IExtensionStatusBarItemService>(
 		"IExtensionStatusBarItemService",
 	);
+
 export interface IExtensionStatusBarItemChangeEvent {
 	readonly added?: ExtensionStatusBarEntry;
 	readonly removed?: string;
@@ -60,6 +61,7 @@ export type ExtensionStatusBarEntry = [
 		priority: number;
 	},
 ];
+
 export const enum StatusBarUpdateKind {
 	DidDefine,
 	DidUpdate,
@@ -377,6 +379,7 @@ const statusBarItemsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 	extensionPoint: "statusBarItems",
 	jsonSchema: statusBarItemsSchema,
 });
+
 export class StatusBarItemsExtensionPoint {
 	constructor(
 		@IExtensionStatusBarItemService

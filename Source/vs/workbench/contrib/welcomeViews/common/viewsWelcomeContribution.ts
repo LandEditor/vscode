@@ -26,6 +26,7 @@ import {
 const viewsRegistry = Registry.as<IViewsRegistry>(
 	ViewContainerExtensions.ViewsRegistry,
 );
+
 export class ViewsWelcomeContribution
 	extends Disposable
 	implements IWorkbenchContribution

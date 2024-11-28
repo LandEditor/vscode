@@ -191,6 +191,7 @@ type SysrootDictEntry = {
 	SysrootDir: string;
 	Tarball: string;
 };
+
 export async function getVSCodeSysroot(
 	arch: DebianArchString,
 ): Promise<string> {

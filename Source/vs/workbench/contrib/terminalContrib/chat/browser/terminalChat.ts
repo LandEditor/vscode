@@ -21,9 +21,11 @@ export const enum TerminalChatCommandId {
 
 export const MENU_TERMINAL_CHAT_WIDGET_INPUT_SIDE_TOOLBAR =
 	MenuId.for("terminalChatWidget");
+
 export const MENU_TERMINAL_CHAT_WIDGET_STATUS = MenuId.for(
 	"terminalChatWidget.status",
 );
+
 export const MENU_TERMINAL_CHAT_WIDGET_TOOLBAR = MenuId.for(
 	"terminalChatWidget.toolbar",
 );

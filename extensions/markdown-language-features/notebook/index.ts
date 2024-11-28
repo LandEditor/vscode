@@ -125,6 +125,7 @@ const allowedSvgTags = Object.freeze([
 const sanitizerOptions: DOMPurify.Config = {
 	ALLOWED_TAGS: [...allowedHtmlTags, ...allowedSvgTags],
 };
+
 export const activate: ActivationFunction<void> = (ctx) => {
 	const markdownIt: MarkdownIt = new MarkdownIt({
 		html: true,

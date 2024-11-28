@@ -18,21 +18,28 @@ import {
 } from "../../../../base/common/stream.js";
 
 export const UTF8 = "utf8";
+
 export const UTF8_with_bom = "utf8bom";
+
 export const UTF16be = "utf16be";
+
 export const UTF16le = "utf16le";
+
 export type UTF_ENCODING =
 	| typeof UTF8
 	| typeof UTF8_with_bom
 	| typeof UTF16be
 	| typeof UTF16le;
+
 export function isUTFEncoding(encoding: string): encoding is UTF_ENCODING {
 	return [UTF8, UTF8_with_bom, UTF16be, UTF16le].some(
 		(utfEncoding) => utfEncoding === encoding,
 	);
 }
 export const UTF16be_BOM = [0xfe, 0xff];
+
 export const UTF16le_BOM = [0xff, 0xfe];
+
 export const UTF8_BOM = [0xef, 0xbb, 0xbf];
 
 const ZERO_BYTE_DETECTION_BUFFER_MAX_LEN = 512; // number of bytes to look at to decide about a file being binary or not
@@ -459,11 +466,13 @@ export function detectEncodingFromBuffer(
 	autoGuessEncoding?: false,
 	candidateGuessEncodings?: string[],
 ): IDetectedEncodingResult;
+
 export function detectEncodingFromBuffer(
 	readResult: IReadResult,
 	autoGuessEncoding?: boolean,
 	candidateGuessEncodings?: string[],
 ): Promise<IDetectedEncodingResult>;
+
 export function detectEncodingFromBuffer(
 	{ buffer, bytesRead }: IReadResult,
 	autoGuessEncoding?: boolean,
@@ -550,6 +559,7 @@ type EncodingsMap = {
 		guessableName?: string;
 	};
 };
+
 export const SUPPORTED_ENCODINGS: EncodingsMap = {
 	utf8: {
 		labelLong: "UTF-8",
@@ -809,6 +819,7 @@ export const SUPPORTED_ENCODINGS: EncodingsMap = {
 		order: 47,
 	},
 };
+
 export const GUESSABLE_ENCODINGS: EncodingsMap = (() => {
 	const guessableEncodings: EncodingsMap = {};
 

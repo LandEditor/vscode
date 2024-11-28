@@ -50,6 +50,7 @@ import { IFileOperationUndoRedoInfo } from "../../workingCopy/common/workingCopy
 
 export const ITextFileService =
 	createDecorator<ITextFileService>("textFileService");
+
 export interface ITextFileService extends IDisposable {
 	readonly _serviceBrand: undefined;
 	/**
@@ -588,13 +589,17 @@ export function stringToSnapshot(value: string): ITextSnapshot {
 	};
 }
 export function toBufferOrReadable(value: string): VSBuffer;
+
 export function toBufferOrReadable(value: ITextSnapshot): VSBufferReadable;
+
 export function toBufferOrReadable(
 	value: string | ITextSnapshot,
 ): VSBuffer | VSBufferReadable;
+
 export function toBufferOrReadable(
 	value: string | ITextSnapshot | undefined,
 ): VSBuffer | VSBufferReadable | undefined;
+
 export function toBufferOrReadable(
 	value: string | ITextSnapshot | undefined,
 ): VSBuffer | VSBufferReadable | undefined {

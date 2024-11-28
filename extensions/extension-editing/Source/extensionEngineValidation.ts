@@ -28,6 +28,7 @@ export interface INormalizedVersion {
 const VERSION_REGEXP = /^(\^|>=)?((\d+)|x)\.((\d+)|x)\.((\d+)|x)(\-.*)?$/;
 
 const NOT_BEFORE_REGEXP = /^-(\d{4})(\d{2})(\d{2})$/;
+
 export function isValidVersionStr(version: string): boolean {
 	version = version.trim();
 

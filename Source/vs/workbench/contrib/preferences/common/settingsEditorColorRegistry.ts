@@ -36,6 +36,7 @@ export const settingsHeaderForeground = registerColor(
 		"The foreground color for a section header or active title.",
 	),
 );
+
 export const settingsHeaderHoverForeground = registerColor(
 	"settings.settingsHeaderHoverForeground",
 	transparent(settingsHeaderForeground, 0.7),
@@ -44,6 +45,7 @@ export const settingsHeaderHoverForeground = registerColor(
 		"The foreground color for a section header or hovered title.",
 	),
 );
+
 export const modifiedItemIndicator = registerColor(
 	"settings.modifiedItemIndicator",
 	{
@@ -57,6 +59,7 @@ export const modifiedItemIndicator = registerColor(
 		"The color of the modified setting indicator.",
 	),
 );
+
 export const settingsHeaderBorder = registerColor(
 	"settings.headerBorder",
 	PANEL_BORDER,
@@ -65,6 +68,7 @@ export const settingsHeaderBorder = registerColor(
 		"The color of the header container border.",
 	),
 );
+
 export const settingsSashBorder = registerColor(
 	"settings.sashBorder",
 	PANEL_BORDER,
@@ -82,6 +86,7 @@ export const settingsSelectBackground = registerColor(
 		"Settings editor dropdown background.",
 	),
 );
+
 export const settingsSelectForeground = registerColor(
 	"settings.dropdownForeground",
 	selectForeground,
@@ -90,11 +95,13 @@ export const settingsSelectForeground = registerColor(
 		"Settings editor dropdown foreground.",
 	),
 );
+
 export const settingsSelectBorder = registerColor(
 	"settings.dropdownBorder",
 	selectBorder,
 	localize("settingsDropdownBorder", "Settings editor dropdown border."),
 );
+
 export const settingsSelectListBorder = registerColor(
 	"settings.dropdownListBorder",
 	editorWidgetBorder,
@@ -112,6 +119,7 @@ export const settingsCheckboxBackground = registerColor(
 		"Settings editor checkbox background.",
 	),
 );
+
 export const settingsCheckboxForeground = registerColor(
 	"settings.checkboxForeground",
 	checkboxForeground,
@@ -120,6 +128,7 @@ export const settingsCheckboxForeground = registerColor(
 		"Settings editor checkbox foreground.",
 	),
 );
+
 export const settingsCheckboxBorder = registerColor(
 	"settings.checkboxBorder",
 	checkboxBorder,
@@ -134,6 +143,7 @@ export const settingsTextInputBackground = registerColor(
 		"Settings editor text input box background.",
 	),
 );
+
 export const settingsTextInputForeground = registerColor(
 	"settings.textInputForeground",
 	inputForeground,
@@ -142,6 +152,7 @@ export const settingsTextInputForeground = registerColor(
 		"Settings editor text input box foreground.",
 	),
 );
+
 export const settingsTextInputBorder = registerColor(
 	"settings.textInputBorder",
 	inputBorder,
@@ -156,6 +167,7 @@ export const settingsNumberInputBackground = registerColor(
 		"Settings editor number input box background.",
 	),
 );
+
 export const settingsNumberInputForeground = registerColor(
 	"settings.numberInputForeground",
 	inputForeground,
@@ -164,6 +176,7 @@ export const settingsNumberInputForeground = registerColor(
 		"Settings editor number input box foreground.",
 	),
 );
+
 export const settingsNumberInputBorder = registerColor(
 	"settings.numberInputBorder",
 	inputBorder,
@@ -172,6 +185,7 @@ export const settingsNumberInputBorder = registerColor(
 		"Settings editor number input box border.",
 	),
 );
+
 export const focusedRowBackground = registerColor(
 	"settings.focusedRowBackground",
 	{
@@ -185,6 +199,7 @@ export const focusedRowBackground = registerColor(
 		"The background color of a settings row when focused.",
 	),
 );
+
 export const rowHoverBackground = registerColor(
 	"settings.rowHoverBackground",
 	{
@@ -198,6 +213,7 @@ export const rowHoverBackground = registerColor(
 		"The background color of a settings row when hovered.",
 	),
 );
+
 export const focusedRowBorder = registerColor(
 	"settings.focusedRowBorder",
 	focusBorder,

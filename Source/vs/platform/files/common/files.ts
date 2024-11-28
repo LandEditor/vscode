@@ -26,6 +26,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 //#region file service & providers
 export const IFileService = createDecorator<IFileService>("fileService");
+
 export interface IFileService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -397,6 +398,7 @@ export interface IFileWriteOptions
 export type IFileOpenOptions =
 	| IFileOpenForReadOptions
 	| IFileOpenForWriteOptions;
+
 export function isFileOpenForWriteOptions(
 	options: IFileOpenOptions,
 ): options is IFileOpenForWriteOptions {
@@ -1480,17 +1482,24 @@ export const AutoSaveConfiguration = {
 	ON_FOCUS_CHANGE: "onFocusChange",
 	ON_WINDOW_CHANGE: "onWindowChange",
 };
+
 export const HotExitConfiguration = {
 	OFF: "off",
 	ON_EXIT: "onExit",
 	ON_EXIT_AND_WINDOW_CLOSE: "onExitAndWindowClose",
 };
+
 export const FILES_ASSOCIATIONS_CONFIG = "files.associations";
+
 export const FILES_EXCLUDE_CONFIG = "files.exclude";
+
 export const FILES_READONLY_INCLUDE_CONFIG = "files.readonlyInclude";
+
 export const FILES_READONLY_EXCLUDE_CONFIG = "files.readonlyExclude";
+
 export const FILES_READONLY_FROM_PERMISSIONS_CONFIG =
 	"files.readonlyFromPermissions";
+
 export interface IGlobPatterns {
 	[filepattern: string]: boolean;
 }
@@ -1533,11 +1542,14 @@ export enum FileKind {
  * A hint to disable etag checking for reading/writing.
  */
 export const ETAG_DISABLED = "";
+
 export function etag(stat: { mtime: number; size: number }): string;
+
 export function etag(stat: {
 	mtime: number | undefined;
 	size: number | undefined;
 }): string | undefined;
+
 export function etag(stat: {
 	mtime: number | undefined;
 	size: number | undefined;
@@ -1593,7 +1605,9 @@ export class ByteSize {
 }
 // File limits
 export function getLargeFileConfirmationLimit(remoteAuthority?: string): number;
+
 export function getLargeFileConfirmationLimit(uri?: URI): number;
+
 export function getLargeFileConfirmationLimit(arg?: string | URI): number {
 	const isRemote =
 		typeof arg === "string" || arg?.scheme === Schemas.vscodeRemote;

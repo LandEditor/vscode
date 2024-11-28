@@ -14,6 +14,7 @@ const emojiRegex = /:([-+_a-z0-9]+):/g;
 let emojiMap: Record<string, string> | undefined;
 
 let emojiMapPromise: Promise<void> | undefined;
+
 export async function ensureEmojis() {
 	if (emojiMap === undefined) {
 		if (emojiMapPromise === undefined) {

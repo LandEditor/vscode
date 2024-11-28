@@ -23,6 +23,7 @@ import {
  * in case the column is invalid.
  */
 export type EditorGroupColumn = number;
+
 export function columnToEditorGroup(
 	editorGroupService: IEditorGroupsService,
 	configurationService: IConfigurationService,

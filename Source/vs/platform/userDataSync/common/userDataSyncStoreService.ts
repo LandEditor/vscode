@@ -84,6 +84,7 @@ const REQUEST_SESSION_INTERVAL = 1000 * 60 * 5; /* 5 minutes */
 type UserDataSyncStore = IUserDataSyncStore & {
 	defaultType: UserDataSyncStoreType;
 };
+
 export abstract class AbstractUserDataSyncStoreManagementService
 	extends Disposable
 	implements IUserDataSyncStoreManagementService

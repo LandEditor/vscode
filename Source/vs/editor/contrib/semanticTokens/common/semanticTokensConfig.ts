@@ -7,6 +7,7 @@ import { IThemeService } from "../../../../platform/theme/common/themeService.js
 import { ITextModel } from "../../../common/model.js";
 
 export const SEMANTIC_HIGHLIGHTING_SETTING_ID = "editor.semanticHighlighting";
+
 export interface IEditorSemanticHighlightingOptions {
 	enabled: true | false | "configuredByTheme";
 }

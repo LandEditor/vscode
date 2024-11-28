@@ -6,6 +6,7 @@ import { assertNever } from "../../../../base/common/assert.js";
 import { URI } from "../../../../base/common/uri.js";
 
 export const TEST_DATA_SCHEME = "vscode-test-data";
+
 export const enum TestUriType {
 	/** All console output for a task */
 	TaskOutput,
@@ -111,6 +112,7 @@ export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
 	}
 	return undefined;
 };
+
 export const buildTestUri = (parsed: ParsedTestUri): URI => {
 	const uriParts = {
 		scheme: TEST_DATA_SCHEME,

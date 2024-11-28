@@ -12,6 +12,7 @@ import {
 } from "./util";
 
 const vendorPrefixes = ["-webkit-", "-moz-", "-ms-", "-o-", ""];
+
 export function reflectCssValue(): Thenable<boolean> | undefined {
 	const editor = window.activeTextEditor;
 

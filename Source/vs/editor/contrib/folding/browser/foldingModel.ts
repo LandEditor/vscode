@@ -40,6 +40,7 @@ interface ILineMemento extends ILineRange {
 	source?: FoldSource;
 }
 export type CollapseMemento = ILineMemento[];
+
 export class FoldingModel {
 	private readonly _textModel: ITextModel;
 	private readonly _decorationProvider: IDecorationProvider;

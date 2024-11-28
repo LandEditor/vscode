@@ -71,6 +71,7 @@ export const globalvariables: IEntries = {
 		description: "Refers to the current object",
 	},
 };
+
 export const compiletimeconstants: IEntries = {
 	__CLASS__: {
 		description:
@@ -180,6 +181,7 @@ export const compiletimeconstants: IEntries = {
 			"The default algorithm to use for hashing if no algorithm is provided. This may change in newer PHP releases when newer, stronger hashing algorithms are supported.",
 	},
 };
+
 export const keywords: IEntries = {
 	define: {
 		description: "Defines a named constant at runtime.",

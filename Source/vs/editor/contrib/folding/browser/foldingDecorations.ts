@@ -53,6 +53,7 @@ registerColor(
 		"Color of the folding control in the editor gutter.",
 	),
 );
+
 export const foldingExpandedIcon = registerIcon(
 	"folding-expanded",
 	Codicon.chevronDown,
@@ -61,6 +62,7 @@ export const foldingExpandedIcon = registerIcon(
 		"Icon for expanded ranges in the editor glyph margin.",
 	),
 );
+
 export const foldingCollapsedIcon = registerIcon(
 	"folding-collapsed",
 	Codicon.chevronRight,
@@ -69,6 +71,7 @@ export const foldingCollapsedIcon = registerIcon(
 		"Icon for collapsed ranges in the editor glyph margin.",
 	),
 );
+
 export const foldingManualCollapsedIcon = registerIcon(
 	"folding-manual-collapsed",
 	foldingCollapsedIcon,
@@ -77,6 +80,7 @@ export const foldingManualCollapsedIcon = registerIcon(
 		"Icon for manually collapsed ranges in the editor glyph margin.",
 	),
 );
+
 export const foldingManualExpandedIcon = registerIcon(
 	"folding-manual-expanded",
 	foldingExpandedIcon,
@@ -94,6 +98,7 @@ const foldedBackgroundMinimap = {
 const collapsed = localize("linesCollapsed", "Click to expand the range.");
 
 const expanded = localize("linesExpanded", "Click to collapse the range.");
+
 export class FoldingDecorationProvider implements IDecorationProvider {
 	private static readonly COLLAPSED_VISUAL_DECORATION =
 		ModelDecorationOptions.register({

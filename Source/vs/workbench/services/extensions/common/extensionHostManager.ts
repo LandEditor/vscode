@@ -108,6 +108,7 @@ type ExtensionHostStartupEvent = {
 	errorMessage?: string;
 	errorStack?: string;
 };
+
 export class ExtensionHostManager
 	extends Disposable
 	implements IExtensionHostManager

@@ -205,6 +205,7 @@ const codeLensDecorationOptions = ModelDecorationOptions.register({
 	collapseOnReplaceEdit: true,
 	description: "codelens",
 });
+
 export class CodeLensWidget {
 	private readonly _editor: IActiveCodeEditor;
 	private readonly _viewZone: CodeLensViewZone;

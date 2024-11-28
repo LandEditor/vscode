@@ -9,6 +9,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 export const IUriIdentityService = createDecorator<IUriIdentityService>(
 	"IUriIdentityService",
 );
+
 export interface IUriIdentityService {
 	readonly _serviceBrand: undefined;
 	/**

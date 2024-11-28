@@ -12,6 +12,7 @@ import * as platform from "../../registry/common/platform.js";
 export const Extensions = {
 	JSONContribution: "base.contributions.json",
 };
+
 export interface ISchemaContributions {
 	schemas: {
 		[id: string]: IJSONSchema;

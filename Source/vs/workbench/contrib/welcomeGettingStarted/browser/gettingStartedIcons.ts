@@ -14,6 +14,7 @@ export const gettingStartedUncheckedCodicon = registerIcon(
 		"Used to represent walkthrough steps which have not been completed",
 	),
 );
+
 export const gettingStartedCheckedCodicon = registerIcon(
 	"getting-started-step-checked",
 	Codicon.passFilled,

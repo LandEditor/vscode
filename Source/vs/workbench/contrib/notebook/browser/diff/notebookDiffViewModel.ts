@@ -794,6 +794,7 @@ export type CellDiffInfo =
 			modifiedCellIndex: number;
 			type: "insert";
 	  };
+
 export function computeDiff(
 	originalModel: NotebookTextModel,
 	modifiedModel: NotebookTextModel,

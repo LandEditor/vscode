@@ -50,10 +50,12 @@ import { ICodeEditor, IDiffEditor } from "./editorBrowser.js";
 import { ICodeEditorService } from "./services/codeEditorService.js";
 
 export type ServicesAccessor = InstantiationServicesAccessor;
+
 export type EditorContributionCtor = IConstructorSignature<
 	IEditorContribution,
 	[ICodeEditor]
 >;
+
 export type DiffEditorContributionCtor = IConstructorSignature<
 	IDiffEditorContribution,
 	[IDiffEditor]

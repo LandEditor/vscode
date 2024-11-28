@@ -26,6 +26,7 @@ import {
  * of the color in the terminal color table.
  */
 export const ansiColorIdentifiers: ColorIdentifier[] = [];
+
 export const TERMINAL_BACKGROUND_COLOR = registerColor(
 	"terminal.background",
 	null,
@@ -34,6 +35,7 @@ export const TERMINAL_BACKGROUND_COLOR = registerColor(
 		"The background color of the terminal, this allows coloring the terminal differently to the panel.",
 	),
 );
+
 export const TERMINAL_FOREGROUND_COLOR = registerColor(
 	"terminal.foreground",
 	{
@@ -47,6 +49,7 @@ export const TERMINAL_FOREGROUND_COLOR = registerColor(
 		"The foreground color of the terminal.",
 	),
 );
+
 export const TERMINAL_CURSOR_FOREGROUND_COLOR = registerColor(
 	"terminalCursor.foreground",
 	null,
@@ -55,6 +58,7 @@ export const TERMINAL_CURSOR_FOREGROUND_COLOR = registerColor(
 		"The foreground color of the terminal cursor.",
 	),
 );
+
 export const TERMINAL_CURSOR_BACKGROUND_COLOR = registerColor(
 	"terminalCursor.background",
 	null,
@@ -63,6 +67,7 @@ export const TERMINAL_CURSOR_BACKGROUND_COLOR = registerColor(
 		"The background color of the terminal cursor. Allows customizing the color of a character overlapped by a block cursor.",
 	),
 );
+
 export const TERMINAL_SELECTION_BACKGROUND_COLOR = registerColor(
 	"terminal.selectionBackground",
 	editorSelectionBackground,
@@ -71,6 +76,7 @@ export const TERMINAL_SELECTION_BACKGROUND_COLOR = registerColor(
 		"The selection background color of the terminal.",
 	),
 );
+
 export const TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR = registerColor(
 	"terminal.inactiveSelectionBackground",
 	{
@@ -84,6 +90,7 @@ export const TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR = registerColor(
 		"The selection background color of the terminal when it does not have focus.",
 	),
 );
+
 export const TERMINAL_SELECTION_FOREGROUND_COLOR = registerColor(
 	"terminal.selectionForeground",
 	{
@@ -97,6 +104,7 @@ export const TERMINAL_SELECTION_FOREGROUND_COLOR = registerColor(
 		"The selection foreground color of the terminal. When this is null the selection foreground will be retained and have the minimum contrast ratio feature applied.",
 	),
 );
+
 export const TERMINAL_COMMAND_DECORATION_DEFAULT_BACKGROUND_COLOR =
 	registerColor(
 		"terminalCommandDecoration.defaultBackground",
@@ -111,6 +119,7 @@ export const TERMINAL_COMMAND_DECORATION_DEFAULT_BACKGROUND_COLOR =
 			"The default terminal command decoration background color.",
 		),
 	);
+
 export const TERMINAL_COMMAND_DECORATION_SUCCESS_BACKGROUND_COLOR =
 	registerColor(
 		"terminalCommandDecoration.successBackground",
@@ -125,6 +134,7 @@ export const TERMINAL_COMMAND_DECORATION_SUCCESS_BACKGROUND_COLOR =
 			"The terminal command decoration background color for successful commands.",
 		),
 	);
+
 export const TERMINAL_COMMAND_DECORATION_ERROR_BACKGROUND_COLOR = registerColor(
 	"terminalCommandDecoration.errorBackground",
 	{
@@ -138,6 +148,7 @@ export const TERMINAL_COMMAND_DECORATION_ERROR_BACKGROUND_COLOR = registerColor(
 		"The terminal command decoration background color for error commands.",
 	),
 );
+
 export const TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR = registerColor(
 	"terminalOverviewRuler.cursorForeground",
 	"#A0A0A0CC",
@@ -146,6 +157,7 @@ export const TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR = registerColor(
 		"The overview ruler cursor color.",
 	),
 );
+
 export const TERMINAL_BORDER_COLOR = registerColor(
 	"terminal.border",
 	PANEL_BORDER,
@@ -154,6 +166,7 @@ export const TERMINAL_BORDER_COLOR = registerColor(
 		"The color of the border that separates split panes within the terminal. This defaults to panel.border.",
 	),
 );
+
 export const TERMINAL_OVERVIEW_RULER_BORDER_COLOR = registerColor(
 	"terminalOverviewRuler.border",
 	editorOverviewRulerBorder,
@@ -162,6 +175,7 @@ export const TERMINAL_OVERVIEW_RULER_BORDER_COLOR = registerColor(
 		"The overview ruler left-side border color.",
 	),
 );
+
 export const TERMINAL_FIND_MATCH_BACKGROUND_COLOR = registerColor(
 	"terminal.findMatchBackground",
 	{
@@ -177,6 +191,7 @@ export const TERMINAL_FIND_MATCH_BACKGROUND_COLOR = registerColor(
 	),
 	true,
 );
+
 export const TERMINAL_HOVER_HIGHLIGHT_BACKGROUND_COLOR = registerColor(
 	"terminal.hoverHighlightBackground",
 	transparent(editorHoverHighlight, 0.5),
@@ -185,6 +200,7 @@ export const TERMINAL_HOVER_HIGHLIGHT_BACKGROUND_COLOR = registerColor(
 		"Border color of the other search matches in the terminal.",
 	),
 );
+
 export const TERMINAL_FIND_MATCH_BORDER_COLOR = registerColor(
 	"terminal.findMatchBorder",
 	{
@@ -198,6 +214,7 @@ export const TERMINAL_FIND_MATCH_BORDER_COLOR = registerColor(
 		"Border color of the current search match in the terminal.",
 	),
 );
+
 export const TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR = registerColor(
 	"terminal.findMatchHighlightBackground",
 	{
@@ -212,6 +229,7 @@ export const TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR = registerColor(
 	),
 	true,
 );
+
 export const TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR = registerColor(
 	"terminal.findMatchHighlightBorder",
 	{
@@ -225,6 +243,7 @@ export const TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR = registerColor(
 		"Border color of the other search matches in the terminal.",
 	),
 );
+
 export const TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR =
 	registerColor(
 		"terminalOverviewRuler.findMatchForeground",
@@ -239,6 +258,7 @@ export const TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR =
 			"Overview ruler marker color for find matches in the terminal.",
 		),
 	);
+
 export const TERMINAL_DRAG_AND_DROP_BACKGROUND = registerColor(
 	"terminal.dropBackground",
 	EDITOR_DRAG_AND_DROP_BACKGROUND,
@@ -248,6 +268,7 @@ export const TERMINAL_DRAG_AND_DROP_BACKGROUND = registerColor(
 	),
 	true,
 );
+
 export const TERMINAL_TAB_ACTIVE_BORDER = registerColor(
 	"terminal.tab.activeBorder",
 	TAB_ACTIVE_BORDER,
@@ -256,6 +277,7 @@ export const TERMINAL_TAB_ACTIVE_BORDER = registerColor(
 		"Border on the side of the terminal tab in the panel. This defaults to tab.activeBorder.",
 	),
 );
+
 export const TERMINAL_INITIAL_HINT_FOREGROUND = registerColor(
 	"terminal.initialHintForeground",
 	{
@@ -269,6 +291,7 @@ export const TERMINAL_INITIAL_HINT_FOREGROUND = registerColor(
 		"Foreground color of the terminal initial hint.",
 	),
 );
+
 export const ansiColorMap: {
 	[key: string]: {
 		index: number;
@@ -421,6 +444,7 @@ export const ansiColorMap: {
 		},
 	},
 };
+
 export function registerColors(): void {
 	for (const id in ansiColorMap) {
 		const entry = ansiColorMap[id];

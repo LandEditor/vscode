@@ -19,6 +19,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const IContextViewService =
 	createDecorator<IContextViewService>("contextViewService");
+
 export interface IContextViewService extends IContextViewProvider {
 	readonly _serviceBrand: undefined;
 	showContextView(
@@ -55,6 +56,7 @@ export interface IOpenContextView {
 }
 export const IContextMenuService =
 	createDecorator<IContextMenuService>("contextMenuService");
+
 export interface IContextMenuService {
 	readonly _serviceBrand: undefined;
 	readonly onDidShowContextMenu: Event<void>;

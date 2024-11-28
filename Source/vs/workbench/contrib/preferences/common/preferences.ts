@@ -38,6 +38,7 @@ export interface IEndpointDetails {
 }
 export const IPreferencesSearchService =
 	createDecorator<IPreferencesSearchService>("preferencesSearchService");
+
 export interface IPreferencesSearchService {
 	readonly _serviceBrand: undefined;
 
@@ -59,100 +60,145 @@ export interface IRemoteSearchProvider extends ISearchProvider {
 }
 export const SETTINGS_EDITOR_COMMAND_CLEAR_SEARCH_RESULTS =
 	"settings.action.clearSearchResults";
+
 export const SETTINGS_EDITOR_COMMAND_SHOW_CONTEXT_MENU =
 	"settings.action.showContextMenu";
+
 export const SETTINGS_EDITOR_COMMAND_SUGGEST_FILTERS =
 	"settings.action.suggestFilters";
+
 export const CONTEXT_SETTINGS_EDITOR = new RawContextKey<boolean>(
 	"inSettingsEditor",
 	false,
 );
+
 export const CONTEXT_SETTINGS_JSON_EDITOR = new RawContextKey<boolean>(
 	"inSettingsJSONEditor",
 	false,
 );
+
 export const CONTEXT_SETTINGS_SEARCH_FOCUS = new RawContextKey<boolean>(
 	"inSettingsSearch",
 	false,
 );
+
 export const CONTEXT_TOC_ROW_FOCUS = new RawContextKey<boolean>(
 	"settingsTocRowFocus",
 	false,
 );
+
 export const CONTEXT_SETTINGS_ROW_FOCUS = new RawContextKey<boolean>(
 	"settingRowFocus",
 	false,
 );
+
 export const CONTEXT_KEYBINDINGS_EDITOR = new RawContextKey<boolean>(
 	"inKeybindings",
 	false,
 );
+
 export const CONTEXT_KEYBINDINGS_SEARCH_FOCUS = new RawContextKey<boolean>(
 	"inKeybindingsSearch",
 	false,
 );
+
 export const CONTEXT_KEYBINDING_FOCUS = new RawContextKey<boolean>(
 	"keybindingFocus",
 	false,
 );
+
 export const CONTEXT_WHEN_FOCUS = new RawContextKey<boolean>(
 	"whenFocus",
 	false,
 );
+
 export const KEYBINDINGS_EDITOR_COMMAND_SEARCH =
 	"keybindings.editor.searchKeybindings";
+
 export const KEYBINDINGS_EDITOR_COMMAND_CLEAR_SEARCH_RESULTS =
 	"keybindings.editor.clearSearchResults";
+
 export const KEYBINDINGS_EDITOR_COMMAND_CLEAR_SEARCH_HISTORY =
 	"keybindings.editor.clearSearchHistory";
+
 export const KEYBINDINGS_EDITOR_COMMAND_RECORD_SEARCH_KEYS =
 	"keybindings.editor.recordSearchKeys";
+
 export const KEYBINDINGS_EDITOR_COMMAND_SORTBY_PRECEDENCE =
 	"keybindings.editor.toggleSortByPrecedence";
+
 export const KEYBINDINGS_EDITOR_COMMAND_DEFINE =
 	"keybindings.editor.defineKeybinding";
+
 export const KEYBINDINGS_EDITOR_COMMAND_ADD =
 	"keybindings.editor.addKeybinding";
+
 export const KEYBINDINGS_EDITOR_COMMAND_DEFINE_WHEN =
 	"keybindings.editor.defineWhenExpression";
+
 export const KEYBINDINGS_EDITOR_COMMAND_ACCEPT_WHEN =
 	"keybindings.editor.acceptWhenExpression";
+
 export const KEYBINDINGS_EDITOR_COMMAND_REJECT_WHEN =
 	"keybindings.editor.rejectWhenExpression";
+
 export const KEYBINDINGS_EDITOR_COMMAND_REMOVE =
 	"keybindings.editor.removeKeybinding";
+
 export const KEYBINDINGS_EDITOR_COMMAND_RESET =
 	"keybindings.editor.resetKeybinding";
+
 export const KEYBINDINGS_EDITOR_COMMAND_COPY =
 	"keybindings.editor.copyKeybindingEntry";
+
 export const KEYBINDINGS_EDITOR_COMMAND_COPY_COMMAND =
 	"keybindings.editor.copyCommandKeybindingEntry";
+
 export const KEYBINDINGS_EDITOR_COMMAND_COPY_COMMAND_TITLE =
 	"keybindings.editor.copyCommandTitle";
+
 export const KEYBINDINGS_EDITOR_COMMAND_SHOW_SIMILAR =
 	"keybindings.editor.showConflicts";
+
 export const KEYBINDINGS_EDITOR_COMMAND_FOCUS_KEYBINDINGS =
 	"keybindings.editor.focusKeybindings";
+
 export const KEYBINDINGS_EDITOR_SHOW_DEFAULT_KEYBINDINGS =
 	"keybindings.editor.showDefaultKeybindings";
+
 export const KEYBINDINGS_EDITOR_SHOW_USER_KEYBINDINGS =
 	"keybindings.editor.showUserKeybindings";
+
 export const KEYBINDINGS_EDITOR_SHOW_EXTENSION_KEYBINDINGS =
 	"keybindings.editor.showExtensionKeybindings";
+
 export const MODIFIED_SETTING_TAG = "modified";
+
 export const EXTENSION_SETTING_TAG = "ext:";
+
 export const FEATURE_SETTING_TAG = "feature:";
+
 export const ID_SETTING_TAG = "id:";
+
 export const LANGUAGE_SETTING_TAG = "lang:";
+
 export const GENERAL_TAG_SETTING_TAG = "tag:";
+
 export const POLICY_SETTING_TAG = "hasPolicy";
+
 export const WORKSPACE_TRUST_SETTING_TAG = "workspaceTrust";
+
 export const REQUIRE_TRUSTED_WORKSPACE_SETTING_TAG = "requireTrustedWorkspace";
+
 export const KEYBOARD_LAYOUT_OPEN_PICKER =
 	"workbench.action.openKeyboardLayoutPicker";
+
 export const ENABLE_LANGUAGE_FILTER = true;
+
 export const ENABLE_EXTENSION_TOGGLE_SETTINGS = true;
+
 export const EXTENSION_FETCH_TIMEOUT_MS = 1000;
+
 export type ExtensionToggleData = {
 	settingsEditorRecommendedExtensions: IStringDictionary<IExtensionRecommendations>;
 	recommendedExtensionsGalleryInfo: IStringDictionary<IGalleryExtension>;
@@ -160,6 +206,7 @@ export type ExtensionToggleData = {
 };
 
 let cachedExtensionToggleData: ExtensionToggleData | undefined;
+
 export async function getExperimentalExtensionToggleData(
 	extensionGalleryService: IExtensionGalleryService,
 	productService: IProductService,
@@ -253,6 +300,7 @@ export const PREVIEW_INDICATOR_DESCRIPTION = localize(
 	"previewIndicatorDescription",
 	"This setting controls a new feature that is still under refinement yet ready to use. Feedback is welcome.",
 );
+
 export const EXPERIMENTAL_INDICATOR_DESCRIPTION = localize(
 	"experimentalIndicatorDescription",
 	"This setting controls a new feature that is actively being developed and may be unstable. It is subject to change or removal.",

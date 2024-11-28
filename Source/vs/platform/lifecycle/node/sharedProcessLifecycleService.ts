@@ -11,6 +11,7 @@ export const ISharedProcessLifecycleService =
 	createDecorator<ISharedProcessLifecycleService>(
 		"sharedProcessLifecycleService",
 	);
+
 export interface ISharedProcessLifecycleService {
 	readonly _serviceBrand: undefined;
 	/**

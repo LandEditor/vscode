@@ -28,6 +28,7 @@ export const showStartEntryInWeb = new RawContextKey<boolean>(
 	"showRemoteStartEntryInWeb",
 	false,
 );
+
 export class RemoteStartEntry
 	extends Disposable
 	implements IWorkbenchContribution

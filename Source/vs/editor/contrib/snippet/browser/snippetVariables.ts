@@ -68,6 +68,7 @@ export const KnownSnippetVariableNames = Object.freeze<{
 	"RANDOM_HEX": true,
 	"UUID": true,
 });
+
 export class CompositeSnippetVariableResolver implements VariableResolver {
 	constructor(private readonly _delegates: VariableResolver[]) {
 		//

@@ -21,6 +21,7 @@ const webviewMimeTypes = new Map([
 	[".xml", "application/xml"],
 	[".wasm", "application/wasm"],
 ]);
+
 export function getWebviewContentMimeType(resource: URI): string {
 	const ext = extname(resource.fsPath).toLowerCase();
 

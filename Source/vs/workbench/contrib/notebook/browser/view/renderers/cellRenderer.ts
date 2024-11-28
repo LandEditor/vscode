@@ -73,6 +73,7 @@ import {
 } from "../notebookRenderingCommon.js";
 
 const $ = DOM.$;
+
 export class NotebookCellListDelegate
 	extends Disposable
 	implements IListVirtualDelegate<CellViewModel>

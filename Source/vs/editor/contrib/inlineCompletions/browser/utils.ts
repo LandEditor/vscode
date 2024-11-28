@@ -28,6 +28,7 @@ import { Range } from "../../../common/core/range.js";
 import { SingleTextEdit, TextEdit } from "../../../common/core/textEdit.js";
 
 const array: ReadonlyArray<any> = [];
+
 export function getReadonlyEmptyArray<T>(): readonly T[] {
 	return array;
 }

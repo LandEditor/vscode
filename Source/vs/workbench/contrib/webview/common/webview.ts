@@ -17,7 +17,9 @@ export interface WebviewRemoteInfo {
  * should always go to a service worker.
  */
 export const webviewResourceBaseHost = "vscode-cdn.net";
+
 export const webviewRootResourceAuthority = `vscode-resource.${webviewResourceBaseHost}`;
+
 export const webviewGenericCspSource = `'self' https://*.${webviewResourceBaseHost}`;
 /**
  * Construct a uri that can load resources inside a webview

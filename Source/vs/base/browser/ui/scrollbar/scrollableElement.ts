@@ -40,6 +40,7 @@ const HIDE_TIMEOUT = 500;
 const SCROLL_WHEEL_SENSITIVITY = 50;
 
 const SCROLL_WHEEL_SMOOTH_SCROLL_ENABLED = true;
+
 export interface IOverviewRulerLayoutInfo {
 	parent: HTMLElement;
 	insertBefore: HTMLElement;

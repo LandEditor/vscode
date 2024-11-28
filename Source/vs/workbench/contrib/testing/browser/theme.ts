@@ -38,6 +38,7 @@ export const testingColorIconFailed = registerColor(
 		"Color for the 'failed' icon in the test explorer.",
 	),
 );
+
 export const testingColorIconErrored = registerColor(
 	"testing.iconErrored",
 	{
@@ -51,6 +52,7 @@ export const testingColorIconErrored = registerColor(
 		"Color for the 'Errored' icon in the test explorer.",
 	),
 );
+
 export const testingColorIconPassed = registerColor(
 	"testing.iconPassed",
 	{
@@ -64,11 +66,13 @@ export const testingColorIconPassed = registerColor(
 		"Color for the 'passed' icon in the test explorer.",
 	),
 );
+
 export const testingColorRunAction = registerColor(
 	"testing.runAction",
 	testingColorIconPassed,
 	localize("testing.runAction", "Color for 'run' icons in the editor."),
 );
+
 export const testingColorIconQueued = registerColor(
 	"testing.iconQueued",
 	"#cca700",
@@ -77,6 +81,7 @@ export const testingColorIconQueued = registerColor(
 		"Color for the 'Queued' icon in the test explorer.",
 	),
 );
+
 export const testingColorIconUnset = registerColor(
 	"testing.iconUnset",
 	"#848484",
@@ -85,6 +90,7 @@ export const testingColorIconUnset = registerColor(
 		"Color for the 'Unset' icon in the test explorer.",
 	),
 );
+
 export const testingColorIconSkipped = registerColor(
 	"testing.iconSkipped",
 	"#848484",
@@ -93,6 +99,7 @@ export const testingColorIconSkipped = registerColor(
 		"Color for the 'Skipped' icon in the test explorer.",
 	),
 );
+
 export const testingPeekBorder = registerColor(
 	"testing.peekBorder",
 	{
@@ -103,6 +110,7 @@ export const testingPeekBorder = registerColor(
 	},
 	localize("testing.peekBorder", "Color of the peek view borders and arrow."),
 );
+
 export const testingMessagePeekBorder = registerColor(
 	"testing.messagePeekBorder",
 	{
@@ -116,6 +124,7 @@ export const testingMessagePeekBorder = registerColor(
 		"Color of the peek view borders and arrow when peeking a logged message.",
 	),
 );
+
 export const testingPeekHeaderBackground = registerColor(
 	"testing.peekHeaderBackground",
 	{
@@ -126,6 +135,7 @@ export const testingPeekHeaderBackground = registerColor(
 	},
 	localize("testing.peekBorder", "Color of the peek view borders and arrow."),
 );
+
 export const testingPeekMessageHeaderBackground = registerColor(
 	"testing.messagePeekHeaderBackground",
 	{
@@ -139,6 +149,7 @@ export const testingPeekMessageHeaderBackground = registerColor(
 		"Color of the peek view borders and arrow when peeking a logged message.",
 	),
 );
+
 export const testingCoveredBackground = registerColor(
 	"testing.coveredBackground",
 	{
@@ -152,6 +163,7 @@ export const testingCoveredBackground = registerColor(
 		"Background color of text that was covered.",
 	),
 );
+
 export const testingCoveredBorder = registerColor(
 	"testing.coveredBorder",
 	{
@@ -162,6 +174,7 @@ export const testingCoveredBorder = registerColor(
 	},
 	localize("testing.coveredBorder", "Border color of text that was covered."),
 );
+
 export const testingCoveredGutterBackground = registerColor(
 	"testing.coveredGutterBackground",
 	{
@@ -175,6 +188,7 @@ export const testingCoveredGutterBackground = registerColor(
 		"Gutter color of regions where code was covered.",
 	),
 );
+
 export const testingUncoveredBranchBackground = registerColor(
 	"testing.uncoveredBranchBackground",
 	{
@@ -188,6 +202,7 @@ export const testingUncoveredBranchBackground = registerColor(
 		"Background of the widget shown for an uncovered branch.",
 	),
 );
+
 export const testingUncoveredBackground = registerColor(
 	"testing.uncoveredBackground",
 	{
@@ -201,6 +216,7 @@ export const testingUncoveredBackground = registerColor(
 		"Background color of text that was not covered.",
 	),
 );
+
 export const testingUncoveredBorder = registerColor(
 	"testing.uncoveredBorder",
 	{
@@ -214,6 +230,7 @@ export const testingUncoveredBorder = registerColor(
 		"Border color of text that was not covered.",
 	),
 );
+
 export const testingUncoveredGutterBackground = registerColor(
 	"testing.uncoveredGutterBackground",
 	{
@@ -227,6 +244,7 @@ export const testingUncoveredGutterBackground = registerColor(
 		"Gutter color of regions where code not covered.",
 	),
 );
+
 export const testingCoverCountBadgeBackground = registerColor(
 	"testing.coverCountBadgeBackground",
 	badgeBackground,
@@ -235,6 +253,7 @@ export const testingCoverCountBadgeBackground = registerColor(
 		"Background for the badge indicating execution count",
 	),
 );
+
 export const testingCoverCountBadgeForeground = registerColor(
 	"testing.coverCountBadgeForeground",
 	badgeForeground,
@@ -301,6 +320,7 @@ export const testStatesToIconColors: { [K in TestResultState]?: string } = {
 	[TestResultState.Unset]: testingColorIconUnset,
 	[TestResultState.Skipped]: testingColorIconSkipped,
 };
+
 export const testingRetiredColorIconErrored = registerColor(
 	"testing.iconErrored.retired",
 	transparent(testingColorIconErrored, 0.7),
@@ -309,6 +329,7 @@ export const testingRetiredColorIconErrored = registerColor(
 		"Retired color for the 'Errored' icon in the test explorer.",
 	),
 );
+
 export const testingRetiredColorIconFailed = registerColor(
 	"testing.iconFailed.retired",
 	transparent(testingColorIconFailed, 0.7),
@@ -317,6 +338,7 @@ export const testingRetiredColorIconFailed = registerColor(
 		"Retired color for the 'failed' icon in the test explorer.",
 	),
 );
+
 export const testingRetiredColorIconPassed = registerColor(
 	"testing.iconPassed.retired",
 	transparent(testingColorIconPassed, 0.7),
@@ -325,6 +347,7 @@ export const testingRetiredColorIconPassed = registerColor(
 		"Retired color for the 'passed' icon in the test explorer.",
 	),
 );
+
 export const testingRetiredColorIconQueued = registerColor(
 	"testing.iconQueued.retired",
 	transparent(testingColorIconQueued, 0.7),
@@ -333,6 +356,7 @@ export const testingRetiredColorIconQueued = registerColor(
 		"Retired color for the 'Queued' icon in the test explorer.",
 	),
 );
+
 export const testingRetiredColorIconUnset = registerColor(
 	"testing.iconUnset.retired",
 	transparent(testingColorIconUnset, 0.7),
@@ -341,6 +365,7 @@ export const testingRetiredColorIconUnset = registerColor(
 		"Retired color for the 'Unset' icon in the test explorer.",
 	),
 );
+
 export const testingRetiredColorIconSkipped = registerColor(
 	"testing.iconSkipped.retired",
 	transparent(testingColorIconSkipped, 0.7),
@@ -349,6 +374,7 @@ export const testingRetiredColorIconSkipped = registerColor(
 		"Retired color for the 'Skipped' icon in the test explorer.",
 	),
 );
+
 export const testStatesToRetiredIconColors: {
 	[K in TestResultState]?: string;
 } = {

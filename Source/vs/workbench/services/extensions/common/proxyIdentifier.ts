@@ -37,6 +37,7 @@ export class ProxyIdentifier<T> {
 }
 
 const identifiers: ProxyIdentifier<any>[] = [];
+
 export function createProxyIdentifier<T>(
 	identifier: string,
 ): ProxyIdentifier<T> {
@@ -63,6 +64,7 @@ export type Dto<T> = T extends {
 							[k in keyof T]: Dto<T[k]>;
 						}
 					: T;
+
 export type Proxied<T> = {
 	[K in keyof T]: T[K] extends (...args: infer A) => infer R
 		? (
@@ -72,6 +74,7 @@ export type Proxied<T> = {
 			) => Promise<Dto<Awaited<R>>>
 		: never;
 };
+
 export function getStringIdentifierForProxy(nid: number): string {
 	return identifiers[nid].sid;
 }

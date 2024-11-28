@@ -28,6 +28,7 @@ import { IStandaloneThemeService } from "../common/standaloneTheme.js";
 const ttPolicy = createTrustedTypesPolicy("standaloneColorizer", {
 	createHTML: (value) => value,
 });
+
 export interface IColorizerOptions {
 	tabSize?: number;
 }

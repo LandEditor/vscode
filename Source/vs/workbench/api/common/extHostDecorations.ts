@@ -173,4 +173,5 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 export const IExtHostDecorations = createDecorator<IExtHostDecorations>(
 	"IExtHostDecorations",
 );
+
 export interface IExtHostDecorations extends ExtHostDecorations {}

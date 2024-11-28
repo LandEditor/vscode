@@ -41,6 +41,7 @@ import { IDebugVisualizerService } from "../common/debugVisualizers.js";
 import { LinkDetector } from "./linkDetector.js";
 
 const $ = dom.$;
+
 export interface IRenderValueOptions {
 	showChanged?: boolean;
 	maxValueLength?: number;

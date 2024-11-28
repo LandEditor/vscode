@@ -123,6 +123,7 @@ function darwinBundleDocumentTypes(
 }
 
 const { electronVersion, msBuildId } = util.getElectronVersion();
+
 export const config = {
 	version: electronVersion,
 	tag: product.electronRepository

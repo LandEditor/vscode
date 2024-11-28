@@ -11,6 +11,7 @@ export const extensionsViewIcon = registerIcon(
 	Codicon.extensions,
 	localize("extensionsViewIcon", "View icon of the extensions view."),
 );
+
 export const manageExtensionIcon = registerIcon(
 	"extensions-manage",
 	Codicon.gear,
@@ -19,6 +20,7 @@ export const manageExtensionIcon = registerIcon(
 		"Icon for the 'Manage' action in the extensions view.",
 	),
 );
+
 export const clearSearchResultsIcon = registerIcon(
 	"extensions-clear-search-results",
 	Codicon.clearAll,
@@ -27,6 +29,7 @@ export const clearSearchResultsIcon = registerIcon(
 		"Icon for the 'Clear Search Result' action in the extensions view.",
 	),
 );
+
 export const refreshIcon = registerIcon(
 	"extensions-refresh",
 	Codicon.refresh,
@@ -35,6 +38,7 @@ export const refreshIcon = registerIcon(
 		"Icon for the 'Refresh' action in the extensions view.",
 	),
 );
+
 export const filterIcon = registerIcon(
 	"extensions-filter",
 	Codicon.filter,
@@ -43,6 +47,7 @@ export const filterIcon = registerIcon(
 		"Icon for the 'Filter' action in the extensions view.",
 	),
 );
+
 export const installLocalInRemoteIcon = registerIcon(
 	"extensions-install-local-in-remote",
 	Codicon.cloudDownload,
@@ -51,6 +56,7 @@ export const installLocalInRemoteIcon = registerIcon(
 		"Icon for the 'Install Local Extension in Remote' action in the extensions view.",
 	),
 );
+
 export const installWorkspaceRecommendedIcon = registerIcon(
 	"extensions-install-workspace-recommended",
 	Codicon.cloudDownload,
@@ -59,6 +65,7 @@ export const installWorkspaceRecommendedIcon = registerIcon(
 		"Icon for the 'Install Workspace Recommended Extensions' action in the extensions view.",
 	),
 );
+
 export const configureRecommendedIcon = registerIcon(
 	"extensions-configure-recommended",
 	Codicon.pencil,
@@ -67,6 +74,7 @@ export const configureRecommendedIcon = registerIcon(
 		"Icon for the 'Configure Recommended Extensions' action in the extensions view.",
 	),
 );
+
 export const syncEnabledIcon = registerIcon(
 	"extensions-sync-enabled",
 	Codicon.sync,
@@ -75,6 +83,7 @@ export const syncEnabledIcon = registerIcon(
 		"Icon to indicate that an extension is synced.",
 	),
 );
+
 export const syncIgnoredIcon = registerIcon(
 	"extensions-sync-ignored",
 	Codicon.syncIgnored,
@@ -83,6 +92,7 @@ export const syncIgnoredIcon = registerIcon(
 		"Icon to indicate that an extension is ignored when syncing.",
 	),
 );
+
 export const remoteIcon = registerIcon(
 	"extensions-remote",
 	Codicon.remote,
@@ -91,6 +101,7 @@ export const remoteIcon = registerIcon(
 		"Icon to indicate that an extension is remote in the extensions view and editor.",
 	),
 );
+
 export const installCountIcon = registerIcon(
 	"extensions-install-count",
 	Codicon.cloudDownload,
@@ -99,6 +110,7 @@ export const installCountIcon = registerIcon(
 		"Icon shown along with the install count in the extensions view and editor.",
 	),
 );
+
 export const ratingIcon = registerIcon(
 	"extensions-rating",
 	Codicon.star,
@@ -107,6 +119,7 @@ export const ratingIcon = registerIcon(
 		"Icon shown along with the rating in the extensions view and editor.",
 	),
 );
+
 export const verifiedPublisherIcon = registerIcon(
 	"extensions-verified-publisher",
 	Codicon.verifiedFilled,
@@ -115,6 +128,7 @@ export const verifiedPublisherIcon = registerIcon(
 		"Icon used for the verified extension publisher in the extensions view and editor.",
 	),
 );
+
 export const preReleaseIcon = registerIcon(
 	"extensions-pre-release",
 	Codicon.versions,
@@ -123,6 +137,7 @@ export const preReleaseIcon = registerIcon(
 		"Icon shown for extensions having pre-release versions in extensions view and editor.",
 	),
 );
+
 export const sponsorIcon = registerIcon(
 	"extensions-sponsor",
 	Codicon.heartFilled,
@@ -131,6 +146,7 @@ export const sponsorIcon = registerIcon(
 		"Icon used for sponsoring extensions in the extensions view and editor.",
 	),
 );
+
 export const starFullIcon = registerIcon(
 	"extensions-star-full",
 	Codicon.starFull,
@@ -139,6 +155,7 @@ export const starFullIcon = registerIcon(
 		"Full star icon used for the rating in the extensions editor.",
 	),
 );
+
 export const starHalfIcon = registerIcon(
 	"extensions-star-half",
 	Codicon.starHalf,
@@ -147,6 +164,7 @@ export const starHalfIcon = registerIcon(
 		"Half star icon used for the rating in the extensions editor.",
 	),
 );
+
 export const starEmptyIcon = registerIcon(
 	"extensions-star-empty",
 	Codicon.starEmpty,
@@ -155,6 +173,7 @@ export const starEmptyIcon = registerIcon(
 		"Empty star icon used for the rating in the extensions editor.",
 	),
 );
+
 export const errorIcon = registerIcon(
 	"extensions-error-message",
 	Codicon.error,
@@ -163,6 +182,7 @@ export const errorIcon = registerIcon(
 		"Icon shown with a error message in the extensions editor.",
 	),
 );
+
 export const warningIcon = registerIcon(
 	"extensions-warning-message",
 	Codicon.warning,
@@ -171,6 +191,7 @@ export const warningIcon = registerIcon(
 		"Icon shown with a warning message in the extensions editor.",
 	),
 );
+
 export const infoIcon = registerIcon(
 	"extensions-info-message",
 	Codicon.info,
@@ -179,6 +200,7 @@ export const infoIcon = registerIcon(
 		"Icon shown with an info message in the extensions editor.",
 	),
 );
+
 export const trustIcon = registerIcon(
 	"extension-workspace-trust",
 	Codicon.shield,
@@ -187,6 +209,7 @@ export const trustIcon = registerIcon(
 		"Icon shown with a workspace trust message in the extension editor.",
 	),
 );
+
 export const activationTimeIcon = registerIcon(
 	"extension-activation-time",
 	Codicon.history,

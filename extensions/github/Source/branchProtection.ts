@@ -63,6 +63,7 @@ const REPOSITORY_RULESETS_QUERY = `
 		}
 	}
 `;
+
 export class GithubBranchProtectionProviderManager {
 	private readonly disposables = new DisposableStore();
 	private readonly providerDisposables = new DisposableStore();

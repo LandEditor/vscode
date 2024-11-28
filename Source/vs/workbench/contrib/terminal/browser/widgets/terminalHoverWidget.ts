@@ -21,6 +21,7 @@ import { TerminalSettingId } from "../../../../../platform/terminal/common/termi
 import { ITerminalWidget } from "./widgets.js";
 
 const $ = dom.$;
+
 export interface ILinkHoverTargetOptions {
 	readonly viewportRange: IViewportRange;
 	readonly cellDimensions: {

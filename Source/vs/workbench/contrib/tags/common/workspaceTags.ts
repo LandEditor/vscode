@@ -13,9 +13,11 @@ import {
 export type Tags = {
 	[index: string]: boolean | number | string | undefined;
 };
+
 export const IWorkspaceTagsService = createDecorator<IWorkspaceTagsService>(
 	"workspaceTagsService",
 );
+
 export interface IWorkspaceTagsService {
 	readonly _serviceBrand: undefined;
 

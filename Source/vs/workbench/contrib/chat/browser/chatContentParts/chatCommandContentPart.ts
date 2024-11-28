@@ -17,6 +17,7 @@ import {
 } from "./chatContentParts.js";
 
 const $ = dom.$;
+
 export class ChatCommandButtonContentPart
 	extends Disposable
 	implements IChatContentPart

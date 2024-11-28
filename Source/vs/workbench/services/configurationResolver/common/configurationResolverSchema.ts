@@ -24,6 +24,7 @@ const defaultDescription = nls.localize(
 	"JsonSchema.input.default",
 	"The default value for the input.",
 );
+
 export const inputsSchema: IJSONSchema = {
 	definitions: {
 		inputs: {

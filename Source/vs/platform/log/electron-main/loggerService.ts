@@ -21,6 +21,7 @@ export const ILoggerMainService = refineServiceDecorator<
 	ILoggerService,
 	ILoggerMainService
 >(ILoggerService);
+
 export interface ILoggerMainService extends ILoggerService {
 	getOnDidChangeLogLevelEvent(
 		windowId: number,

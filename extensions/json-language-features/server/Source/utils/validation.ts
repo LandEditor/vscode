@@ -18,10 +18,12 @@ import { RuntimeEnvironment } from "../jsonServer";
 import { formatError, runSafeAsync } from "./runner";
 
 export type Validator = (textDocument: TextDocument) => Promise<Diagnostic[]>;
+
 export type DiagnosticsSupport = {
 	dispose(): void;
 	requestRefresh(): void;
 };
+
 export function registerDiagnosticsPushSupport(
 	documents: TextDocuments<TextDocument>,
 	connection: Connection,

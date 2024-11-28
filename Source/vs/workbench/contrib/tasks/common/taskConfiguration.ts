@@ -216,6 +216,7 @@ export type CommandString =
 			value: string | string[];
 			quoting: "escape" | "strong" | "weak";
 	  };
+
 export namespace CommandString {
 	export function value(value: CommandString): string {
 		if (Types.isString(value)) {
@@ -2976,6 +2977,7 @@ class ConfigurationParser {
 const uuidMaps: Map<TaskConfigSource, Map<string, UUIDMap>> = new Map();
 
 const recentUuidMaps: Map<TaskConfigSource, Map<string, UUIDMap>> = new Map();
+
 export function parse(
 	workspaceFolder: IWorkspaceFolder,
 	workspace: IWorkspace | undefined,

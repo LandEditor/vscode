@@ -154,6 +154,7 @@ export type ScanOptions = {
 
 export const IExtensionsScannerService =
 	createDecorator<IExtensionsScannerService>("IExtensionsScannerService");
+
 export interface IExtensionsScannerService {
 	readonly _serviceBrand: undefined;
 

@@ -151,12 +151,14 @@ type Settings = {
 		proxyStrictSSL?: boolean;
 	};
 };
+
 export type JSONSchemaSettings = {
 	fileMatch?: string[];
 	url?: string;
 	schema?: any;
 	folderUri?: string;
 };
+
 export namespace SettingIds {
 	export const enableFormatter = "json.format.enable";
 
@@ -194,6 +196,7 @@ export type LanguageClientConstructor = (
 	description: string,
 	clientOptions: LanguageClientOptions,
 ) => BaseLanguageClient;
+
 export interface Runtime {
 	schemaRequests: SchemaRequestService;
 	telemetry?: TelemetryReporter;
@@ -221,6 +224,7 @@ let jsoncFoldingLimit = 5000;
 let jsonColorDecoratorLimit = 5000;
 
 let jsoncColorDecoratorLimit = 5000;
+
 export interface AsyncDisposable {
 	dispose(): Promise<void>;
 }

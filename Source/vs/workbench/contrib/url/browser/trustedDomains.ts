@@ -20,9 +20,12 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
 
 const TRUSTED_DOMAINS_URI = URI.parse("trustedDomains:/Trusted Domains");
+
 export const TRUSTED_DOMAINS_STORAGE_KEY = "http.linkProtectionTrustedDomains";
+
 export const TRUSTED_DOMAINS_CONTENT_STORAGE_KEY =
 	"http.linkProtectionTrustedDomainsContent";
+
 export const manageTrustedDomainSettingsCommand = {
 	id: "workbench.action.manageTrustedDomain",
 	description: {
@@ -53,6 +56,7 @@ type ConfigureTrustedDomainsQuickPickItem = IQuickPickItem &
 				toTrust: string;
 		  }
 	);
+
 export async function configureOpenerTrustedDomainsHandler(
 	trustedDomains: string[],
 	domainToConfigure: string,

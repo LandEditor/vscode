@@ -35,6 +35,7 @@ interface SiblingClause {
 	when: string;
 }
 export const GLOBSTAR = "**";
+
 export const GLOB_SPLIT = "/";
 
 const PATH_REGEX = "[/\\\\]"; // any slash or backslash
@@ -534,6 +535,7 @@ export function match(
 	pattern: string | IRelativePattern,
 	path: string,
 ): boolean;
+
 export function match(
 	expression: IExpression,
 	path: string,
@@ -562,14 +564,17 @@ export function parse(
 	pattern: string | IRelativePattern,
 	options?: IGlobOptions,
 ): ParsedPattern;
+
 export function parse(
 	expression: IExpression,
 	options?: IGlobOptions,
 ): ParsedExpression;
+
 export function parse(
 	arg1: string | IExpression | IRelativePattern,
 	options?: IGlobOptions,
 ): ParsedPattern | ParsedExpression;
+
 export function parse(
 	arg1: string | IExpression | IRelativePattern,
 	options: IGlobOptions = {},

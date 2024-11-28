@@ -22,6 +22,7 @@ const WorkspaceTrustEditorIcon = registerIcon(
 		"Icon of the workspace trust editor label.",
 	),
 );
+
 export class WorkspaceTrustEditorInput extends EditorInput {
 	static readonly ID: string = "workbench.input.workspaceTrust";
 	override get capabilities(): EditorInputCapabilities {

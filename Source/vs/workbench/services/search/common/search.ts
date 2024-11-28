@@ -24,11 +24,17 @@ import {
 } from "./searchExtTypes.js";
 
 export { TextSearchCompleteMessageType };
+
 export const VIEWLET_ID = "workbench.view.search";
+
 export const PANEL_ID = "workbench.panel.search";
+
 export const VIEW_ID = "workbench.view.search";
+
 export const SEARCH_RESULT_LANGUAGE_ID = "search-result";
+
 export const SEARCH_EXCLUDE_CONFIG = "search.exclude";
+
 export const DEFAULT_MAX_SEARCH_RESULTS = 20000;
 // Warning: this pattern is used in the search editor to detect offsets. If you
 // change this, also change the search-result built-in extension
@@ -38,6 +44,7 @@ const SEARCH_ELIDED_SUFFIX = " characters skipped ⟫";
 
 const SEARCH_ELIDED_MIN_LEN =
 	(SEARCH_ELIDED_PREFIX.length + SEARCH_ELIDED_SUFFIX.length + 5) * 2;
+
 export const ISearchService = createDecorator<ISearchService>("searchService");
 /**
  * A service that enables to search for files or with in files.
@@ -164,14 +171,23 @@ export interface IAITextQueryProps<U extends UriComponents>
 	userDisabledExcludesAndIgnoreFiles?: boolean;
 }
 export type IFileQuery = IFileQueryProps<URI>;
+
 export type IRawFileQuery = IFileQueryProps<UriComponents>;
+
 export type ITextQuery = ITextQueryProps<URI>;
+
 export type IRawTextQuery = ITextQueryProps<UriComponents>;
+
 export type IAITextQuery = IAITextQueryProps<URI>;
+
 export type IRawAITextQuery = IAITextQueryProps<UriComponents>;
+
 export type IRawQuery = IRawTextQuery | IRawFileQuery | IRawAITextQuery;
+
 export type ISearchQuery = ITextQuery | IFileQuery | IAITextQuery;
+
 export type ITextSearchQuery = ITextQuery | IAITextQuery;
+
 export const enum QueryType {
 	File = 1,
 	Text = 2,
@@ -211,6 +227,7 @@ export interface IFileMatch<U extends UriComponents = URI> {
 	results?: ITextSearchResult<U>[];
 }
 export type IRawFileMatch2 = IFileMatch<UriComponents>;
+
 export interface ITextSearchPreviewOptions {
 	matchLines: number;
 	charsPerLine: number;
@@ -236,6 +253,7 @@ export interface ITextSearchContext<U extends UriComponents = URI> {
 export type ITextSearchResult<U extends UriComponents = URI> =
 	| ITextSearchMatch<U>
 	| ITextSearchContext<U>;
+
 export function resultIsMatch(
 	result: ITextSearchResult,
 ): result is ITextSearchMatch {
@@ -248,6 +266,7 @@ export interface IProgressMessage {
 	message: string;
 }
 export type ISearchProgressItem = IFileMatch | IProgressMessage;
+
 export function isFileMatch(p: ISearchProgressItem): p is IFileMatch {
 	return !!(<IFileMatch>p).resource;
 }
@@ -669,6 +688,7 @@ export interface ISerializedSearchError {
 export type ISerializedSearchComplete =
 	| ISerializedSearchSuccess
 	| ISerializedSearchError;
+
 export function isSerializedSearchComplete(
 	arg: ISerializedSearchProgressItem | ISerializedSearchComplete,
 ): arg is ISerializedSearchComplete {
@@ -713,10 +733,12 @@ export type ISerializedSearchProgressItem =
 	| ISerializedFileMatch
 	| ISerializedFileMatch[]
 	| IProgressMessage;
+
 export type IFileSearchProgressItem =
 	| IRawFileMatch
 	| IRawFileMatch[]
 	| IProgressMessage;
+
 export class SerializableFileMatch implements ISerializedFileMatch {
 	path: string;
 	results: ITextSearchMatch[];

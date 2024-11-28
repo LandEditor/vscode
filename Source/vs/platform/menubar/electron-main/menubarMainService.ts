@@ -17,6 +17,7 @@ import { Menubar } from "./menubar.js";
 
 export const IMenubarMainService =
 	createDecorator<IMenubarMainService>("menubarMainService");
+
 export interface IMenubarMainService extends ICommonMenubarService {
 	readonly _serviceBrand: undefined;
 }

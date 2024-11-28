@@ -142,6 +142,7 @@ export function matchesSomeScheme(
 	return schemes.some((scheme) => matchesScheme(target, scheme));
 }
 export const connectionTokenCookieName = "vscode-tkn";
+
 export const connectionTokenQueryName = "tkn";
 class RemoteAuthoritiesImpl {
 	private readonly _hosts: {
@@ -228,6 +229,7 @@ class RemoteAuthoritiesImpl {
 	}
 }
 export const RemoteAuthorities = new RemoteAuthoritiesImpl();
+
 export function getServerRootPath(
 	product: {
 		quality?: string;
@@ -270,12 +272,17 @@ export type AppResourcePath =
 	| `x${string}`
 	| `y${string}`
 	| `z${string}`;
+
 export const builtinExtensionsPath: AppResourcePath = "vs/../../extensions";
+
 export const nodeModulesPath: AppResourcePath = "vs/../../node_modules";
+
 export const nodeModulesAsarPath: AppResourcePath =
 	"vs/../../node_modules.asar";
+
 export const nodeModulesAsarUnpackedPath: AppResourcePath =
 	"vs/../../node_modules.asar.unpacked";
+
 export const VSCODE_AUTHORITY = "vscode-app";
 class FileAccessImpl {
 	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -382,6 +389,7 @@ class FileAccessImpl {
 	}
 }
 export const FileAccess = new FileAccessImpl();
+
 export namespace COI {
 	const coiHeaders = new Map<
 		"3" | "2" | "1" | string,

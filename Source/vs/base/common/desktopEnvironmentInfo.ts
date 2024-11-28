@@ -24,6 +24,7 @@ enum DesktopEnvironment {
 const kXdgCurrentDesktopEnvVar = "XDG_CURRENT_DESKTOP";
 
 const kKDESessionEnvVar = "KDE_SESSION_VERSION";
+
 export function getDesktopEnvironment(): DesktopEnvironment {
 	const xdgCurrentDesktop = env[kXdgCurrentDesktopEnvVar];
 

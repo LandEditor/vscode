@@ -214,6 +214,7 @@ type ChatFollowupsRetrievedClassification = {
 	owner: "roblourens";
 	comment: "Provides insight into the usage of Chat features.";
 };
+
 export class ChatServiceTelemetry {
 	constructor(
 		@ITelemetryService

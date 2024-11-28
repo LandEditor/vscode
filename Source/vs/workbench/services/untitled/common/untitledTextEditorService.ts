@@ -27,6 +27,7 @@ import {
 
 export const IUntitledTextEditorService =
 	createDecorator<IUntitledTextEditorService>("untitledTextEditorService");
+
 export interface INewUntitledTextEditorOptions {
 	/**
 	 * Initial value of the untitled editor. An untitled editor with initial
@@ -71,6 +72,7 @@ export interface INewUntitledTextEditorWithAssociatedResourceOptions
 }
 type IInternalUntitledTextEditorOptions = IExistingUntitledTextEditorOptions &
 	INewUntitledTextEditorWithAssociatedResourceOptions;
+
 export interface IUntitledTextEditorModelManager {
 	/**
 	 * Events for when untitled text editors change (e.g. getting dirty, saved or reverted).

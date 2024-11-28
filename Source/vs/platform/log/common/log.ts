@@ -19,6 +19,7 @@ import { IEnvironmentService } from "../../environment/common/environment.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export const ILogService = createDecorator<ILogService>("logService");
+
 export const ILoggerService = createDecorator<ILoggerService>("loggerService");
 
 function now(): string {

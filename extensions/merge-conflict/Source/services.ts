@@ -13,6 +13,7 @@ import * as interfaces from "./interfaces";
 import Decorator from "./mergeDecorator";
 
 const ConfigurationSectionName = "merge-conflict";
+
 export default class ServiceWrapper implements vscode.Disposable {
 	private services: vscode.Disposable[] = [];
 	private telemetryReporter: TelemetryReporter;

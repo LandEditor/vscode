@@ -5,6 +5,7 @@
 import { LineTokens } from "./lineTokens.js";
 
 export const EMPTY_LINE_TOKENS = new Uint32Array(0).buffer;
+
 export class ContiguousTokensEditing {
 	public static deleteBeginning(
 		lineTokens: Uint32Array | ArrayBuffer | null,

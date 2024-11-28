@@ -31,10 +31,12 @@ import { getLogger } from "./logging.js";
  * {@link computeFn} should start with a JS Doc using `@description` to name the derived.
  */
 export function derived<T>(computeFn: (reader: IReader) => T): IObservable<T>;
+
 export function derived<T>(
 	owner: DebugOwner,
 	computeFn: (reader: IReader) => T,
 ): IObservable<T>;
+
 export function derived<T>(
 	computeFnOrOwner: ((reader: IReader) => T) | DebugOwner,
 	computeFn?: ((reader: IReader) => T) | undefined,
@@ -130,10 +132,12 @@ export function derivedHandleChanges<T, TChangeSummary>(
 export function derivedWithStore<T>(
 	computeFn: (reader: IReader, store: DisposableStore) => T,
 ): IObservable<T>;
+
 export function derivedWithStore<T>(
 	owner: object,
 	computeFn: (reader: IReader, store: DisposableStore) => T,
 ): IObservable<T>;
+
 export function derivedWithStore<T>(
 	computeFnOrOwner: ((reader: IReader, store: DisposableStore) => T) | object,
 	computeFnOrUndefined?: (reader: IReader, store: DisposableStore) => T,
@@ -167,10 +171,12 @@ export function derivedWithStore<T>(
 export function derivedDisposable<T extends IDisposable | undefined>(
 	computeFn: (reader: IReader) => T,
 ): IObservable<T>;
+
 export function derivedDisposable<T extends IDisposable | undefined>(
 	owner: DebugOwner,
 	computeFn: (reader: IReader) => T,
 ): IObservable<T>;
+
 export function derivedDisposable<T extends IDisposable | undefined>(
 	computeFnOrOwner: ((reader: IReader) => T) | DebugOwner,
 	computeFnOrUndefined?: (reader: IReader) => T,
